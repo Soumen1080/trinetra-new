@@ -1,0 +1,452 @@
+# Trinetra crypto detection rules (Semgrep OSS).
+#
+# TWO RULES GOVERN EVERY RULE IN THIS FILE, AND BOTH ARE LOAD-BEARING.
+#
+# 1. Match call expressions, never bare identifiers.
+#    A rule matching the token `rsa` flags `rsa = "some string"`. Every pattern
+#    here matches an invocation, so a variable that merely shares a name with an
+#    algorithm is not a finding. tests/fixtures/negative asserts this.
+#
+# 2. Interpolate captured values into the message.
+#    Semgrep OSS emits no `metavars` field, so the message string is the ONLY
+#    channel that can carry a key size back to the scanner. Every rule that can
+#    capture a size writes `trinetra:key_size=$VAR` into its message, and the
+#    adapter parses it back out. A rule author who forgets this silently loses
+#    the key size and the finding degrades to NEEDS_CONTEXT.
+#
+# The `metadata.trinetra` block is the canonical vocabulary (P6). Semgrep's own
+# `severity` is required by its schema but is IGNORED by the adapter: Trinetra
+# scores, Semgrep does not (P1).
+#
+# scripts/lint_rules.py enforces both constraints mechanically in CI.
+
+rules:
+  # ---------------------------------------------------------------------------
+  # Python
+  # ---------------------------------------------------------------------------
+  - id: trinetra-python-rsa-generate
+    languages: [python]
+    severity: INFO
+    message: >-
+      RSA key generation. trinetra:key_size=$BITS
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: rsa
+        primitive: pke
+        purposes: [key_encapsulation]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: rsa.generate_private_key(..., key_size=$BITS, ...)
+          - pattern: RSA.generate($BITS, ...)
+          - pattern: RSA.generate($BITS)
+
+  - id: trinetra-python-rsa-generate-unsized
+    languages: [python]
+    severity: INFO
+    message: >-
+      RSA key generation with an unresolved key size.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: rsa
+        primitive: pke
+        purposes: [key_encapsulation]
+        confidence: medium
+    patterns:
+      - pattern-either:
+          - pattern: rsa.generate_private_key(...)
+          - pattern: RSA.generate(...)
+      # Excluded so a sized call is reported once, by the rule that knows the
+      # size, rather than twice at two confidences.
+      - pattern-not: rsa.generate_private_key(..., key_size=$BITS, ...)
+      - pattern-not: RSA.generate($BITS, ...)
+
+  - id: trinetra-python-aes-mode
+    languages: [python]
+    severity: INFO
+    message: >-
+      AES cipher construction. trinetra:mode=$MODE
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: aes
+        primitive: block_cipher
+        purposes: [encryption]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: AES.new($KEY, AES.$MODE, ...)
+          - pattern: AES.new($KEY, AES.$MODE)
+
+  # Split per algorithm rather than interpolating $ALGO: hashlib.md5 is a bare
+  # attribute, not a captured value, so there is nothing to interpolate. Naming
+  # the algorithm in metadata is exact where a metavariable would be empty.
+  - id: trinetra-python-md5
+    languages: [python]
+    severity: INFO
+    message: >-
+      MD5 hash in use.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: md5
+        primitive: hash
+        purposes: [hashing]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: hashlib.md5(...)
+          - pattern: hashes.MD5()
+
+  - id: trinetra-python-sha1
+    languages: [python]
+    severity: INFO
+    message: >-
+      SHA-1 hash in use.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: sha1
+        primitive: hash
+        purposes: [hashing]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: hashlib.sha1(...)
+          - pattern: hashes.SHA1()
+
+  - id: trinetra-python-sha2
+    languages: [python]
+    severity: INFO
+    message: >-
+      SHA-2 family hash in use.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: sha2
+        primitive: hash
+        purposes: [hashing]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: hashlib.sha256(...)
+          - pattern: hashlib.sha384(...)
+          - pattern: hashlib.sha512(...)
+          - pattern: hashes.SHA256()
+          - pattern: hashes.SHA384()
+          - pattern: hashes.SHA512()
+
+  - id: trinetra-python-ec-generate
+    languages: [python]
+    severity: INFO
+    message: >-
+      Elliptic-curve key generation. trinetra:curve=$CURVE
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: ecdsa
+        primitive: signature
+        purposes: [digital_signature]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: ec.generate_private_key(ec.$CURVE(), ...)
+          - pattern: ec.generate_private_key(ec.$CURVE, ...)
+
+  - id: trinetra-python-3des
+    languages: [python]
+    severity: INFO
+    message: >-
+      Triple-DES cipher construction.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: 3des
+        primitive: block_cipher
+        purposes: [encryption]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: DES3.new(...)
+          - pattern: algorithms.TripleDES(...)
+
+  # ---------------------------------------------------------------------------
+  # Java
+  # ---------------------------------------------------------------------------
+  - id: trinetra-java-cipher-getinstance
+    languages: [java]
+    severity: INFO
+    message: >-
+      JCA cipher instantiated. trinetra:transformation=$TRANSFORM
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        primitive: block_cipher
+        purposes: [encryption]
+        confidence: high
+    patterns:
+      - pattern: Cipher.getInstance("$TRANSFORM", ...)
+
+  - id: trinetra-java-messagedigest
+    languages: [java]
+    severity: INFO
+    message: >-
+      JCA message digest instantiated. trinetra:algorithm=$ALGO
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        primitive: hash
+        purposes: [hashing]
+        confidence: high
+    patterns:
+      - pattern: MessageDigest.getInstance("$ALGO", ...)
+
+  - id: trinetra-java-keypairgenerator
+    languages: [java]
+    severity: INFO
+    message: >-
+      JCA key pair generator. trinetra:algorithm=$ALGO
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        primitive: pke
+        purposes: [key_encapsulation]
+        confidence: high
+    patterns:
+      - pattern: KeyPairGenerator.getInstance("$ALGO", ...)
+
+  - id: trinetra-java-keysize
+    languages: [java]
+    severity: INFO
+    message: >-
+      Key size configured on a key generator. trinetra:key_size=$BITS
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        primitive: pke
+        purposes: [key_encapsulation]
+        confidence: medium
+    patterns:
+      - pattern-either:
+          - pattern: $GEN.initialize($BITS)
+          - pattern: $GEN.init($BITS)
+
+  # ---------------------------------------------------------------------------
+  # Go
+  # ---------------------------------------------------------------------------
+  - id: trinetra-go-rsa-generate
+    languages: [go]
+    severity: INFO
+    message: >-
+      RSA key generation. trinetra:key_size=$BITS
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: rsa
+        primitive: pke
+        purposes: [key_encapsulation]
+        confidence: high
+    patterns:
+      - pattern: rsa.GenerateKey($RAND, $BITS)
+
+  - id: trinetra-go-md5
+    languages: [go]
+    severity: INFO
+    message: >-
+      MD5 hash in use.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: md5
+        primitive: hash
+        purposes: [hashing]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: md5.New()
+          - pattern: md5.Sum(...)
+
+  - id: trinetra-go-sha1
+    languages: [go]
+    severity: INFO
+    message: >-
+      SHA-1 hash in use.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: sha1
+        primitive: hash
+        purposes: [hashing]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: sha1.New()
+          - pattern: sha1.Sum(...)
+
+  - id: trinetra-go-aes
+    languages: [go]
+    severity: INFO
+    message: >-
+      AES cipher construction.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: aes
+        primitive: block_cipher
+        purposes: [encryption]
+        confidence: high
+    patterns:
+      - pattern: aes.NewCipher(...)
+
+  - id: trinetra-go-ecdsa
+    languages: [go]
+    severity: INFO
+    message: >-
+      ECDSA key generation.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: ecdsa
+        primitive: signature
+        purposes: [digital_signature]
+        confidence: high
+    patterns:
+      - pattern: ecdsa.GenerateKey(...)
+
+  # ---------------------------------------------------------------------------
+  # JavaScript / TypeScript  (CBOMkit does not cover these)
+  # ---------------------------------------------------------------------------
+  - id: trinetra-js-createhash
+    languages: [javascript, typescript]
+    severity: INFO
+    message: >-
+      Node crypto hash created. trinetra:algorithm=$ALGO
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        primitive: hash
+        purposes: [hashing]
+        confidence: high
+    patterns:
+      - pattern: crypto.createHash("$ALGO", ...)
+
+  - id: trinetra-js-createcipheriv
+    languages: [javascript, typescript]
+    severity: INFO
+    message: >-
+      Node crypto cipher created. trinetra:transformation=$ALGO
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        primitive: block_cipher
+        purposes: [encryption]
+        confidence: high
+    patterns:
+      - pattern: crypto.createCipheriv("$ALGO", ...)
+
+  - id: trinetra-js-generatekeypair
+    languages: [javascript, typescript]
+    severity: INFO
+    message: >-
+      Node crypto key pair generation. trinetra:algorithm=$ALGO
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        primitive: pke
+        purposes: [key_encapsulation]
+        confidence: high
+    patterns:
+      - pattern-either:
+          - pattern: crypto.generateKeyPair("$ALGO", ...)
+          - pattern: crypto.generateKeyPairSync("$ALGO", ...)
+
+  # ---------------------------------------------------------------------------
+  # C / C++  (CBOMkit does not cover these)
+  # ---------------------------------------------------------------------------
+  - id: trinetra-c-openssl-md5
+    languages: [c, cpp]
+    severity: INFO
+    message: >-
+      OpenSSL MD5 digest selected.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: md5
+        primitive: hash
+        purposes: [hashing]
+        confidence: medium
+    patterns:
+      - pattern-either:
+          - pattern: MD5_Init(...)
+          - pattern: EVP_md5(...)
+
+  - id: trinetra-c-openssl-sha1
+    languages: [c, cpp]
+    severity: INFO
+    message: >-
+      OpenSSL SHA-1 digest selected.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: sha1
+        primitive: hash
+        purposes: [hashing]
+        confidence: medium
+    patterns:
+      - pattern-either:
+          - pattern: SHA1_Init(...)
+          - pattern: EVP_sha1(...)
+
+  - id: trinetra-c-openssl-sha256
+    languages: [c, cpp]
+    severity: INFO
+    message: >-
+      OpenSSL SHA-256 digest selected.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: sha256
+        primitive: hash
+        purposes: [hashing]
+        confidence: medium
+    patterns:
+      - pattern: SHA256_Init(...)
+
+  - id: trinetra-c-openssl-rsa
+    languages: [c, cpp]
+    severity: INFO
+    message: >-
+      OpenSSL RSA key generation. trinetra:key_size=$BITS
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: rsa
+        primitive: pke
+        purposes: [key_encapsulation]
+        confidence: medium
+    patterns:
+      - pattern-either:
+          - pattern: RSA_generate_key($BITS, ...)
+          - pattern: RSA_generate_key_ex($RSA, $BITS, ...)
+
+  - id: trinetra-c-openssl-aes
+    languages: [c, cpp]
+    severity: INFO
+    message: >-
+      OpenSSL AES cipher selected.
+    metadata:
+      trinetra:
+        asset_type: algorithm
+        algorithm: aes
+        primitive: block_cipher
+        purposes: [encryption]
+        confidence: medium
+    patterns:
+      - pattern-either:
+          - pattern: EVP_aes_128_cbc(...)
+          - pattern: EVP_aes_256_cbc(...)
+          - pattern: EVP_aes_128_gcm(...)
+          - pattern: EVP_aes_256_gcm(...)
+          - pattern: AES_set_encrypt_key(...)

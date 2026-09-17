@@ -1,0 +1,129 @@
+# Data-classification taint rules — how Mosca's X gets scanner evidence.
+#
+# No scanner can know how long the data an artefact protects must stay secret.
+# What a scanner CAN observe is what kind of data actually reaches a crypto call.
+# These rules run in Semgrep taint mode: PII patterns are sources, crypto calls
+# are sinks, and a reaching path attaches trinetra:data-category to the finding.
+#
+# THIS IS EVIDENCE OF WHAT THE CODE PROTECTS, NOT A BUSINESS DECISION.
+# It enters the context chain at the `scanner_evidence` tier — below a user's
+# confirmation, never above it. The Python schema enforces that a scanner may
+# supply `data_category` and nothing else, so these rules cannot become a
+# back-channel for facts no scanner can know.
+#
+# Taint mode matters: a rule that merely matched the name `aadhaar_number`
+# anywhere would manufacture PII evidence from a name coincidence. Requiring a
+# genuine source -> sink path is what makes this evidence rather than a guess.
+
+rules:
+  - id: trinetra-taint-aadhaar-to-crypto
+    languages: [python, java, go, javascript, typescript]
+    severity: INFO
+    message: >-
+      Aadhaar-like identifier reaches a cryptographic sink.
+      trinetra:data_category=aadhaar_pii
+    metadata:
+      trinetra:
+        data_category: aadhaar_pii
+        confidence: medium
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $OBJ.aadhaar_number
+          - pattern: $OBJ.aadhaarNumber
+          - pattern: $OBJ.get("aadhaar_number")
+          - pattern: |
+              aadhaar_number = ...
+          - pattern: |
+              aadhaarNumber = ...
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $C.encrypt(...)
+          - pattern: $C.update(...)
+          - pattern: $C.doFinal(...)
+          - pattern: $C.Seal(...)
+          - pattern: $C.sign(...)
+
+  - id: trinetra-taint-card-to-crypto
+    languages: [python, java, go, javascript, typescript]
+    severity: INFO
+    message: >-
+      Payment card number reaches a cryptographic sink.
+      trinetra:data_category=payment_card
+    metadata:
+      trinetra:
+        data_category: payment_card
+        confidence: medium
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $OBJ.card_number
+          - pattern: $OBJ.cardNumber
+          - pattern: $OBJ.pan
+          - pattern: |
+              card_number = ...
+          - pattern: |
+              cardNumber = ...
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $C.encrypt(...)
+          - pattern: $C.update(...)
+          - pattern: $C.doFinal(...)
+          - pattern: $C.Seal(...)
+          - pattern: $C.sign(...)
+
+  - id: trinetra-taint-health-to-crypto
+    languages: [python, java, go, javascript, typescript]
+    severity: INFO
+    message: >-
+      Health record identifier reaches a cryptographic sink.
+      trinetra:data_category=health_record
+    metadata:
+      trinetra:
+        data_category: health_record
+        confidence: medium
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $OBJ.medical_record_id
+          - pattern: $OBJ.medicalRecordId
+          - pattern: $OBJ.patient_id
+          - pattern: |
+              medical_record_id = ...
+          - pattern: |
+              patient_id = ...
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $C.encrypt(...)
+          - pattern: $C.update(...)
+          - pattern: $C.doFinal(...)
+          - pattern: $C.Seal(...)
+          - pattern: $C.sign(...)
+
+  - id: trinetra-taint-credential-to-crypto
+    languages: [python, java, go, javascript, typescript]
+    severity: INFO
+    message: >-
+      Credential material reaches a cryptographic sink.
+      trinetra:data_category=credential_secret
+    metadata:
+      trinetra:
+        data_category: credential_secret
+        confidence: medium
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $OBJ.password
+          - pattern: $OBJ.secret_key
+          - pattern: $OBJ.api_key
+          - pattern: |
+              password = ...
+          - pattern: |
+              secret_key = ...
+    pattern-sinks:
+      - pattern-either:
+          - pattern: $C.encrypt(...)
+          - pattern: $C.update(...)
+          - pattern: $C.doFinal(...)
+          - pattern: $C.Seal(...)
+          - pattern: $C.sign(...)
