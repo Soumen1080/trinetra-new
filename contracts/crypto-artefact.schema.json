@@ -1,0 +1,1375 @@
+{
+  "$defs": {
+    "AlgorithmDetail": {
+      "additionalProperties": false,
+      "description": "Detail for ``asset_type == algorithm`` (the R19 fields).\n\n``AES`` is not an answer; ``AES-256-GCM`` is. Each of these fields is\n``None`` when the call site did not state it -- ``AES.new(key, MODE_GCM)``\ngenuinely does not reveal the key size, and the finding must say so rather\nthan assume 128 or 256.",
+      "properties": {
+        "curve": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "e.g. P-256, Curve25519.",
+          "title": "Curve"
+        },
+        "detail_type": {
+          "const": "algorithm",
+          "default": "algorithm",
+          "title": "Detail Type",
+          "type": "string"
+        },
+        "key_size_bits": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Key Size Bits"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CipherMode"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "padding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Padding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "parameter_set": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CycloneDX parameterSetIdentifier, e.g. '2048' or 'ML-KEM-768'.",
+          "title": "Parameter Set"
+        },
+        "rounds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rounds"
+        }
+      },
+      "title": "AlgorithmDetail",
+      "type": "object"
+    },
+    "AssetType": {
+      "description": "What kind of cryptographic asset a finding describes.\n\nMirrors the CycloneDX 1.6 ``cryptoProperties.assetType`` value set, extended\nwith the two infrastructure types Trinetra discovers that CycloneDX models as\n``related-crypto-material``.",
+      "enum": [
+        "algorithm",
+        "key",
+        "certificate",
+        "protocol",
+        "library",
+        "hardware_module",
+        "cloud_service",
+        "related_material"
+      ],
+      "title": "AssetType",
+      "type": "string"
+    },
+    "CertificateDetail": {
+      "additionalProperties": false,
+      "description": "Detail for ``asset_type == certificate`` (plan task 1.4).",
+      "properties": {
+        "chain_depth": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Chain Depth"
+        },
+        "detail_type": {
+          "const": "certificate",
+          "default": "certificate",
+          "title": "Detail Type",
+          "type": "string"
+        },
+        "fingerprint_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fingerprint Sha256"
+        },
+        "is_ca": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Ca"
+        },
+        "is_self_signed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Self Signed"
+        },
+        "issuer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer"
+        },
+        "not_after": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Not After"
+        },
+        "not_before": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Not Before"
+        },
+        "public_key_algorithm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Public Key Algorithm"
+        },
+        "public_key_curve": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Public Key Curve"
+        },
+        "public_key_size_bits": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Public Key Size Bits"
+        },
+        "serial_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Serial Number"
+        },
+        "signature_algorithm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Algorithm the ISSUER used to sign. Distinct from the subject public key: a quantum-vulnerable signature on a certificate is an authenticity risk, while a vulnerable public key is a confidentiality one.",
+          "title": "Signature Algorithm"
+        },
+        "subject": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject"
+        },
+        "subject_alternative_names": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Subject Alternative Names",
+          "type": "array"
+        }
+      },
+      "title": "CertificateDetail",
+      "type": "object"
+    },
+    "CipherMode": {
+      "description": "Block cipher mode of operation.\n\nLoad-bearing for R19: ``AES-128`` alone is not an answer. ECB is a finding in\nits own right regardless of key size.",
+      "enum": [
+        "ecb",
+        "cbc",
+        "ctr",
+        "gcm",
+        "ccm",
+        "ofb",
+        "cfb",
+        "xts",
+        "siv",
+        "poly1305",
+        "other"
+      ],
+      "title": "CipherMode",
+      "type": "string"
+    },
+    "CloudProvider": {
+      "enum": [
+        "aws",
+        "azure",
+        "gcp",
+        "ibm",
+        "oracle",
+        "on_premise",
+        "other"
+      ],
+      "title": "CloudProvider",
+      "type": "string"
+    },
+    "CloudServiceDetail": {
+      "additionalProperties": false,
+      "description": "Detail for ``asset_type == cloud_service`` (plan task 1.8).",
+      "properties": {
+        "detail_type": {
+          "const": "cloud_service",
+          "default": "cloud_service",
+          "title": "Detail Type",
+          "type": "string"
+        },
+        "fips_status": {
+          "$ref": "#/$defs/FipsStatus",
+          "default": "unknown"
+        },
+        "key_management": {
+          "$ref": "#/$defs/KeyManagementKind",
+          "default": "unknown"
+        },
+        "key_spec": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Provider key spec, e.g. RSA_2048, SYMMETRIC_DEFAULT.",
+          "title": "Key Spec"
+        },
+        "provider": {
+          "$ref": "#/$defs/CloudProvider",
+          "default": "other"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Region"
+        },
+        "resource_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ARN, resource URI or key id.",
+          "title": "Resource Id"
+        },
+        "rotation_enabled": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rotation Enabled"
+        },
+        "service": {
+          "$ref": "#/$defs/CloudServiceKind",
+          "default": "other"
+        }
+      },
+      "title": "CloudServiceDetail",
+      "type": "object"
+    },
+    "CloudServiceKind": {
+      "enum": [
+        "kms",
+        "cloud_hsm",
+        "certificate_manager",
+        "secrets_manager",
+        "vault",
+        "other"
+      ],
+      "title": "CloudServiceKind",
+      "type": "string"
+    },
+    "Confidence": {
+      "description": "Three levels only.\n\nA numeric confidence invites false precision and arithmetic that the\nunderlying evidence does not support. :meth:`downgrade` implements the\none-level drop the risk engine applies when any factor lacked evidence.",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "DetectionMethod": {
+      "description": "How a finding was detected. Feeds the confidence shown in the UI.",
+      "enum": [
+        "semgrep_pattern",
+        "semgrep_taint",
+        "tree_sitter_ast",
+        "dependency_manifest",
+        "sbom_ingest",
+        "binary_symbol",
+        "binary_constant",
+        "certificate_parse",
+        "tls_handshake",
+        "pkcs11_enumeration",
+        "cloud_api",
+        "config_parse",
+        "entropy_heuristic",
+        "other"
+      ],
+      "title": "DetectionMethod",
+      "type": "string"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "description": "Why Trinetra believes a finding is real.\n\nEvery artefact carries one. An artefact without evidence is not a\nlower-quality artefact -- it is a bug, so the field is mandatory.",
+      "properties": {
+        "additional_context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Scanner-supplied note, e.g. the data-flow sink reached.",
+          "title": "Additional Context"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "detection_method": {
+          "$ref": "#/$defs/DetectionMethod"
+        },
+        "location": {
+          "$ref": "#/$defs/SourceLocation"
+        },
+        "redacted": {
+          "default": false,
+          "description": "True when the snippet was withheld or masked because it contained key material. The platform must never log a real key.",
+          "title": "Redacted",
+          "type": "boolean"
+        },
+        "rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Identifier of the rule that fired.",
+          "title": "Rule Id"
+        },
+        "snippet": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The source line(s) that triggered detection. Redacted before storage when the match is key material.",
+          "title": "Snippet"
+        }
+      },
+      "required": [
+        "location",
+        "detection_method",
+        "confidence"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "FipsStatus": {
+      "enum": [
+        "fips_140_2",
+        "fips_140_3",
+        "non_fips",
+        "unknown"
+      ],
+      "title": "FipsStatus",
+      "type": "string"
+    },
+    "HardwareModuleDetail": {
+      "additionalProperties": false,
+      "description": "Detail for ``asset_type == hardware_module`` (plan task 1.7).",
+      "properties": {
+        "detail_type": {
+          "const": "hardware_module",
+          "default": "hardware_module",
+          "title": "Detail Type",
+          "type": "string"
+        },
+        "fips_certificate_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fips Certificate Number"
+        },
+        "fips_status": {
+          "$ref": "#/$defs/FipsStatus",
+          "default": "unknown"
+        },
+        "firmware_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Firmware Version"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "pkcs11_slot_id": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pkcs11 Slot Id"
+        },
+        "pkcs11_token_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pkcs11 Token Label"
+        },
+        "serial_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Serial Number"
+        },
+        "supports_pqc": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "PQC-capable firmware. Load-bearing for migration planning: an HSM that cannot be upgraded is a hardware purchase, not a code change, and dominates the cost model.",
+          "title": "Supports Pqc"
+        },
+        "vendor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vendor"
+        }
+      },
+      "title": "HardwareModuleDetail",
+      "type": "object"
+    },
+    "KeyDetail": {
+      "additionalProperties": false,
+      "description": "Detail for ``asset_type == key`` (plan task 1.3).",
+      "properties": {
+        "activated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activated At"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "detail_type": {
+          "const": "key",
+          "default": "key",
+          "title": "Detail Type",
+          "type": "string"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expires At"
+        },
+        "fingerprint_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Hash of the public key or key identifier. Never the key itself -- Trinetra stores no secret material.",
+          "title": "Fingerprint Sha256"
+        },
+        "is_exposed": {
+          "default": false,
+          "description": "Reachable by a party that should not hold it, e.g. a key in a public repository or a world-readable file.",
+          "title": "Is Exposed",
+          "type": "boolean"
+        },
+        "is_hardcoded": {
+          "default": false,
+          "description": "Key material embedded in source, config or an image layer. Always a finding regardless of algorithm strength.",
+          "title": "Is Hardcoded",
+          "type": "boolean"
+        },
+        "key_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "e.g. rsa, ec, aes, hmac. None when unobserved.",
+          "title": "Key Type"
+        },
+        "rotation_period_days": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Observed or configured rotation period. None means no rotation policy was found -- which is itself a finding, and must not be reported as 'rotates yearly'.",
+          "title": "Rotation Period Days"
+        },
+        "size_bits": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Size Bits"
+        },
+        "state": {
+          "$ref": "#/$defs/KeyState",
+          "default": "unknown"
+        },
+        "storage_location": {
+          "$ref": "#/$defs/KeyStorageLocation",
+          "default": "unknown"
+        }
+      },
+      "title": "KeyDetail",
+      "type": "object"
+    },
+    "KeyManagementKind": {
+      "description": "Who controls the key.\n\n``provider_managed`` keys cannot be migrated by the customer on their own\nschedule, which is a migration-complexity input, not merely a label.",
+      "enum": [
+        "provider_managed",
+        "customer_managed",
+        "customer_supplied",
+        "unknown"
+      ],
+      "title": "KeyManagementKind",
+      "type": "string"
+    },
+    "KeyState": {
+      "description": "Lifecycle state of a key, per NIST SP 800-57.",
+      "enum": [
+        "pre_activation",
+        "active",
+        "suspended",
+        "deactivated",
+        "compromised",
+        "destroyed",
+        "unknown"
+      ],
+      "title": "KeyState",
+      "type": "string"
+    },
+    "KeyStorageLocation": {
+      "description": "Where the key material actually lives.\n\nOrdered loosely from worst to best. ``source_code`` is always a finding: a\nkey in a repository is disclosed to everyone with read access and to every\nsystem that has ever mirrored it.",
+      "enum": [
+        "source_code",
+        "config_file",
+        "environment_variable",
+        "keystore_file",
+        "container_image",
+        "secrets_manager",
+        "cloud_kms",
+        "hsm",
+        "tpm",
+        "smartcard",
+        "unknown"
+      ],
+      "title": "KeyStorageLocation",
+      "type": "string"
+    },
+    "LibraryDetail": {
+      "additionalProperties": false,
+      "description": "Detail for ``asset_type == library`` (plan task 1.6).\n\nA library finding proves that a crypto implementation is present. It does\n**not** prove any particular algorithm is used, which is why\n:attr:`CryptoArtefact.algorithm` is forced empty for libraries.",
+      "properties": {
+        "detail_type": {
+          "const": "library",
+          "default": "library",
+          "title": "Detail Type",
+          "type": "string"
+        },
+        "ecosystem": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "npm, pypi, maven, ...",
+          "title": "Ecosystem"
+        },
+        "fips_status": {
+          "$ref": "#/$defs/FipsStatus",
+          "default": "unknown"
+        },
+        "is_direct_dependency": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Direct Dependency"
+        },
+        "package_name": {
+          "title": "Package Name",
+          "type": "string"
+        },
+        "purl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Package URL, e.g. pkg:golang/crypto@0.17.0",
+          "title": "Purl"
+        },
+        "supports_pqc": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether this version ships PQC primitives. None means the knowledge base has no entry -- not that it lacks support.",
+          "title": "Supports Pqc"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        }
+      },
+      "required": [
+        "package_name"
+      ],
+      "title": "LibraryDetail",
+      "type": "object"
+    },
+    "NistSecurityLevel": {
+      "description": "NIST PQC security category.\n\n``LEVEL_0`` is Trinetra's own extension meaning \"no security remains against\na CRQC\" -- the honest description of RSA and ECC in a post-quantum world.",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "unknown"
+      ],
+      "title": "NistSecurityLevel",
+      "type": "string"
+    },
+    "Padding": {
+      "description": "Padding scheme. ``pkcs1_v15`` and ``raw`` are findings in themselves.",
+      "enum": [
+        "pkcs1_v15",
+        "oaep",
+        "pss",
+        "pkcs7",
+        "ansi_x923",
+        "iso10126",
+        "zero",
+        "raw",
+        "none",
+        "other"
+      ],
+      "title": "Padding",
+      "type": "string"
+    },
+    "Primitive": {
+      "description": "The cryptographic primitive an algorithm implements.\n\nDrives the attack model: only ``pke``, ``signature``, ``key_agreement`` and\n``kem`` are Shor-breakable, while ``block_cipher`` and ``hash`` are merely\nGrover-weakened. The risk engine reads this field, never the algorithm name.",
+      "enum": [
+        "block_cipher",
+        "stream_cipher",
+        "hash",
+        "mac",
+        "aead",
+        "signature",
+        "pke",
+        "kem",
+        "key_agreement",
+        "kdf",
+        "drbg",
+        "other"
+      ],
+      "title": "Primitive",
+      "type": "string"
+    },
+    "ProtocolDetail": {
+      "additionalProperties": false,
+      "description": "Detail for ``asset_type == protocol`` (plan task 1.5).",
+      "properties": {
+        "cipher_suites": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cipher Suites",
+          "type": "array"
+        },
+        "detail_type": {
+          "const": "protocol",
+          "default": "protocol",
+          "title": "Detail Type",
+          "type": "string"
+        },
+        "is_observed": {
+          "default": false,
+          "description": "True when read from a live handshake, false when declared in configuration. Declared and observed crypto routinely differ, and the distinction must survive to the UI.",
+          "title": "Is Observed",
+          "type": "boolean"
+        },
+        "key_exchange_groups": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Key Exchange Groups",
+          "type": "array"
+        },
+        "protocol": {
+          "$ref": "#/$defs/ProtocolName",
+          "default": "other"
+        },
+        "signature_algorithms": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Signature Algorithms",
+          "type": "array"
+        },
+        "supports_hybrid_kex": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether a PQC hybrid group such as X25519MLKEM768 is offered. None means not determined.",
+          "title": "Supports Hybrid Kex"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "e.g. '1.2', '1.3', '2.0'. None when unobserved.",
+          "title": "Version"
+        }
+      },
+      "title": "ProtocolDetail",
+      "type": "object"
+    },
+    "ProtocolName": {
+      "enum": [
+        "tls",
+        "dtls",
+        "ssh",
+        "ipsec",
+        "ike",
+        "wireguard",
+        "smime",
+        "openpgp",
+        "kerberos",
+        "saml",
+        "oidc",
+        "other"
+      ],
+      "title": "ProtocolName",
+      "type": "string"
+    },
+    "Purpose": {
+      "description": "What the artefact is used *for* at the point of detection.\n\nDistinct from :class:`Primitive`: RSA is a ``pke`` primitive that may be used\nfor ``key_encapsulation`` in one call site and ``digital_signature`` in\nanother, and the two carry different urgency (confidentiality risk is\nretroactive, authenticity risk is not).",
+      "enum": [
+        "encryption",
+        "decryption",
+        "digital_signature",
+        "verify",
+        "key_encapsulation",
+        "key_agreement",
+        "key_derivation",
+        "hashing",
+        "authentication",
+        "integrity",
+        "random_generation",
+        "other"
+      ],
+      "title": "Purpose",
+      "type": "string"
+    },
+    "QuantumVulnerability": {
+      "description": "How an algorithm fares against a cryptographically relevant quantum\ncomputer.\n\n``classically_broken`` is deliberately separate from the quantum categories:\nMD5 and SHA-1 are today's problem, not 2035's, and conflating the two\nmisrepresents urgency in both directions.",
+      "enum": [
+        "shor_broken",
+        "grover_weakened",
+        "quantum_safe",
+        "classically_broken",
+        "not_applicable",
+        "unknown"
+      ],
+      "title": "QuantumVulnerability",
+      "type": "string"
+    },
+    "RelatedMaterialDetail": {
+      "additionalProperties": false,
+      "description": "Detail for ``asset_type == related_material``: salts, IVs, nonces, seeds.",
+      "properties": {
+        "detail_type": {
+          "const": "related_material",
+          "default": "related_material",
+          "title": "Detail Type",
+          "type": "string"
+        },
+        "is_hardcoded": {
+          "default": false,
+          "description": "A static IV or salt defeats the construction it feeds, so this is a finding independent of the algorithm's strength.",
+          "title": "Is Hardcoded",
+          "type": "boolean"
+        },
+        "material_kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "iv, nonce, salt, seed, token, ...",
+          "title": "Material Kind"
+        },
+        "size_bits": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Size Bits"
+        }
+      },
+      "title": "RelatedMaterialDetail",
+      "type": "object"
+    },
+    "ScannerKind": {
+      "enum": [
+        "source",
+        "container",
+        "cloud_hsm",
+        "network",
+        "binary"
+      ],
+      "title": "ScannerKind",
+      "type": "string"
+    },
+    "SourceLocation": {
+      "additionalProperties": false,
+      "description": "Where in a target a finding was observed.",
+      "properties": {
+        "column": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Column"
+        },
+        "end_line": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Line"
+        },
+        "line": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed line number, when known.",
+          "title": "Line"
+        },
+        "path": {
+          "description": "Path relative to the scan target root. Never an absolute host path -- that would leak the scanner's filesystem layout.",
+          "title": "Path",
+          "type": "string"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enclosing function/class, or the binary symbol name.",
+          "title": "Symbol"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "SourceLocation",
+      "type": "object"
+    }
+  },
+  "$id": "https://trinetra.local/contracts/crypto-artefact-1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One cryptographic asset, however it was discovered (plan task 1.2).\n\nThis is the single record every scanner produces and every engine consumes.\nWhatever found it -- Semgrep, Syft, a TLS handshake, a PKCS#11 enumeration --\na finding arrives here and nothing downstream can tell the difference.",
+  "properties": {
+    "algorithm": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Normalised algorithm name. **Always None for libraries** -- see the model validator; a package name is not an algorithm.",
+      "title": "Algorithm"
+    },
+    "artefact_id": {
+      "description": "Deterministic sha256 identity; stable across rescans of the same target. Produced by from_evidence().",
+      "title": "Artefact Id",
+      "type": "string"
+    },
+    "asset_type": {
+      "$ref": "#/$defs/AssetType"
+    },
+    "detail": {
+      "anyOf": [
+        {
+          "discriminator": {
+            "mapping": {
+              "algorithm": "#/$defs/AlgorithmDetail",
+              "certificate": "#/$defs/CertificateDetail",
+              "cloud_service": "#/$defs/CloudServiceDetail",
+              "hardware_module": "#/$defs/HardwareModuleDetail",
+              "key": "#/$defs/KeyDetail",
+              "library": "#/$defs/LibraryDetail",
+              "protocol": "#/$defs/ProtocolDetail",
+              "related_material": "#/$defs/RelatedMaterialDetail"
+            },
+            "propertyName": "detail_type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/AlgorithmDetail"
+            },
+            {
+              "$ref": "#/$defs/KeyDetail"
+            },
+            {
+              "$ref": "#/$defs/CertificateDetail"
+            },
+            {
+              "$ref": "#/$defs/ProtocolDetail"
+            },
+            {
+              "$ref": "#/$defs/LibraryDetail"
+            },
+            {
+              "$ref": "#/$defs/HardwareModuleDetail"
+            },
+            {
+              "$ref": "#/$defs/CloudServiceDetail"
+            },
+            {
+              "$ref": "#/$defs/RelatedMaterialDetail"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Type-specific fields; see the detail models.",
+      "title": "Detail"
+    },
+    "discovered_by": {
+      "$ref": "#/$defs/ScannerKind"
+    },
+    "evidence": {
+      "description": "At least one. An artefact with no evidence is a bug (P3).",
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "minItems": 1,
+      "title": "Evidence",
+      "type": "array"
+    },
+    "first_seen": {
+      "format": "date-time",
+      "title": "First Seen",
+      "type": "string"
+    },
+    "last_seen": {
+      "format": "date-time",
+      "title": "Last Seen",
+      "type": "string"
+    },
+    "name": {
+      "description": "As discovered, e.g. 'RSA-2048', 'OpenSSL', 'TLS 1.2'.",
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "nist_security_level": {
+      "$ref": "#/$defs/NistSecurityLevel",
+      "default": "unknown"
+    },
+    "oid": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "ASN.1 OID where applicable.",
+      "title": "Oid"
+    },
+    "primitive": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Primitive"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "purposes": {
+      "items": {
+        "$ref": "#/$defs/Purpose"
+      },
+      "title": "Purposes",
+      "type": "array"
+    },
+    "quantum_vulnerability": {
+      "$ref": "#/$defs/QuantumVulnerability",
+      "default": "unknown"
+    },
+    "raw_cbom": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The original CycloneDX component. Nothing a scanner produced is ever lost, even if Trinetra does not model it yet.",
+      "title": "Raw Cbom"
+    },
+    "scan_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Owning scan. None before persistence.",
+      "title": "Scan Id"
+    }
+  },
+  "required": [
+    "artefact_id",
+    "asset_type",
+    "name",
+    "evidence",
+    "discovered_by",
+    "first_seen",
+    "last_seen"
+  ],
+  "title": "CryptoArtefact",
+  "type": "object",
+  "x-trinetra-schema-version": "1.0"
+}

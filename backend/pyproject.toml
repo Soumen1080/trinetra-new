@@ -1,0 +1,47 @@
+[project]
+name = "trinetra-backend"
+version = "0.1.0"
+description = "Trinetra — PQC Cryptographic Bill of Materials analytics platform"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.9",
+    "sqlalchemy>=2.0.36",
+    "alembic>=1.14",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+postgres = ["psycopg[binary]>=3.2"]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers"
+
+[tool.ruff]
+line-length = 90
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+# F403/F405: app.models re-exports the vocabulary via a star import by design,
+# so the enum names stay importable from one place.
+ignore = ["F403", "F405"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+warn_unused_ignores = false

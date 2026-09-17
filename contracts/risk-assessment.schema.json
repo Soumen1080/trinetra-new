@@ -1,0 +1,447 @@
+{
+  "$defs": {
+    "AssessmentStatus": {
+      "description": "Why an artefact does or does not carry a score.\n\n``NEEDS_CONTEXT`` is load-bearing and must never be folded into a low-risk\nband: those artefacts are *unassessed*, not safe. P3 requires that the\ndistinction survive all the way to the UI.",
+      "enum": [
+        "scored",
+        "needs_context",
+        "policy_decided",
+        "dependency_only",
+        "not_applicable"
+      ],
+      "title": "AssessmentStatus",
+      "type": "string"
+    },
+    "Confidence": {
+      "description": "Three levels only.\n\nA numeric confidence invites false precision and arithmetic that the\nunderlying evidence does not support. :meth:`downgrade` implements the\none-level drop the risk engine applies when any factor lacked evidence.",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "MoscaTrack": {
+      "additionalProperties": false,
+      "description": "Track A -- will migration finish before the data stops being safe?\n\n``X + Y > Z`` means the deadline has already passed.",
+      "properties": {
+        "confidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Confidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "evidence": {
+          "description": "Human-readable citations for X.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "is_urgent": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "True when X + Y > Z. None when any input is missing -- which is not the same as 'not urgent'.",
+          "title": "Is Urgent"
+        },
+        "shortfall_years": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "(X + Y) - Z. Positive means the deadline has passed; negative is remaining slack.",
+          "title": "Shortfall Years"
+        },
+        "x_years": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Confidentiality lifetime. None when unevidenced.",
+          "title": "X Years"
+        },
+        "y_years": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Migration time. Human-supplied only.",
+          "title": "Y Years"
+        },
+        "z_basis": {
+          "$ref": "#/$defs/MoscaZBasis",
+          "default": "unavailable"
+        },
+        "z_years": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Threat horizon.",
+          "title": "Z Years"
+        }
+      },
+      "title": "MoscaTrack",
+      "type": "object"
+    },
+    "MoscaZBasis": {
+      "description": "Where the threat horizon Z came from. A Z without its basis is unusable.",
+      "enum": [
+        "org_horizon",
+        "resource_model",
+        "unavailable"
+      ],
+      "title": "MoscaZBasis",
+      "type": "string"
+    },
+    "Priority": {
+      "enum": [
+        "p0",
+        "p1",
+        "p2",
+        "none"
+      ],
+      "title": "Priority",
+      "type": "string"
+    },
+    "QuantumProjectionStatus": {
+      "enum": [
+        "calculated",
+        "beyond_horizon",
+        "model_unavailable",
+        "not_required"
+      ],
+      "title": "QuantumProjectionStatus",
+      "type": "string"
+    },
+    "ResourceScenario": {
+      "description": "Scales the capability curve P(t) -- never the attack requirement Q.",
+      "enum": [
+        "conservative",
+        "baseline",
+        "aggressive"
+      ],
+      "title": "ResourceScenario",
+      "type": "string"
+    },
+    "ResourceTrack": {
+      "additionalProperties": false,
+      "description": "Track B -- when could this algorithm become attack-feasible?\n\nQ (the attack requirement) is a property of the algorithm. A scenario scales\nthe capability curve P(t) and **never** Q, so roadmap optimism cannot alter\nhow hard an algorithm is to break.",
+      "properties": {
+        "assumptions": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Error-correction scheme, logical-qubit definition, physical error rate. A Q without its assumptions is a number nobody can check.",
+          "title": "Assumptions",
+          "type": "object"
+        },
+        "caveats": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Caveats",
+          "type": "array"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Confidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "gate_count_required": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gate Count Required"
+        },
+        "logical_qubits_required": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Logical Qubits Required"
+        },
+        "m_years": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Years until attack feasibility.",
+          "title": "M Years"
+        },
+        "migration_deadline_year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Migration Deadline Year"
+        },
+        "projected_break_year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Projected Break Year"
+        },
+        "scenario": {
+          "$ref": "#/$defs/ResourceScenario",
+          "default": "baseline"
+        },
+        "status": {
+          "$ref": "#/$defs/QuantumProjectionStatus",
+          "default": "model_unavailable"
+        }
+      },
+      "title": "ResourceTrack",
+      "type": "object"
+    },
+    "ScoreContribution": {
+      "additionalProperties": false,
+      "description": "One factor's contribution to the final score.\n\n``has_evidence=False`` with ``points=0`` is the honest representation of an\nunmeasured factor. The alternative -- a midpoint -- is indistinguishable\nfrom a real measurement once it reaches a chart.",
+      "properties": {
+        "factor": {
+          "title": "Factor",
+          "type": "string"
+        },
+        "has_evidence": {
+          "title": "Has Evidence",
+          "type": "boolean"
+        },
+        "max_points": {
+          "exclusiveMinimum": 0,
+          "title": "Max Points",
+          "type": "integer"
+        },
+        "points": {
+          "minimum": 0,
+          "title": "Points",
+          "type": "number"
+        },
+        "reason": {
+          "description": "Plain language, shown in the UI beside the number.",
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "factor",
+        "points",
+        "max_points",
+        "has_evidence",
+        "reason"
+      ],
+      "title": "ScoreContribution",
+      "type": "object"
+    }
+  },
+  "$id": "https://trinetra.local/contracts/risk-assessment-1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One verdict for one artefact. **Append-only** -- never updated (P5).\n\nRe-scoring inserts a new row, which is what makes \"why was this P0 last\nweek?\" an answerable question.",
+  "properties": {
+    "artefact_id": {
+      "title": "Artefact Id",
+      "type": "string"
+    },
+    "assessed_at": {
+      "format": "date-time",
+      "title": "Assessed At",
+      "type": "string"
+    },
+    "assessment_id": {
+      "title": "Assessment Id",
+      "type": "string"
+    },
+    "contributions": {
+      "items": {
+        "$ref": "#/$defs/ScoreContribution"
+      },
+      "title": "Contributions",
+      "type": "array"
+    },
+    "final_confidence": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Confidence"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "final_score": {
+      "anyOf": [
+        {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "None unless both tracks produced a result. Half the evidence still makes a number; it is just not a comparable one.",
+      "title": "Final Score"
+    },
+    "input_provenance": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Which tier supplied each input, copied from the context at assessment time so the verdict stays reproducible even if the context is later edited.",
+      "title": "Input Provenance",
+      "type": "object"
+    },
+    "missing_fields": {
+      "description": "Named so NEEDS_CONTEXT is an action, not a dead end.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing Fields",
+      "type": "array"
+    },
+    "mosca": {
+      "$ref": "#/$defs/MoscaTrack"
+    },
+    "policy_version": {
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "priority": {
+      "$ref": "#/$defs/Priority",
+      "default": "none"
+    },
+    "quantum_forecast_profile_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Quantum Forecast Profile Version"
+    },
+    "rationale": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Plain-language explanation shown in the UI.",
+      "title": "Rationale"
+    },
+    "resource": {
+      "$ref": "#/$defs/ResourceTrack"
+    },
+    "scan_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scan Id"
+    },
+    "status": {
+      "$ref": "#/$defs/AssessmentStatus"
+    },
+    "weights_version": {
+      "title": "Weights Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "assessment_id",
+    "artefact_id",
+    "status",
+    "policy_version",
+    "weights_version",
+    "assessed_at"
+  ],
+  "title": "RiskAssessment",
+  "type": "object",
+  "x-trinetra-schema-version": "1.0"
+}

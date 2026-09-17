@@ -1,0 +1,68 @@
+{
+  "$defs": {
+    "DependencyRelation": {
+      "description": "Edge kinds in the artefact dependency graph (1.10).",
+      "enum": [
+        "depends_on",
+        "provides",
+        "uses",
+        "contains",
+        "signed_by",
+        "issued_by",
+        "protects"
+      ],
+      "title": "DependencyRelation",
+      "type": "string"
+    }
+  },
+  "$id": "https://trinetra.local/contracts/dependency-edge-1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One edge in the crypto dependency graph (plan task 1.10).\n\nApplication -> library -> algorithm. Answers \"if OpenSSL is the problem,\nwhat breaks?\", which is the blast-radius question behind migration planning.",
+  "properties": {
+    "depth": {
+      "default": 0,
+      "description": "0 for direct, incrementing transitively.",
+      "minimum": 0,
+      "title": "Depth",
+      "type": "integer"
+    },
+    "is_direct": {
+      "default": true,
+      "title": "Is Direct",
+      "type": "boolean"
+    },
+    "relation": {
+      "$ref": "#/$defs/DependencyRelation"
+    },
+    "source_id": {
+      "description": "artefact_id or application_id.",
+      "title": "Source Id",
+      "type": "string"
+    },
+    "source_kind": {
+      "description": "'application' or 'artefact'.",
+      "title": "Source Kind",
+      "type": "string"
+    },
+    "target_id": {
+      "title": "Target Id",
+      "type": "string"
+    },
+    "target_kind": {
+      "description": "'application' or 'artefact'.",
+      "title": "Target Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_id",
+    "target_id",
+    "relation",
+    "source_kind",
+    "target_kind"
+  ],
+  "title": "DependencyEdge",
+  "type": "object",
+  "x-trinetra-schema-version": "1.0"
+}

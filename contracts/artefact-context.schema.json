@@ -1,0 +1,274 @@
+{
+  "$defs": {
+    "BusinessCriticality": {
+      "description": "Business criticality of the owning system.\n\nA string enum rather than a bare 1-5 integer so that an unset value is\n``unknown`` and visibly so, rather than silently becoming 3 (P3).",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ],
+      "title": "BusinessCriticality",
+      "type": "string"
+    },
+    "DataClassification": {
+      "enum": [
+        "restricted",
+        "confidential",
+        "internal",
+        "public",
+        "unknown"
+      ],
+      "title": "DataClassification",
+      "type": "string"
+    },
+    "EvidenceSource": {
+      "description": "Ranked sources for the confidentiality lifetime X.",
+      "enum": [
+        "user",
+        "scanner",
+        "org_policy",
+        "legal_profile"
+      ],
+      "title": "EvidenceSource",
+      "type": "string"
+    },
+    "ExposureLevel": {
+      "description": "Network reachability of the system holding the artefact.\n\nDrives HNDL urgency: internet-exposed traffic can be recorded today by an\nadversary with no access to the network, which is what makes it the\nhighest-priority confidentiality risk.",
+      "enum": [
+        "internet",
+        "partner",
+        "internal",
+        "isolated",
+        "unknown"
+      ],
+      "title": "ExposureLevel",
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Which tier supplied a single context field, and why (P4).",
+      "properties": {
+        "source_detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Identifier within the tier, e.g. the org preset name or the taint rule that produced the evidence.",
+          "title": "Source Detail"
+        },
+        "tier": {
+          "$ref": "#/$defs/ProvenanceTier"
+        }
+      },
+      "required": [
+        "tier"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "ProvenanceTier": {
+      "description": "Which tier supplied a context field.\n\nStrict precedence, strongest first. Every resolved context field records its\ntier so that no number can be presented without its origin (P4).",
+      "enum": [
+        "user",
+        "scanner_evidence",
+        "org_preset",
+        "unknown"
+      ],
+      "title": "ProvenanceTier",
+      "type": "string"
+    },
+    "RetentionBasis": {
+      "description": "What backs a retention figure.\n\n``regulatory_minimum`` carries an explicit caveat: Indian statutes mandate\nretention *minimums*, not confidentiality lifetimes, and the two are not\ninterchangeable.",
+      "enum": [
+        "legal",
+        "regulatory_minimum",
+        "assumption"
+      ],
+      "title": "RetentionBasis",
+      "type": "string"
+    },
+    "RetentionEvidence": {
+      "additionalProperties": false,
+      "description": "One piece of evidence for the confidentiality lifetime X.",
+      "properties": {
+        "basis": {
+          "$ref": "#/$defs/RetentionBasis"
+        },
+        "caveat": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Printed with the figure wherever it appears. Retention minimums in particular are not confidentiality lifetimes.",
+          "title": "Caveat"
+        },
+        "citation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Statute, policy id or profile entry.",
+          "title": "Citation"
+        },
+        "data_category": {
+          "description": "e.g. aadhaar_pii, health_record, session_token.",
+          "title": "Data Category",
+          "type": "string"
+        },
+        "lifetime_years": {
+          "minimum": 0,
+          "title": "Lifetime Years",
+          "type": "integer"
+        },
+        "source": {
+          "$ref": "#/$defs/EvidenceSource"
+        }
+      },
+      "required": [
+        "source",
+        "data_category",
+        "lifetime_years",
+        "basis"
+      ],
+      "title": "RetentionEvidence",
+      "type": "object"
+    }
+  },
+  "$id": "https://trinetra.local/contracts/artefact-context-1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Resolved business context for one artefact, with per-field provenance.\n\nCreated by the context resolver, editable by a user. The ``provenance`` map\nis what lets the UI show *where each number came from* (P4, and UI\nobligation O2).",
+  "properties": {
+    "application_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Application Id"
+    },
+    "artefact_id": {
+      "title": "Artefact Id",
+      "type": "string"
+    },
+    "business_criticality": {
+      "$ref": "#/$defs/BusinessCriticality",
+      "default": "unknown"
+    },
+    "data_category": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Data Category"
+    },
+    "data_classification": {
+      "$ref": "#/$defs/DataClassification",
+      "default": "unknown"
+    },
+    "data_lifetime_years": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Resolved X. None when unevidenced.",
+      "title": "Data Lifetime Years"
+    },
+    "exposure": {
+      "$ref": "#/$defs/ExposureLevel",
+      "default": "unknown"
+    },
+    "migration_time_years": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Resolved Y. Human-supplied only.",
+      "title": "Migration Time Years"
+    },
+    "provenance": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Provenance"
+      },
+      "description": "field name -> which tier supplied it. Fields absent from this map were never resolved and must render as 'unknown', not as a value with no origin.",
+      "title": "Provenance",
+      "type": "object"
+    },
+    "retention_evidence": {
+      "items": {
+        "$ref": "#/$defs/RetentionEvidence"
+      },
+      "title": "Retention Evidence",
+      "type": "array"
+    },
+    "updated_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updated At"
+    },
+    "updated_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updated By"
+    }
+  },
+  "required": [
+    "artefact_id"
+  ],
+  "title": "ArtefactContext",
+  "type": "object",
+  "x-trinetra-schema-version": "1.0"
+}

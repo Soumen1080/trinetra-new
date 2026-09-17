@@ -1,0 +1,171 @@
+{
+  "$defs": {
+    "BusinessCriticality": {
+      "description": "Business criticality of the owning system.\n\nA string enum rather than a bare 1-5 integer so that an unset value is\n``unknown`` and visibly so, rather than silently becoming 3 (P3).",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ],
+      "title": "BusinessCriticality",
+      "type": "string"
+    },
+    "DataClassification": {
+      "enum": [
+        "restricted",
+        "confidential",
+        "internal",
+        "public",
+        "unknown"
+      ],
+      "title": "DataClassification",
+      "type": "string"
+    },
+    "ExposureLevel": {
+      "description": "Network reachability of the system holding the artefact.\n\nDrives HNDL urgency: internet-exposed traffic can be recorded today by an\nadversary with no access to the network, which is what makes it the\nhighest-priority confidentiality risk.",
+      "enum": [
+        "internet",
+        "partner",
+        "internal",
+        "isolated",
+        "unknown"
+      ],
+      "title": "ExposureLevel",
+      "type": "string"
+    }
+  },
+  "$id": "https://trinetra.local/contracts/application-1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A system that owns artefacts (plan task 1.9).\n\nSupplies the business inputs to the risk engine: criticality, data\nclassification, exposure and retention. Every one defaults to ``UNKNOWN``\nor ``None`` rather than to a middle value (P3).",
+  "properties": {
+    "application_id": {
+      "title": "Application Id",
+      "type": "string"
+    },
+    "business_criticality": {
+      "$ref": "#/$defs/BusinessCriticality",
+      "default": "unknown"
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Created At"
+    },
+    "data_classification": {
+      "$ref": "#/$defs/DataClassification",
+      "default": "unknown"
+    },
+    "data_retention_years": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "How long the data must remain confidential -- Mosca's X. None means no evidence supported a value; the engine then reports no X rather than assuming one.",
+      "title": "Data Retention Years"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
+    "exposure": {
+      "$ref": "#/$defs/ExposureLevel",
+      "default": "unknown"
+    },
+    "migration_time_years": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Mosca's Y. Supplied by a human -- **never inferred**. Trinetra cannot see team capacity, budget cycles or vendor roadmaps.",
+      "title": "Migration Time Years"
+    },
+    "name": {
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "owner": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Team or individual accountable for migration.",
+      "title": "Owner"
+    },
+    "owner_email": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Owner Email"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "updated_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updated At"
+    }
+  },
+  "required": [
+    "application_id",
+    "name"
+  ],
+  "title": "Application",
+  "type": "object",
+  "x-trinetra-schema-version": "1.0"
+}
