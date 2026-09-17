@@ -154,7 +154,7 @@ func TestObservedKeySizeSurvives(t *testing.T) {
 func TestDedupePrefersObservedKeySize(t *testing.T) {
 	withoutSize := Finding{
 		AssetType: AssetAlgorithm, Name: "RSA-2048", Algorithm: "rsa",
-		Location: Location{Path: "svc/auth.py", Line: 20},
+		Location:        Location{Path: "svc/auth.py", Line: 20},
 		DetectionMethod: DetectSemgrepPattern, Confidence: ConfidenceMedium,
 		RuleID: "trinetra-python-rsa-generate",
 	}

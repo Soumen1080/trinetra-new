@@ -7,6 +7,10 @@
 > - Binary analysis and live TLS probing moved out of the core path to Phases 11B and 11A, matching §7.4. See the R15 note in §1.
 > - **Phases 2–3 re-planned again around PQCA CBOMkit** (Apache 2.0, Linux Foundation): adopt a maintained detection engine rather than writing 43 Semgrep rules and an X.509 extractor. CBOMkit does **no** risk scoring, Mosca or PQC recommendation, so Phases 5–6 — the differentiator — remain entirely ours.
 > - **Q values are transcribed from cited papers, not computed** (5.1). The doc's RSA figure (Gidney–Ekerå 2021, 20M qubits) is superseded by Gidney 2025 (<1M); build the first profile from the newer one.
+> - **Phase 2 is implemented and measured** (see its section). One plan
+>   assumption was wrong and is corrected there: `cbomkit-lib` is a Java library,
+>   not a CLI, so detection is built behind a pluggable `Engine` interface with
+>   Semgrep working today and CBOMkit activated by configuration.
 > - Seven principles (P1–P7) now govern the code; P3 in particular ("missing evidence produces *no number*, never a default") is enforced in the Phase 1 schema.
 
 ---
@@ -17,25 +21,25 @@ Every clause of the problem statement must be satisfied. This table is the **acc
 
 | # | Requirement clause | Where it is built | Done |
 |---|---|---|---|
-| R1 | Identify & catalogue **algorithms** | Phase 2 (CBOMkit: Java/Python/Go) | [ ] |
+| R1 | Identify & catalogue **algorithms** | Phase 2 (Semgrep + CBOMkit engines) | [x] **done** |
 | R2 | Identify & catalogue **keys** | Phase 3.2c (theia + gitleaks) | [ ] |
 | R3 | Identify & catalogue **certificates** | Phase 3.2b (theia X.509) | [ ] |
-| R4 | Identify & catalogue **protocols** (TLS/SSH/IPsec) | Phase 2 (declared) + **Phase 11A (observed)** | [ ] |
+| R4 | Identify & catalogue **protocols** (TLS/SSH/IPsec) | Phase 2 (declared) + **Phase 11A (observed)** | [~] partial |
 | R5 | Identify & catalogue **libraries** (OpenSSL, BouncyCastle…) | Phase 3.3–3.4 (Syft PURLs) — *never with an algorithm* | [ ] |
 | R6 | Identify & catalogue **hardware modules** (HSM/TPM/PKCS#11) | Phase 4.2–4.3 | [ ] |
 | R7 | Identify & catalogue **cloud services** (KMS/ACM/Key Vault) | Phase 4.4 (metadata only) | [ ] |
 | R8 | Coverage of **internal AND external facing** apps/infra | Phases 2–4 (internal) + **11A (external)** | [ ] |
 | R9 | **Quantum risk assessment** — systems prone to quantum attack | Phase 5.3 (Track B, resource model) | [ ] |
-| R10 | Highlight **risks to sensitive data** (HNDL) | Phase 2.3 (our taint rules) + Phase 5.5 | [ ] |
+| R10 | Highlight **risks to sensitive data** (HNDL) | Phase 2.3 (taint rules **done**) + Phase 5.5 | [~] evidence done |
 | R11 | **Classify** artefacts by type, lifetime, business criticality | Phase 5.5c + context chain | [ ] |
 | R12 | **Mosca's algorithm** (X + Y vs Z) applied & categorized | Phase 5.2 (Track A) | [ ] |
 | R13 | **Recommend PQC / hybrid alternatives** by risk, latency, cost | Phase 6 | [ ] |
-| R14 | Scan **source code repositories** | Phase 2 | [ ] |
+| R14 | Scan **source code repositories** | Phase 2 | [x] **done** |
 | R15 | Scan **binaries** | **Phase 11B** (Ghidra; §7.4 extension, not core) | [ ] |
 | R16 | Scan **libraries** | Phase 3.2 | [ ] |
 | R17 | Scan **container images** | Phase 3 (cbomkit-theia) | [ ] |
 | R18 | Report in **standardised formats** (CycloneDX CBOM 1.6) | Phase 2.0 (contract) + Phase 7 (export) | [ ] |
-| R19 | Report shows **versions / modes** (AES-128-CBC, RSA-2048…) | Phase 1.2 data model + Phase 7 | [~] schema done |
+| R19 | Report shows **versions / modes** (AES-128-CBC, RSA-2048…) | Phase 1.2 schema + Phase 2 detection + Phase 7 export | [~] detection done |
 | R20 | **Interactive GUI** to visualise scan, risks, results | Phases 8–10 | [ ] |
 | R21 | **Usable GUI** — a non-expert can see everything without training *(quality bar on R20, see §4)* | Phase 8.5 + Phases 9–10 + Phase 10B validation | [ ] |
 
@@ -338,86 +342,111 @@ Security users reject tools they cannot verify. Transparency *is* a usability fe
 
 ---
 
-# PHASE 2 — Source Discovery *(R14, R1, R4 · adopt PQCA CBOMkit)*
+# PHASE 2 — Source Discovery ✅ *(R14, R1, R4 · pluggable engines)*
 
-> **Re-planned twice.** First against `full architecher.md` (Go services, not a
-> Python package). Now again around **PQCA CBOMkit** — a Linux Foundation project
-> (Apache 2.0, donated by IBM) that already does the detection this phase was
-> going to build. Writing 43 Semgrep rules is replaced by wrapping a maintained
-> engine that already resolves key sizes, modes and padding.
+> **Status: complete.** 94 Go tests · 161 Python tests · 29 rules linted ·
+> precision 100%, recall 100% on the labelled corpus (24/24 sites, 0 false
+> positives). Verify with `python scripts/benchmark_accuracy.py`.
+
+> **Re-planned twice, then adjusted once during implementation.**
+> The plan assumed `cbomkit-lib` could be shelled out to like a CLI. **It cannot:
+> it is a Java library, and CBOMkit's other half is a full-stack server
+> (Postgres + Quarkus + Vue), not a scanner binary.** Rather than pretend
+> otherwise, the scanner was built around a **pluggable `Engine` interface**:
 >
-> **This does not weaken the architecture — it applies §7.1 to a better tool.**
-> *"Every upstream tool is a source of evidence, never a source of verdicts."*
-> CBOMkit supplies evidence. Trinetra still decides what it means, and CBOMkit
-> does **no** risk scoring, no Mosca, and no PQC recommendations — so Phases 5–6,
-> the actual differentiator, are untouched.
+> - **`SemgrepEngine` — working today.** Covers all five claimed languages, and
+>   supplies the PII→crypto taint analysis no upstream tool provides.
+> - **`CBOMkitEngine` — wired and tested against recorded output**, activated by
+>   `TRINETRA_CBOMKIT_BINARY` when a JRE and a CLI entry point exist.
+>
+> This keeps the adoption decision intact (CBOMkit drops in with no rewrite)
+> while Phase 2 is genuinely runnable and measurable now. §7.1 is unchanged:
+> every engine is *evidence, never a verdict*, and both adapters discard their
+> tool's severity and compliance opinions.
 
-*Goal: a CBOM from source, produced by a maintained engine behind a thin adapter.*
+### 2.0 The contract ✅
+- [x] **2.0a** `cbom-go/cbom` — CycloneDX 1.6 builder, the frozen Go↔Python contract
+- [x] **2.0b** Validation is a profile over the format, not a new format
+- [x] **2.0c** Namespaced extensions only: `trinetra:key-size-bits`, `trinetra:data-category`, `trinetra:asset-type`, plus detection-method / confidence / rule-id
+- [x] **2.0d** **Byte-identical output for identical input** — content-derived `bom-ref`, caller-supplied timestamp, stable sort. Reversed input yields the same document
+- [x] **2.0e** Zero components is a **valid result**
 
-### 2.0 The contract *(unchanged — still first)*
-- [ ] **2.0a** `contracts/cbom.schema.json` — CycloneDX 1.6, the frozen Go↔Python contract
-- [ ] **2.0b** **CBOMkit already emits CycloneDX 1.6**, so this becomes a *validation profile* over their output rather than a format to invent
-- [ ] **2.0c** Namespaced extensions only: `trinetra:data-category`, `trinetra:asset-type`
-- [ ] **2.0d** Round-trip against the Phase 1 Python contract; byte-identical output for identical input
-- [ ] **2.0e** Zero components is a **valid result**, not an error
+### 2.1 Engine abstraction + CBOMkit adapter ✅
+- [x] **2.1a** Accuracy measured on our own corpus, not claimed from upstream (`scripts/benchmark_accuracy.py`)
+- [x] **2.1b** Key size, mode and padding survive into `cryptoProperties` — asserted on real scanner output
+- [x] **2.1c** Tool name, version **and licence** recorded in `metadata.tools`; validation rejects a document without them
+- [x] **2.1d** `TRINETRA_CBOMKIT_BINARY` keeps the artefact vendorable; an unavailable engine degrades to a coverage gap
+- [x] **2.1e** **Language gap recorded honestly**: `CBOMkitEngine.Languages()` returns java/python/go only, and a test fails if it ever claims more
 
-### 2.1 Evaluate and pin CBOMkit *(do this before writing any adapter)*
-- [ ] **2.1a** Run `cbomkit-lib` against the Phase 0 fixture corpus and **measure precision/recall yourself** — adopting a tool does not transfer responsibility for its accuracy
-- [ ] **2.1b** Confirm key size, mode and padding survive into `cryptoProperties` for Java, Python and Go
-- [ ] **2.1c** Pin an exact version; record name, version and **licence** in `metadata.tools` (an audit artefact must say what produced it)
-- [ ] **2.1d** Vendor or mirror the artefact — an air-gapped deployment cannot pull from Maven at scan time (P7)
-- [ ] **2.1e** **Record the language gap honestly:** CBOMkit covers **Java, Python, Go** (C# in development). **JavaScript, TypeScript, C and C++ are not covered.** Either narrow the claim or fill the gap in 2.4
+### 2.2 The adapter — the trust boundary ✅
+- [x] **2.2a** Subprocess behind an adapter; CBOMkit invoked only when configured
+- [x] **2.2b** Output parsed and **validated**, never trusted — malformed output is a scanner error, not a crash
+- [x] **2.2c** Every result reduced to one `cbom.Finding` in canonical snake_case (P6)
+- [x] **2.2d** **Their verdicts discarded** — Semgrep's `severity` and CBOMkit's compliance policy are both unmapped
+- [x] **2.2e** Original component preserved verbatim in `raw_cbom`
+- [x] **2.2f** An absent key size stays absent, so the finding degrades to `NEEDS_CONTEXT`
 
-### 2.2 The adapter *(the trust boundary — §7.1)*
-- [ ] **2.2a** Invoke `cbomkit-lib` as a subprocess from the Go source-scanner service; it is a **Java** library, so the scanner image carries a JRE
-- [ ] **2.2b** Parse and **validate** its CycloneDX output — never trust it. Malformed output is a scanner error, not a crash
-- [ ] **2.2c** Reduce every component to one `cbom.Finding` in Trinetra's canonical snake_case (P6). CBOMkit's vocabulary must not leak inward
-- [ ] **2.2d** **Discard their compliance verdicts.** CBOMkit ships a "quantum-safe" allowlist policy; Trinetra scores, CBOMkit does not (P1). Take the inventory, drop the judgement
-- [ ] **2.2e** Preserve their original component verbatim into `raw_cbom`
-- [ ] **2.2f** When a key size is absent, emit the finding **without one** so it degrades honestly to `NEEDS_CONTEXT`
+### 2.3 Data-classification taint rules ✅ *(ours — nobody supplies this)*
+- [x] **2.3a** `rules/taint/data-classification-rules.yml`, Semgrep taint mode
+- [x] **2.3b** Sources: `aadhaar_number`, `card_number`, `medical_record_id`, credential material
+- [x] **2.3c** Sinks: `.encrypt()`, `.update()`, `.doFinal()`, `.Seal()`, `.sign()`
+- [x] **2.3d** A reaching path attaches `trinetra:data-category` to the artefacts in that file
+- [x] **2.3e** Evidence of what the code protects; the Phase 1 schema still forbids a scanner supplying anything but `data_category`
+- [x] **2.3f** Fires only on a genuine source→sink path — zero hits on the negative corpus
 
-### 2.3 Data-classification taint rules *(still ours to build — nobody supplies this)*
-CBOMkit has no PII-to-crypto taint analysis, and this is what gives Mosca's X its
-scanner-evidence tier. **This is the one detection component still worth writing.**
+> **Implementation note.** A taint result names no algorithm, so it is *evidence
+> about a location*, not an artefact. `applyDataCategories` folds it onto the
+> crypto findings in the same file. Matching is **per file, not per line**: a
+> source→sink path and the cipher construction it flows into are routinely a few
+> lines apart, and exact-line matching discarded most real evidence. Where a file
+> yields several categories the artefact takes all of them, and Track A's own
+> precedence rule decides which governs — that judgement belongs to the risk
+> engine, not to a scanner adapter.
 
-- [ ] **2.3a** Semgrep OSS in **taint mode**, as a second pass alongside CBOMkit
-- [ ] **2.3b** Sources: `aadhaar_number`, `card_number`, `medical_record_id`, …
-- [ ] **2.3c** Sinks: `.encrypt()`, `.update()`, `.doFinal()`, `.Seal()`, `.sign()`
-- [ ] **2.3d** A reaching path attaches `trinetra:data-category` to that component
-- [ ] **2.3e** **Evidence of what the code protects, not a business decision** — enters the context chain below user confirmation, never above it
-- [ ] **2.3f** Fires only on a genuine source→sink path, never a name coincidence
+### 2.4 Coverage gap: JS/TS and C/C++ ✅
+- [x] **2.4a** Narrow packs for `node:crypto` and the OpenSSL C API — the languages CBOMkit does not cover
+- [x] **2.4b** Both load-bearing rules hold across all 29 rules
+- [x] **2.4c** **`scripts/lint_rules.py` enforces them mechanically** and already caught two real rule bugs
+- [x] **2.4d** Not needed — the gap is filled rather than declared out of scope
 
-### 2.4 Coverage gap: JS/TS and C/C++ *(a small Semgrep pack, not 43 rules)*
-- [ ] **2.4a** A **narrow** Semgrep rule pack for the languages CBOMkit does not cover: `node:crypto`, WebCrypto, OpenSSL C API
-- [ ] **2.4b** Both load-bearing rules still apply: **match call expressions, never bare identifiers**, and **interpolate captured values into the message** (Semgrep OSS emits no `metavars`)
-- [ ] **2.4c** A lint test over the pack enforcing both constraints mechanically
-- [ ] **2.4d** **Or: declare these languages out of scope for v1** and let coverage stats say so. An honest gap beats a weak rule pack — and Phase 1's `CoverageGap` already models exactly this
+### 2.5 The service ✅
+- [x] **2.5a** `POST /internal/v1/scan` via shared `scannerapi`
+- [x] **2.5b** Bearer auth ≥32 chars, **SHA-256 constant-time compare**, 1 MiB cap, UUID validation, unknown fields rejected
+- [x] **2.5c** `targetpath.Resolve` rejects traversal — tested against `../`, absolute POSIX, drive-letter and UNC forms
+- [x] **2.5d** `scan-workdir` read-only in the compose topology
+- [x] **2.5e** **Safe error messages** — a test asserts the response never echoes a host path or the rejected target
+- [x] **2.5f** Never published to the host; graceful shutdown so an in-flight scan is not cut off mid-write
 
-### 2.5 The service
-- [ ] **2.5a** `POST /internal/v1/scan` → `{scan_id, target_reference}`, via shared `scannerapi`
-- [ ] **2.5b** Bearer auth (≥32 chars, SHA-256 constant-time), 1 MiB cap, UUID validation
-- [ ] **2.5c** `targetpath.Resolve` rejects traversal outside the input root
-- [ ] **2.5d** `scan-workdir` mounted **read-only**
-- [ ] **2.5e** Safe, non-leaking error messages — no host paths, no stack traces
-- [ ] **2.5f** Never published to the host; reachable only from backend and worker
+### 2.6 Python-side ingest ✅
+- [x] **2.6a** `app/services/cbom_ingest.py` validates **again** in Python (defence in depth)
+- [x] **2.6b** Component → artefact per the §9 mapping
+- [x] **2.6c** Purpose, primitive, mode and padding normalised through `vocab.py`
+- [x] **2.6d** `trinetra:data-category` lifted out as scanner evidence
+- [x] **2.6e** Whole component preserved in `raw_cbom`
+- [x] **2.6f** Non-`cryptographic-asset` components **skipped, not rejected**
+- [x] **2.6g** `library` findings never carry an algorithm — now enforced **four** times: Go `Normalise()`, Go validator, Pydantic, DB CHECK
+- [x] **2.6h** One malformed component becomes a visible gap instead of discarding the inventory
 
-### 2.6 Python-side ingest *(unchanged)*
-- [ ] **2.6a** Validate the document **again** in Python (defence in depth)
-- [ ] **2.6b** CycloneDX component → `artefacts` row per the §9 mapping
-- [ ] **2.6c** Normalise purpose and algorithm through `vocab.py`
-- [ ] **2.6d** Lift `trinetra:data-category` out as scanner evidence
-- [ ] **2.6e** Whole component preserved in `raw_cbom`
-- [ ] **2.6f** Non-`cryptographic-asset` components **skipped, not rejected**
-- [ ] **2.6g** `library` findings never carry an algorithm
+### 2.7 Fixtures and accuracy ✅
+- [x] **2.7a** Positive fixtures for all five claimed languages
+- [x] **2.7b** **Negative fixtures produce zero findings** — bare identifiers, crypto in comments, crypto in docstrings, classes named after algorithms
+- [x] **2.7c** Key size survives source → message → CBOM → artefact field, asserted end to end
+- [x] **2.7d** Golden CBOM at `tests/golden/positive-fixtures.cbom.json`, regenerated by `go run ./source/cmd/gencbom` and **reviewed on change, never regenerated blindly**
+- [x] **2.7e** **Published precision/recall for the pipeline as integrated** — 100%/100%, key-size resolution 5/5, mode resolution 6/6
 
-### 2.7 Fixtures and accuracy
-- [ ] **2.7a** A positive fixture for **each language actually claimed**
-- [ ] **2.7b** **Negative fixtures producing zero findings** — `rsa = "some string"`, crypto in comments, crypto in tests
-- [ ] **2.7c** Key size survives source → CBOM → database column
-- [ ] **2.7d** Golden CBOMs, **diffed and reviewed, never regenerated blindly**
-- [ ] **2.7e** Published precision/recall — *for the pipeline as integrated*, not as claimed upstream
+**Exit criteria — met.** A fixture repo produces a schema-valid CBOM; ingest populates artefacts with key sizes and modes intact; the same input twice is byte-identical.
 
-**Exit criteria (vertical slice #1):** a fixture repo produces a schema-valid CBOM via CBOMkit; ingest populates `artefacts` with key sizes and modes intact; the same input twice is byte-identical.
+### Bugs this phase's own tests caught
+Worth recording, because each was silent and each would have shipped:
+
+| Bug | Why it mattered |
+|---|---|
+| **Semgrep skips `tests/` by default** | A fixture corpus yielded **zero findings**. That default is right for a linter and wrong for an inventory — a hardcoded key under `tests/` is still a key. Fixed with `--x-ignore-semgrepignore-files` |
+| Dedup key included key size | The same finding with and without a size never merged, defeating the merge that exists to combine engines |
+| POSIX absolute paths accepted on Windows | `filepath.IsAbs` is platform-specific, so a traversal blocked in the Linux container passed on a dev machine |
+| Node `aes-256-cbc` lost its mode | Parsed as slash-separated, so `createCipheriv` was recorded as plain AES |
+| Two rules interpolated uncaptured metavariables | Would have emitted the literal string `$ALGO` as an algorithm name |
+| Taint findings dropped entirely | No algorithm → no name → discarded, losing Mosca's X evidence |
 
 ---
 
@@ -851,9 +880,9 @@ configures.
 
 | M | Name | Phases | Demonstrable outcome | Status |
 |---|---|---|---|---|
-| **M1** | Foundation | 0, 1 | Repo runs; contract frozen | **Phase 1 done** (132 tests) |
-| **M1B** | The wire contract | 2.0, 2.1 | CBOMkit evaluated on our corpus; Go and Python agree byte-for-byte | |
-| **M2** | It finds crypto | 2 | CBOMkit behind an adapter writes a schema-valid CBOM; ingest populates `artefacts` | |
+| **M1** | Foundation | 0, 1 | Repo runs; contract frozen | **done** (161 py tests) |
+| **M1B** | The wire contract | 2.0, 2.1 | Go and Python agree byte-for-byte on one CBOM shape | **done** |
+| **M2** | It finds crypto | 2 | Scanner writes a schema-valid CBOM; ingest populates `artefacts`; 100%/100% on the corpus | **done** |
 | **M3** | It finds crypto everywhere | 3, 4 | Containers, certs, keys, libraries, HSM, KMS | |
 | **M4** | **It assesses quantum risk** | 5 | Two-track verdicts; the §10 worked example reproduces exactly | |
 | **M5** | It tells you what to do | 6 | PQC recommendations, FIPS-cited, unmeasured dimensions labelled | |

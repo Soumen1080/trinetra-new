@@ -41,10 +41,10 @@ func TestScanRequiresBearerToken(t *testing.T) {
 	handler := newTestServer(t, okScan)
 
 	cases := map[string]string{
-		"no header":     "",
-		"wrong scheme":  "Basic " + testToken,
-		"wrong token":   "Bearer " + strings.Repeat("f", 32),
-		"empty token":   "Bearer ",
+		"no header":    "",
+		"wrong scheme": "Basic " + testToken,
+		"wrong token":  "Bearer " + strings.Repeat("f", 32),
+		"empty token":  "Bearer ",
 	}
 
 	for name, header := range cases {

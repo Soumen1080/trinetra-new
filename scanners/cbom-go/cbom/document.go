@@ -45,12 +45,12 @@ type TargetComponent struct {
 }
 
 type Component struct {
-	Type            string           `json:"type"`
-	BOMRef          string           `json:"bom-ref"`
-	Name            string           `json:"name"`
+	Type             string            `json:"type"`
+	BOMRef           string            `json:"bom-ref"`
+	Name             string            `json:"name"`
 	CryptoProperties *CryptoProperties `json:"cryptoProperties,omitempty"`
-	Evidence        *Evidence        `json:"evidence,omitempty"`
-	Properties      []Property       `json:"properties,omitempty"`
+	Evidence         *Evidence         `json:"evidence,omitempty"`
+	Properties       []Property        `json:"properties,omitempty"`
 }
 
 type CryptoProperties struct {

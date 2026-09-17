@@ -1,0 +1,1363 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:fa5dfbd3-362d-7067-ccd8-33f2b1075ab7",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-03-14T10:30:00Z",
+    "tools": [
+      {
+        "vendor": "Trinetra",
+        "name": "source-scanner",
+        "version": "0.2.0",
+        "licence": "Apache-2.0"
+      },
+      {
+        "vendor": "Semgrep",
+        "name": "semgrep-oss",
+        "version": "1.176.1",
+        "licence": "LGPL-2.1"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "target"
+    }
+  },
+  "components": [
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:50c740c465af765fcad1479a0bf6c1be",
+      "name": "RSA-2048",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "parameterSetIdentifier": "2048",
+          "cryptoFunctions": [
+            "encapsulate"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "c/crypto_usage.c",
+            "line": 10,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "medium"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "2048"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-c-openssl-rsa"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:b8757ecc238e5d3dbad9c0a5371e43d0",
+      "name": "AES",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "c/crypto_usage.c",
+            "line": 13,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "medium"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-c-openssl-aes"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:0e1c90ebde2c13ab3d9fac1478935d88",
+      "name": "MD5",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "c/crypto_usage.c",
+            "line": 7,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "md5"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "medium"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-c-openssl-md5"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:06d0e209d8efa845b05e4d758b329edf",
+      "name": "RSA-2048",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "parameterSetIdentifier": "2048",
+          "cryptoFunctions": [
+            "encapsulate"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "go/crypto_usage.go",
+            "line": 15,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "2048"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-go-rsa-generate"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:e552e97a65fe0f66daaea9980885d3c8",
+      "name": "MD5",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "go/crypto_usage.go",
+            "line": 20,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "md5"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-go-md5"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:ffce29ce89a3c808bc2288ad5caf42e4",
+      "name": "SHA1",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "go/crypto_usage.go",
+            "line": 20,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "sha1"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-go-sha1"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:755d099ad0aa66aba7ddeeef9cfabc92",
+      "name": "AES",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "go/crypto_usage.go",
+            "line": 25,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-go-aes"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:f0e6b57123753f0ebf278b7a6886f241",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "cryptoFunctions": [
+            "sign"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "go/crypto_usage.go",
+            "line": 30,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "ecdsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-go-ecdsa"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:95b2dec53ca93a370eb84b18e9e9b894",
+      "name": "AES-CBC",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "mode": "cbc",
+          "padding": "pkcs7",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "java/CryptoUsage.java",
+            "line": 12,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-java-cipher-getinstance"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:21ba1b00eff322e4cc17cbd0e3b3cd5b",
+      "name": "AES-GCM",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "mode": "gcm",
+          "padding": "none",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "java/CryptoUsage.java",
+            "line": 17,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-java-cipher-getinstance"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:6417f070ab4886f49784417f24b9ff64",
+      "name": "AES-ECB",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "mode": "ecb",
+          "padding": "pkcs7",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "java/CryptoUsage.java",
+            "line": 22,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-java-cipher-getinstance"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:10e4ce693bb188576124683fa82c3889",
+      "name": "MD5",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "java/CryptoUsage.java",
+            "line": 27,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "md5"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-java-messagedigest"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:5bd5a5787c660444b0c311be3428d7f1",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "cryptoFunctions": [
+            "encapsulate"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "java/CryptoUsage.java",
+            "line": 32,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-java-keypairgenerator"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:6cab0e8bbfaf45f55d0816bf20c88c08",
+      "name": "SHA256",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "javascript/crypto_usage.js",
+            "line": 11,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "sha256"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-js-createhash"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:965d6773ce91b9dd5aa26a3047cab525",
+      "name": "AES-256-CBC",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "parameterSetIdentifier": "256",
+          "mode": "cbc",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "javascript/crypto_usage.js",
+            "line": 16,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "256"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-js-createcipheriv"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:aee1f0021a9ce3aff31502552f7630df",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "cryptoFunctions": [
+            "encapsulate"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "javascript/crypto_usage.js",
+            "line": 22,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-js-generatekeypair"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:2cf2da3284c6127d4032b4ec243b805d",
+      "name": "MD5",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "javascript/crypto_usage.js",
+            "line": 6,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "md5"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-js-createhash"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:bab1ba1d23834888d3a93f4997988a49",
+      "name": "RSA-1024",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "parameterSetIdentifier": "1024",
+          "cryptoFunctions": [
+            "encapsulate"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/crypto_usage.py",
+            "line": 11,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "1024"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-rsa-generate"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:5c593b0c3a2001e007c4468619d49a33",
+      "name": "RSA-2048",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "parameterSetIdentifier": "2048",
+          "cryptoFunctions": [
+            "encapsulate"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/crypto_usage.py",
+            "line": 16,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "2048"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-rsa-generate"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:a9dde53e705ce9f4cd8ad4a5ecf1fdde",
+      "name": "AES-CBC",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "mode": "cbc",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/crypto_usage.py",
+            "line": 22,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-aes-mode"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:2223040584ab3b976d45ebbdced0fe04",
+      "name": "AES-GCM",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "mode": "gcm",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/crypto_usage.py",
+            "line": 27,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-aes-mode"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:c260e7f8608be849d337212b5417dc56",
+      "name": "MD5",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/crypto_usage.py",
+            "line": 32,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "md5"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-md5"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:559a888d0bfee814e9c74071b4f1ff45",
+      "name": "SHA1",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/crypto_usage.py",
+            "line": 32,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "sha1"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-sha1"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:b6637f32f997ecafea3d12da59277296",
+      "name": "SHA2",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/crypto_usage.py",
+            "line": 37,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "sha2"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-sha2"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:0224a670edd015a54f5460872f24664e",
+      "name": "ECDSA-SECP256R1",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "curve": "SECP256R1",
+          "cryptoFunctions": [
+            "sign"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/crypto_usage.py",
+            "line": 42,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "ecdsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-ec-generate"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:f5dc498fa7fbbdde11ef1240445991ae",
+      "name": "3DES",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/crypto_usage.py",
+            "line": 47,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "3des"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-3des"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:33dc1656465ab3443da6c3295e52f014",
+      "name": "AES-CBC",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "mode": "cbc",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/patient_records.py",
+            "line": 23,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:data-category",
+          "value": "aadhaar_pii,health_record"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-aes-mode"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:04f220b98ad63b51602c34dfbfbcdc70",
+      "name": "RSA-2048",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "parameterSetIdentifier": "2048",
+          "cryptoFunctions": [
+            "encapsulate"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/patient_records.py",
+            "line": 28,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:data-category",
+          "value": "aadhaar_pii,health_record"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "2048"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-rsa-generate"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:c50dded0b9dee1bbc369adc19ceca009",
+      "name": "AES-CBC",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "mode": "cbc",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/patient_records.py",
+            "line": 33,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:data-category",
+          "value": "aadhaar_pii,health_record"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-aes-mode"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:4882c89835c592cd38ed598ac8d6ab9c",
+      "name": "AES-CBC",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "mode": "cbc",
+          "cryptoFunctions": [
+            "encrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/patient_records.py",
+            "line": 39,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:data-category",
+          "value": "aadhaar_pii,health_record"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-aes-mode"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:afc605a02f44eb7877b76cd08202005a",
+      "name": "SHA2",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "cryptoFunctions": [
+            "digest"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "python/patient_records.py",
+            "line": 45,
+            "additionalContext": "requires login"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "sha2"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:data-category",
+          "value": "aadhaar_pii,health_record"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "semgrep_pattern"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "rules.crypto.trinetra-python-sha2"
+        }
+      ]
+    }
+  ]
+}

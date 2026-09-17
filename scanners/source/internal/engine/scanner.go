@@ -111,8 +111,8 @@ func trinetraTool() []cbom.Tool {
 // CoverageReport summarises what was and was not inspected, for the scan
 // envelope. Anything the scanner could not see is stated rather than omitted.
 type CoverageReport struct {
-	FilesScanned int   `json:"files_scanned"`
-	Gaps         []Gap `json:"gaps"`
+	FilesScanned int      `json:"files_scanned"`
+	Gaps         []Gap    `json:"gaps"`
 	Languages    []string `json:"languages_covered"`
 }
 

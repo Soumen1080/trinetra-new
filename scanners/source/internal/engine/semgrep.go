@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -179,13 +180,25 @@ func parseSemgrepOutput(raw []byte) (semgrepOutput, error) {
 func (e *SemgrepEngine) adapt(root string, out semgrepOutput) Result {
 	result := Result{FilesScanned: len(out.Paths.Scanned)}
 
+	// Two kinds of result come back. Crypto rules produce artefacts; taint
+	// rules produce data-category evidence about a location. The second is
+	// folded into the first so an artefact carries what the code it protects
+	// actually holds.
+	var annotations []cbom.Finding
+
 	for _, r := range out.Results {
 		finding, ok := e.toFinding(root, r)
 		if !ok {
 			continue
 		}
+		if finding.Name == "" {
+			annotations = append(annotations, finding)
+			continue
+		}
 		result.Findings = append(result.Findings, finding)
 	}
+
+	result.Findings = applyDataCategories(result.Findings, annotations)
 
 	for _, semErr := range out.Errors {
 		path, _ := targetpath.RelativeTo(root, semErr.Path)
@@ -269,6 +282,14 @@ func (e *SemgrepEngine) toFinding(root string, r semgrepResult) (cbom.Finding, b
 
 	finding.Name = deriveName(finding)
 	if finding.Name == "" {
+		// A taint result names no algorithm -- it reports what kind of data
+		// reached a crypto sink. It is evidence ABOUT a location, not an
+		// artefact in its own right, so it is kept for the annotation pass in
+		// adapt() rather than dropped (which would lose Mosca's X evidence) or
+		// emitted as a nameless component.
+		if finding.DataCategory != "" {
+			return finding, true
+		}
 		return cbom.Finding{}, false
 	}
 
@@ -292,17 +313,28 @@ func parseMessageCaptures(message string) map[string]string {
 	return captures
 }
 
-// applyTransformation splits a JCA transformation into its parts.
+// applyTransformation splits a cipher transformation string into its parts.
+//
+// Two conventions must both be handled, because the rule pack captures whichever
+// the source language uses:
+//
+//	JCA (Java):  "AES/CBC/PKCS5Padding"  -- slash-separated
+//	Node crypto: "aes-256-cbc"           -- hyphen-separated, size embedded
+//
+// Treating the Node form as slash-separated silently loses the mode, so a
+// createCipheriv("aes-256-cbc") call would be recorded as plain AES.
 func applyTransformation(f *cbom.Finding, transform string) {
+	if strings.Contains(transform, "/") {
+		applyJCATransformation(f, transform)
+		return
+	}
+	applyHyphenTransformation(f, transform)
+}
+
+func applyJCATransformation(f *cbom.Finding, transform string) {
 	parts := strings.Split(transform, "/")
-	if len(parts) > 0 && parts[0] != "" {
-		algo := strings.ToLower(parts[0])
-		f.Algorithm = algo
-		// "AES-256" and "AES_128" appear in Node transformation strings.
-		if size, rest, ok := splitAlgorithmSize(algo); ok {
-			f.Algorithm = rest
-			f.KeySizeBits = cbom.IntPtr(size)
-		}
+	if parts[0] != "" {
+		f.Algorithm = strings.ToLower(parts[0])
 	}
 	if len(parts) > 1 {
 		f.Mode = normaliseMode(parts[1])
@@ -312,18 +344,31 @@ func applyTransformation(f *cbom.Finding, transform string) {
 	}
 }
 
-// splitAlgorithmSize handles names like "aes-256-gcm" and "aes_128".
-func splitAlgorithmSize(name string) (int, string, bool) {
-	fields := strings.FieldsFunc(name, func(r rune) bool { return r == '-' || r == '_' })
-	if len(fields) < 2 {
-		return 0, name, false
+// applyHyphenTransformation parses "aes-256-cbc", "aes_128_gcm" and "aes-256".
+func applyHyphenTransformation(f *cbom.Finding, transform string) {
+	fields := strings.FieldsFunc(strings.ToLower(transform), func(r rune) bool {
+		return r == '-' || r == '_'
+	})
+	if len(fields) == 0 {
+		return
 	}
+
+	f.Algorithm = fields[0]
 	for _, field := range fields[1:] {
-		if size, err := strconv.Atoi(field); err == nil && size >= 40 {
-			return size, fields[0], true
+		// A bare number is a key size. The 40-bit floor rejects version-like
+		// fragments while admitting every real key size.
+		if size, err := strconv.Atoi(field); err == nil {
+			if size >= 40 {
+				f.KeySizeBits = cbom.IntPtr(size)
+			}
+			continue
+		}
+		// A recognised mode name is a mode; anything else is left alone rather
+		// than guessed at.
+		if mode := normaliseMode(field); mode != "" && mode != "other" {
+			f.Mode = mode
 		}
 	}
-	return 0, name, false
 }
 
 func normaliseMode(mode string) string {
@@ -357,6 +402,50 @@ func normalisePadding(padding string) string {
 	default:
 		return "other"
 	}
+}
+
+// applyDataCategories folds taint evidence onto the artefacts it describes.
+//
+// A taint result says "this kind of data reaches a crypto sink here". Matching
+// is per file: a source->sink path and the cipher construction it flows into are
+// routinely a few lines apart, so requiring an exact line match would discard
+// most real evidence. Per file is the honest granularity -- narrower than the
+// repository, and it never invents a category for a file that had none.
+//
+// Where a file yields several categories, the artefacts take all of them, and
+// Track A's own precedence rule (the longest lifetime within the strongest tier
+// governs) decides which matters. That decision belongs to the risk engine, not
+// to a scanner adapter.
+func applyDataCategories(findings, annotations []cbom.Finding) []cbom.Finding {
+	if len(annotations) == 0 || len(findings) == 0 {
+		return findings
+	}
+
+	byFile := make(map[string][]string)
+	for _, a := range annotations {
+		if a.DataCategory == "" {
+			continue
+		}
+		path := a.Location.Path
+		if !slices.Contains(byFile[path], a.DataCategory) {
+			byFile[path] = append(byFile[path], a.DataCategory)
+		}
+	}
+
+	for i, f := range findings {
+		// Never overwrite a category an engine already resolved for this site.
+		if f.DataCategory != "" {
+			continue
+		}
+		categories := byFile[f.Location.Path]
+		if len(categories) == 0 {
+			continue
+		}
+		sorted := slices.Clone(categories)
+		slices.Sort(sorted) // deterministic when a file has several
+		findings[i].DataCategory = strings.Join(sorted, ",")
+	}
+	return findings
 }
 
 // deriveName builds the display name, e.g. "RSA-2048" or "AES-128-CBC".

@@ -60,14 +60,27 @@ func Resolve(root, ref string) (string, error) {
 	return joined, nil
 }
 
-// isWindowsAbs catches "C:\..." and UNC paths on platforms where
-// filepath.IsAbs does not, so the check behaves the same in a Linux container
-// and on a Windows developer machine.
+// isWindowsAbs catches absolute paths that the host platform's filepath.IsAbs
+// does not recognise.
+//
+// This must be platform-independent in BOTH directions. filepath.IsAbs on
+// Windows rejects "C:\..." but accepts "/etc/passwd" as relative; on Linux the
+// reverse. The scanner runs in a Linux container while developers test on
+// Windows, so a reference is rejected if it is absolute under EITHER
+// convention — otherwise a traversal blocked in production slips through in
+// development, or worse, the other way round.
 func isWindowsAbs(p string) bool {
-	if strings.HasPrefix(p, `\\`) || strings.HasPrefix(p, "//") {
+	// UNC or POSIX root.
+	if strings.HasPrefix(p, `\\`) || strings.HasPrefix(p, "//") ||
+		strings.HasPrefix(p, "/") || strings.HasPrefix(p, `\`) {
 		return true
 	}
-	return len(p) >= 2 && p[1] == ':'
+	// Drive-letter form: "C:" or "C:\..." or "c:/...".
+	if len(p) >= 2 && p[1] == ':' {
+		c := p[0] | 0x20 // lowercase
+		return c >= 'a' && c <= 'z'
+	}
+	return false
 }
 
 // RelativeTo returns path expressed relative to root, for use in evidence.

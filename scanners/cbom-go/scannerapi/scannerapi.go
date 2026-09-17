@@ -90,7 +90,7 @@ type Config struct {
 
 // Server wraps the HTTP handlers.
 type Server struct {
-	cfg        Config
+	cfg         Config
 	tokenDigest [32]byte
 }
 
