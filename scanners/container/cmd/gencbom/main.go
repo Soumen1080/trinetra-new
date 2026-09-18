@@ -41,6 +41,7 @@ func main() {
 		engine.NewSyftEngine(kb),
 		engine.NewPKIEngine(),
 		engine.NewConfigEngine(),
+		engine.NewSBOMEngine(kb),
 	)
 
 	scanner := engine.NewScanner(registry, artifactstore.New(*out), *inputRoot)

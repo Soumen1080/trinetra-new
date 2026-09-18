@@ -52,13 +52,21 @@ source of evidence, never a source of verdicts.**
 | `PKIEngine` | X.509 certificates, public and private key material | Working |
 | `ConfigEngine` | declared TLS versions, cipher suites, SSH algorithms | Working |
 | `TheiaEngine` | image-layer certs, gitleaks secrets, Java security config | Set `TRINETRA_THEIA_BINARY` |
+| `SBOMEngine` | components asserted by third-party CycloneDX 1.4–1.6 and SPDX 2.x | Working |
 
 **Cloud/HSM scanner:**
 
 | Engine | Covers | Status |
 |---|---|---|
 | `KMSEngine` | AWS KMS keys, specs, ownership | Working (verified against a live KMS API) |
+| `AzureEngine` | Key Vault keys, Managed HSM | Working (`TRINETRA_AZURE_VAULT_URL` + `_TOKEN`) |
+| `GCPEngine` | Cloud KMS keys, protection level | Working (`TRINETRA_GCP_PROJECT` + `_TOKEN`) |
 | `PKCS11Engine` | HSM tokens, key objects, firmware, FIPS, PQC capability | Working (reads an inventory export) |
+
+Azure and GCP take an **operator-supplied bearer token** rather than managing
+credentials themselves. Both providers' token flows are interactive or
+identity-bound and do not belong inside a scanner; passing a short-lived token
+in also means Trinetra never holds a long-lived cloud secret.
 
 Two decisions worth knowing. **PKCS#11 reads an operator-produced inventory
 export rather than dlopen-ing a vendor `.so`**: loading a vendor native library
@@ -150,3 +158,10 @@ time.
 - **Metadata only from a KMS or an HSM.** Both exist so key material never
   leaves them; a scanner that extracted a key would defeat the control it is
   inventorying. Credentials are redacted in logs and never written anywhere.
+- **Second-hand evidence is labelled as such.** A component an external SBOM
+  asserted is `medium` confidence at best and says so in its evidence note —
+  Trinetra did not observe it, and a finding's confidence must reflect who
+  actually looked.
+- **A missing cloud credential is a named gap, never silence.** "No keys found"
+  is the most dangerous possible output for a cloud scanner, so every
+  unavailable engine reports what it could not inventory and why.

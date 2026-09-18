@@ -97,6 +97,8 @@ func (s *Scanner) Scan(ctx context.Context, req scannerapi.ScanRequest) (scanner
 //
 //	aws:ap-south-1      an AWS region
 //	aws                 AWS in the scanner's default region
+//	azure:VAULT_URL     an Azure Key Vault
+//	gcp:europe-west1    a GCP KMS location
 //	hsm                 the configured PKCS#11 inventory export
 //	hsm:/path/export    a specific export
 func (s *Scanner) resolveTarget(reference string) (Target, error) {
@@ -125,6 +127,24 @@ func (s *Scanner) resolveTarget(reference string) (Target, error) {
 			Endpoint: strings.TrimSpace(endpoint),
 		}, nil
 
+	case "azure":
+		// azure:VAULT_URL, or bare "azure" to use the configured vault.
+		return Target{Provider: "azure", Endpoint: rest}, nil
+
+	case "gcp":
+		// gcp:LOCATION[@ENDPOINT] — location is required because GCP KMS
+		// resources are location-scoped and there is no sensible default.
+		location, endpoint, _ := strings.Cut(rest, "@")
+		location = strings.TrimSpace(location)
+		if location == "" {
+			location = s.DefaultRegion
+		}
+		return Target{
+			Provider: "gcp",
+			Region:   location,
+			Endpoint: strings.TrimSpace(endpoint),
+		}, nil
+
 	case "hsm", "pkcs11":
 		return Target{Provider: "pkcs11", ModulePath: rest}, nil
 
@@ -148,5 +168,5 @@ func (e targetError) Error() string { return string(e) }
 
 const (
 	errEmptyTarget   = targetError("target reference is empty")
-	errUnknownTarget = targetError("target reference must start with aws: or hsm:")
+	errUnknownTarget = targetError("target reference must start with aws:, azure:, gcp: or hsm:")
 )

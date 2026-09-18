@@ -64,6 +64,10 @@ func run() error {
 		engine.NewSyftEngine(kb),
 		engine.NewPKIEngine(),
 		engine.NewConfigEngine(),
+		// Last: an SBOM asserts components another tool observed, so where it
+		// and Syft describe the same package, Syft's first-hand record wins the
+		// dedup merge on confidence.
+		engine.NewSBOMEngine(kb),
 	)
 
 	scanner := engine.NewScanner(registry, artifactstore.New(*storeRoot), *inputRoot)

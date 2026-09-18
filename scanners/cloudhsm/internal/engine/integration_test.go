@@ -313,7 +313,9 @@ func TestTargetReferenceParsing(t *testing.T) {
 func TestUnknownTargetReferenceIsRejected(t *testing.T) {
 	scanner := newFixtureScanner(t)
 
-	for _, reference := range []string{"", "   ", "gcp:europe-west1", "/etc/passwd"} {
+	// gcp: and azure: are now recognised schemes (11C.4), so the rejected set
+	// is empty references and anything that names no provider at all.
+	for _, reference := range []string{"", "   ", "oracle:eu-frankfurt", "/etc/passwd"} {
 		if _, err := scanner.resolveTarget(reference); err == nil {
 			t.Errorf("reference %q was accepted", reference)
 		}
@@ -326,7 +328,7 @@ func TestScanErrorsDoNotLeakInternals(t *testing.T) {
 
 	_, err := scanner.Scan(context.Background(), scannerapi.ScanRequest{
 		ScanID:          testScanID,
-		TargetReference: "gcp:secret-project-name",
+		TargetReference: "oracle:secret-project-name",
 	})
 	if err == nil {
 		t.Fatal("expected an unknown target to be rejected")
@@ -439,5 +441,41 @@ func TestTargetReferenceCarriesEndpoint(t *testing.T) {
 	}
 	if got := (&KMSEngine{}).endpointFor(plain); got != "https://kms.eu-west-1.amazonaws.com/" {
 		t.Errorf("default endpoint = %q", got)
+	}
+}
+
+// Every provider scheme must resolve to the right adapter (11C.4).
+func TestAllProviderSchemesResolve(t *testing.T) {
+	scanner := newFixtureScanner(t)
+
+	cases := []struct {
+		reference string
+		provider  string
+		region    string
+		endpoint  string
+	}{
+		{"aws:ap-south-1", "aws", "ap-south-1", ""},
+		{"azure:https://demo.vault.azure.net", "azure", "", "https://demo.vault.azure.net"},
+		{"gcp:europe-west1", "gcp", "europe-west1", ""},
+		{"gcp:europe-west1@http://localhost:9090", "gcp", "europe-west1", "http://localhost:9090"},
+		{"hsm", "pkcs11", "", ""},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.reference, func(t *testing.T) {
+			target, err := scanner.resolveTarget(tc.reference)
+			if err != nil {
+				t.Fatalf("resolve: %v", err)
+			}
+			if target.Provider != tc.provider {
+				t.Errorf("provider = %q, want %q", target.Provider, tc.provider)
+			}
+			if target.Region != tc.region {
+				t.Errorf("region = %q, want %q", target.Region, tc.region)
+			}
+			if target.Endpoint != tc.endpoint {
+				t.Errorf("endpoint = %q, want %q", target.Endpoint, tc.endpoint)
+			}
+		})
 	}
 }

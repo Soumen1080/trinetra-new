@@ -48,7 +48,12 @@ func run() error {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	kms := engine.NewKMSEngine()
-	registry := engine.NewRegistry(kms, engine.NewPKCS11Engine())
+	registry := engine.NewRegistry(
+		kms,
+		engine.NewAzureEngine(),
+		engine.NewGCPEngine(),
+		engine.NewPKCS11Engine(),
+	)
 
 	scanner := engine.NewScanner(registry, artifactstore.New(*storeRoot), *region)
 

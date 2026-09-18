@@ -29,6 +29,12 @@
         "name": "config-scanner",
         "version": "0.1.0",
         "licence": "Apache-2.0"
+      },
+      {
+        "vendor": "Trinetra",
+        "name": "sbom-ingest",
+        "version": "0.1.0",
+        "licence": "Apache-2.0"
       }
     ],
     "component": {
@@ -282,6 +288,66 @@
         {
           "name": "trinetra:rule-id",
           "value": "syft:python"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:106e528bec96f4ad68b246f1a17662c2",
+      "name": "BouncyCastle",
+      "cryptoProperties": {
+        "assetType": "library"
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "opt/app/sbom.cdx.json",
+            "additionalContext": "asserted by an external SBOM (cdxgen@10.2.3), not observed by Trinetra; package bouncycastle; version 1.76; pkg:maven/org.bouncycastle/bcprov-jdk18on@1.76; PQC-capable since 1.72"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:confidence",
+          "value": "medium"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "sbom_ingest"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "sbom:cdxgen@10.2.3"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:4ade569b7ff8599405a90d07c4448121",
+      "name": "jsonwebtoken (JWT library)",
+      "cryptoProperties": {
+        "assetType": "library"
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "opt/app/sbom.cdx.json",
+            "additionalContext": "asserted by an external SBOM (cdxgen@10.2.3), not observed by Trinetra; package jsonwebtoken; version 9.0.2; pkg:npm/jsonwebtoken@9.0.2; PQC support not recorded for this version"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:confidence",
+          "value": "medium"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "sbom_ingest"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "sbom:cdxgen@10.2.3"
         }
       ]
     }

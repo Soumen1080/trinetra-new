@@ -13,7 +13,12 @@ from pathlib import Path
 
 import pytest
 
-from app.models.enums import AssetType, ScannerKind
+from app.models.enums import (
+    AssetType,
+    Confidence,
+    DetectionMethod,
+    ScannerKind,
+)
 from app.services.cbom_ingest import ingest_document, validate_document
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -158,6 +163,47 @@ class TestContainerGoldenDocument:
         assert "container-scanner" in names
         for expected in ("pki-scanner", "config-scanner"):
             assert expected in names, f"{expected} missing from metadata.tools"
+
+    def test_sbom_sourced_findings_are_distinguishable(
+        self, golden_document: dict
+    ) -> None:
+        """Second-hand evidence must stay distinguishable after ingest (11C.2).
+
+        A component an external SBOM asserted was never observed by Trinetra.
+        If that distinction is lost at the ingest boundary, the risk engine
+        treats someone else's claim as our own measurement.
+        """
+        result = ingest_document(golden_document, scan_target=SCAN_TARGET)
+
+        ingested = [
+            artefact
+            for artefact in result.artefacts
+            if artefact.evidence[0].detection_method is DetectionMethod.SBOM_INGEST
+        ]
+        assert ingested, "no SBOM-sourced artefacts in the golden document"
+
+        for artefact in ingested:
+            # Never high: Trinetra did not look at this component itself.
+            assert artefact.evidence[0].confidence is Confidence.MEDIUM, (
+                f"{artefact.name} claims {artefact.evidence[0].confidence} confidence"
+            )
+            note = artefact.evidence[0].additional_context or ""
+            assert "not observed by Trinetra" in note, (
+                f"{artefact.name} does not mark itself second-hand: {note}"
+            )
+
+    def test_directly_observed_findings_outrank_sbom_claims(
+        self, golden_document: dict
+    ) -> None:
+        """A first-hand observation keeps high confidence alongside SBOM data."""
+        result = ingest_document(golden_document, scan_target=SCAN_TARGET)
+
+        confidences = {
+            artefact.evidence[0].detection_method: artefact.evidence[0].confidence
+            for artefact in result.artefacts
+        }
+        assert confidences.get(DetectionMethod.DEPENDENCY_MANIFEST) is Confidence.HIGH
+        assert confidences.get(DetectionMethod.SBOM_INGEST) is Confidence.MEDIUM
 
     def test_ingest_is_idempotent(self, golden_document: dict) -> None:
         first = ingest_document(golden_document, scan_target=SCAN_TARGET)

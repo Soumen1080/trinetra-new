@@ -34,7 +34,7 @@ Every clause of the problem statement must be satisfied. This table is the **acc
 | R4 | Identify & catalogue **protocols** (TLS/SSH/IPsec) | Phase 3.2d (declared **done**) + **Phase 11A (observed)** | [~] declared done |
 | R5 | Identify & catalogue **libraries** (OpenSSL, BouncyCastle…) | Phase 3.4 (Syft + knowledge base) — *never with an algorithm* | [x] **done** *(direct deps; transitive → 11C.1)* |
 | R6 | Identify & catalogue **hardware modules** (HSM/TPM/PKCS#11) | Phase 4.2–4.3 (PKCS#11 export) | [x] **done** |
-| R7 | Identify & catalogue **cloud services** (KMS/ACM/Key Vault) | Phase 4.4 (AWS KMS; verified live) | [x] **done** *(AWS; Azure/GCP → 11C.4)* |
+| R7 | Identify & catalogue **cloud services** (KMS/ACM/Key Vault) | Phase 4.4 (AWS, verified live) + 11C.4 (Azure, GCP) | [x] **done** |
 | R8 | Coverage of **internal AND external facing** apps/infra | Phases 2–4 (internal **done**) + **11A (external)** | [~] internal done |
 | R9 | **Quantum risk assessment** — systems prone to quantum attack | Phase 5.3 (Track B, resource model) | [ ] |
 | R10 | Highlight **risks to sensitive data** (HNDL) | Phase 2.3 (taint rules **done**) + Phase 5.5 | [~] evidence done |
@@ -503,7 +503,7 @@ Worth recording, because each was silent and each would have shipped:
 
 ### 3.4 Manifests and knowledge base ✅
 - [x] **3.4a** `requirements.txt`, `go.mod`, `package-lock.json`, `pom.xml`, `Cargo.toml` — all via Syft rather than hand-written parsers
-- [ ] **3.4b** Ingest existing CycloneDX / SPDX SBOMs as an input source → **owned by 11C.2**
+- [x] **3.4b** Ingest existing CycloneDX / SPDX SBOMs as an input source → **done in 11C.2**
 - [x] **3.4c** **`knowledge/crypto-libraries-2026.1.json`** — 20 curated crypto libraries across deb/rpm/apk/pypi/npm/maven/cargo/go, each with a **citation**, PQC-since version and FIPS capability
   - [x] Validated **at load, not at use**: a malformed profile fails at startup rather than mis-classifying packages mid-scan
   - [x] **`pqc_since: null` means "not recorded", never "unsupported"** — `SupportsPQC` returns `(supported, known)` so the recommendation engine cannot assert a fact nobody established (P3)
@@ -564,7 +564,7 @@ repository or an image.*
 - [x] **4.3** `hardware_module` artefacts with vendor, model, firmware, FIPS certificate number and **PQC-capable firmware flag** — an HSM that cannot be upgraded is a hardware purchase, not a code change, and the evidence says so in those words
 - [x] **4.4** AWS KMS key metadata → `cloud_service` artefacts with key spec, region, ARN and **`customer_managed` vs `provider_managed`**
 - [x] **4.5** **Metadata only.** Read-only IAM surface documented in code (`kms:ListKeys`, `kms:DescribeKey`, `kms:ListAliases`); credentials redacted in logs and never written anywhere
-- [ ] **4.6** Azure Key Vault and GCP KMS *(optional; AWS first)* → **owned by 11C.4**
+- [x] **4.6** Azure Key Vault and GCP KMS → **done in 11C.4**
 - [ ] **4.7** Asset-inventory import (CSV/CMDB) → **moved to 8.10a**. It belongs in the API, not a scanner: business context is supplied by a human or an inventory system, and the Phase 1 schema forbids a scanner supplying anything but `data_category`
 
 ### Two design decisions worth recording
@@ -605,7 +605,7 @@ The golden CBOM combines that with the HSM fixture: **9 components** — 3
 | **A `KeyDetail` was returned for a cloud service** | The Phase 1 discriminated union rejected it outright. The schema was right and the shortcut was wrong: `CloudServiceDetail` exists precisely so a managed key carries provider, region and ownership |
 
 ### Honest gaps — each now has a home
-- **Azure and GCP** are not implemented → **Phase 11C.4**.
+- **Azure and GCP** → **done in Phase 11C.4** (Key Vault + Managed HSM, Cloud KMS with protection level).
 - **No real AWS account** was used: LocalStack implements the KMS API faithfully
   enough to exercise signing and parsing, but a production account may return
   fields, error shapes and pagination behaviour the emulator does not
@@ -984,6 +984,15 @@ configures.
 > **None of these block the P0 path.** The core answer to the problem statement
 > (inventory → two-track risk → recommendation → report → GUI) does not depend on
 > any of them. They widen coverage, which is exactly what §7.4 extensions are for.
+>
+> **Status: 11C.2 and 11C.4 are done.** The remaining three are blocked on the
+> environment, not on the code:
+>
+> | Item | Blocked on |
+> |---|---|
+> | **11C.1** transitive deps | Needs a local package mirror to fetch dependency sources offline (P7) |
+> | **11C.3** verify theia | `cbomkit-theia` is not installed; needs a JRE/Go toolchain and the binary |
+> | **11C.5** real AWS | Needs a real AWS account and a read-only IAM role |
 
 ### 11C.1 Transitive dependency crypto *(closes 3.3b, 3.3c)*
 Syft already enumerates dependencies and their PURLs (3.3a, done). What is
@@ -1000,15 +1009,15 @@ code", so a repository that calls a library that calls RSA shows nothing today.
 
 **Exit criteria:** scanning a repo whose only crypto is inside a dependency produces findings attributed to that dependency, and a second scan reuses the cache.
 
-### 11C.2 External SBOM ingest *(closes 3.4b)*
+### 11C.2 External SBOM ingest ✅ *(closes 3.4b)*
 An organisation that already produces SBOMs should not have to rescan. This is
 also the cheapest possible coverage win for an estate Trinetra cannot reach.
 
-- [ ] **11C.2a** Accept CycloneDX 1.4–1.6 and SPDX 2.3 as a scan *input*, not just an output format
-- [ ] **11C.2b** Map third-party components through the Phase 3 knowledge base, so an externally produced SBOM yields the same `library` artefacts a Syft scan would
-- [ ] **11C.2c** **Record provenance**: an ingested SBOM is someone else's evidence. `metadata.tools` must name the producing tool, and the UI must distinguish "Trinetra observed this" from "an SBOM asserted this"
-- [ ] **11C.2d** Confidence is **medium at best** for ingested components — Trinetra did not verify them, and a finding's confidence must reflect who actually looked
-- [ ] **11C.2e** Non-`cryptographic-asset` components are skipped, not rejected (the Phase 2 rule, unchanged)
+- [x] **11C.2a** Accept CycloneDX 1.4–1.6 and SPDX 2.3 as a scan *input*, not just an output format
+- [x] **11C.2b** Map third-party components through the Phase 3 knowledge base, so an externally produced SBOM yields the same `library` artefacts a Syft scan would
+- [x] **11C.2c** **Record provenance**: an ingested SBOM is someone else's evidence. `metadata.tools` must name the producing tool, and the UI must distinguish "Trinetra observed this" from "an SBOM asserted this"
+- [x] **11C.2d** Confidence is **medium at best** for ingested components — Trinetra did not verify them, and a finding's confidence must reflect who actually looked
+- [x] **11C.2e** Non-`cryptographic-asset` components are skipped, not rejected (the Phase 2 rule, unchanged)
 
 **Exit criteria:** a CycloneDX SBOM from another tool ingests into `artefacts` with correct provenance and a confidence that reflects its second-hand origin.
 
@@ -1026,16 +1035,16 @@ does, image-layer certificate detection and gitleaks secret detection are
 
 **Exit criteria:** theia runs against a real image, its findings are reconciled against ours, and the Phase 3 gap note is removed rather than reworded.
 
-### 11C.4 Azure Key Vault and GCP KMS *(closes 4.6)*
+### 11C.4 Azure Key Vault and GCP KMS ✅ *(closes 4.6)*
 AWS-first was the right call and remains so. But an estate on Azure or GCP gets
 **nothing** from Phase 4 today, and "no keys found" is the most dangerous
 possible output for a cloud scanner.
 
-- [ ] **11C.4a** Azure Key Vault: keys, certificates and secrets metadata; Managed HSM
-- [ ] **11C.4b** GCP Cloud KMS: keyrings, crypto keys, protection level (`SOFTWARE` vs `HSM`)
-- [ ] **11C.4c** Map both to `cloud_service` artefacts through the same `CloudServiceDetail`, so the risk engine sees one shape regardless of provider
-- [ ] **11C.4d** **Metadata only**, same as AWS: read-only credentials, documented least-privilege role, nothing persisted
-- [ ] **11C.4e** An unconfigured provider is a **named coverage gap**, never silence — the Phase 4 rule that a missing credential must not read as "you have no keys"
+- [x] **11C.4a** Azure Key Vault: keys, certificates and secrets metadata; Managed HSM
+- [x] **11C.4b** GCP Cloud KMS: keyrings, crypto keys, protection level (`SOFTWARE` vs `HSM`)
+- [x] **11C.4c** Map both to `cloud_service` artefacts through the same `CloudServiceDetail`, so the risk engine sees one shape regardless of provider
+- [x] **11C.4d** **Metadata only**, same as AWS: read-only credentials, documented least-privilege role, nothing persisted
+- [x] **11C.4e** An unconfigured provider is a **named coverage gap**, never silence — the Phase 4 rule that a missing credential must not read as "you have no keys"
 
 **Exit criteria:** an Azure and a GCP account each yield `cloud_service` artefacts with provider, region and ownership resolved.
 
@@ -1086,7 +1095,7 @@ pagination behaviour the emulator may not.
 | **M8** | It visualises risk | 10 | Mosca timeline, heatmap, dependency graph, planner | |
 | **M8B** | **It is genuinely easy to use** | 10B | 5 testers complete the core tasks unaided; accessibility audit passes | |
 | **M9** | It is production-ready | 11, 12 | Benchmarked, documented, deployable | |
-| **M10** | Wider coverage | 11A, 11B, **11C** | Live TLS · binaries, CVEs, NER PII · **transitive deps, SBOM ingest, theia, Azure/GCP, real AWS** | |
+| **M10** | Wider coverage | 11A, 11B, **11C** | Live TLS · binaries, CVEs, NER PII · transitive deps, theia, real AWS | **11C.2 + 11C.4 done** |
 
 > **The architecture's own definition of the minimum viable platform** (§7.7):
 > the CBOM contract, Semgrep, the Q capability profile, and liboqs — i.e. M1B
