@@ -4,4 +4,5 @@ use (
 	./cbom-go
 	./source
 	./container
+	./cloudhsm
 )

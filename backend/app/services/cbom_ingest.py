@@ -23,15 +23,20 @@ from typing import Any
 
 from app.models.enums import (
     AssetType,
+    CloudProvider,
+    CloudServiceKind,
     Confidence,
     DetectionMethod,
+    KeyManagementKind,
     ProtocolName,
     ScannerKind,
 )
 from app.schemas.artefact import (
     AlgorithmDetail,
     CertificateDetail,
+    CloudServiceDetail,
     CryptoArtefact,
+    HardwareModuleDetail,
     KeyDetail,
     LibraryDetail,
     ProtocolDetail,
@@ -60,6 +65,15 @@ TRINETRA_DETECTION_METHOD_PROPERTY = "trinetra:detection-method"
 TRINETRA_CONFIDENCE_PROPERTY = "trinetra:confidence"
 TRINETRA_RULE_ID_PROPERTY = "trinetra:rule-id"
 TRINETRA_ALGORITHM_PROPERTY = "trinetra:algorithm"
+
+#: Cloud-service attributes. The scanner emits these so a KMS key's provider,
+#: region and ownership survive into the model: who controls a key decides
+#: whether migrating it is a code change or a vendor negotiation.
+TRINETRA_CLOUD_PROVIDER_PROPERTY = "trinetra:cloud-provider"
+TRINETRA_CLOUD_SERVICE_PROPERTY = "trinetra:cloud-service"
+TRINETRA_KEY_MANAGEMENT_PROPERTY = "trinetra:key-management"
+TRINETRA_RESOURCE_PROPERTY = "trinetra:resource-id"
+TRINETRA_REGION_PROPERTY = "trinetra:region"
 
 
 class CBOMValidationError(ValueError):
@@ -289,8 +303,79 @@ def _build_detail(
         return _build_protocol_detail(name, algo_props, properties)
     if asset_type is AssetType.KEY:
         return _build_key_detail(algo_props, properties)
+    if asset_type is AssetType.CLOUD_SERVICE:
+        return _build_cloud_service_detail(algo_props, properties)
+    if asset_type is AssetType.HARDWARE_MODULE:
+        return _build_hardware_module_detail(properties)
     if asset_type is AssetType.ALGORITHM:
         return _build_algorithm_detail(algo_props, properties)
+    return None
+
+
+def _build_cloud_service_detail(
+    algo_props: dict[str, Any], properties: dict[str, str]
+) -> CloudServiceDetail | None:
+    """Build the detail for a managed cloud key.
+
+    ``key_spec`` carries the provider's own spelling verbatim (RSA_2048,
+    SYMMETRIC_DEFAULT). That is the load-bearing field: it is what makes a KMS
+    key legible as Shor-breakable without re-querying the provider, and keeping
+    the provider's exact string means a reader can check it against the console.
+    """
+    key_spec = algo_props.get("parameterSetIdentifier") or None
+    resource = properties.get(TRINETRA_RESOURCE_PROPERTY) or None
+    region = properties.get(TRINETRA_REGION_PROPERTY) or None
+
+    provider = _parse_enum(
+        properties.get(TRINETRA_CLOUD_PROVIDER_PROPERTY),
+        CloudProvider,
+        CloudProvider.OTHER,
+    )
+    service = _parse_enum(
+        properties.get(TRINETRA_CLOUD_SERVICE_PROPERTY),
+        CloudServiceKind,
+        CloudServiceKind.OTHER,
+    )
+    management = _parse_enum(
+        properties.get(TRINETRA_KEY_MANAGEMENT_PROPERTY),
+        KeyManagementKind,
+        KeyManagementKind.UNKNOWN,
+    )
+
+    detail = CloudServiceDetail(
+        provider=provider,
+        service=service,
+        resource_id=resource,
+        region=region,
+        key_spec=key_spec,
+        key_management=management,
+    )
+
+    populated = detail.model_dump(
+        exclude={"detail_type"}, exclude_none=True, exclude_defaults=True
+    )
+    if populated:
+        return detail
+    return None
+
+
+def _build_hardware_module_detail(
+    properties: dict[str, str],
+) -> HardwareModuleDetail | None:
+    """Build the detail for an HSM.
+
+    Deliberately sparse: the scanner records vendor, firmware and FIPS data in
+    the evidence note, and only what the wire format carries structurally is
+    lifted here. Inventing structured fields from a prose note would turn a
+    human-readable description into data nobody validated.
+    """
+    detail = HardwareModuleDetail()
+
+    populated = detail.model_dump(
+        exclude={"detail_type"}, exclude_none=True, exclude_defaults=True
+    )
+    if populated:
+        return detail
     return None
 
 
@@ -383,6 +468,18 @@ def _parse_protocol_name(name: str) -> ProtocolName:
     if ProtocolName.has_value(token):
         return ProtocolName(token)
     return ProtocolName.OTHER
+
+
+def _parse_enum(raw: str | None, enum_type: Any, fallback: Any) -> Any:
+    """Parse a canonical enum value, falling back when it is absent or unknown.
+
+    An unrecognised value degrades to the fallback rather than raising: a newer
+    scanner emitting a value this build does not know should still ingest, with
+    the unknown value preserved verbatim in ``raw_cbom``.
+    """
+    if raw and enum_type.has_value(raw):
+        return enum_type(raw)
+    return fallback
 
 
 def _parse_optional_datetime(raw: Any) -> datetime | None:

@@ -20,11 +20,16 @@ scanners/
     internal/engine/      syft, x509/pki, config and theia engines
     cmd/                  the service binary
     cmd/gencbom/          regenerates the golden container CBOM
+  cloudhsm/               the cloud and HSM scanner service
+    internal/engine/      aws kms (sigv4) and pkcs#11 engines
+    cmd/                  the service binary
+    cmd/gencbom/          regenerates the golden cloud/HSM CBOM
 ```
 
-Two services, not one, because their blast radii differ: the container scanner
-needs registry egress to pull images and the source scanner needs none, so a
-compromised image pull cannot reach the source tree.
+Three services, not one, because their blast radii differ: the container scanner
+needs registry egress to pull images, the cloud scanner holds cloud credentials,
+and the source scanner needs neither. A compromised image pull cannot reach the
+source tree, and neither can reach the cloud credentials.
 
 ## Detection engines
 
@@ -48,6 +53,21 @@ source of evidence, never a source of verdicts.**
 | `ConfigEngine` | declared TLS versions, cipher suites, SSH algorithms | Working |
 | `TheiaEngine` | image-layer certs, gitleaks secrets, Java security config | Set `TRINETRA_THEIA_BINARY` |
 
+**Cloud/HSM scanner:**
+
+| Engine | Covers | Status |
+|---|---|---|
+| `KMSEngine` | AWS KMS keys, specs, ownership | Working (verified against a live KMS API) |
+| `PKCS11Engine` | HSM tokens, key objects, firmware, FIPS, PQC capability | Working (reads an inventory export) |
+
+Two decisions worth knowing. **PKCS#11 reads an operator-produced inventory
+export rather than dlopen-ing a vendor `.so`**: loading a vendor native library
+into a service that holds cloud credentials is unnecessary attack surface, HSMs
+usually sit on networks the scanner cannot reach, and an export is reviewable by
+a human first. **SigV4 is implemented in one file rather than pulling the AWS
+SDK**: three read-only calls do not justify that dependency tree in a service
+that must be vendorable for an air-gapped install.
+
 Engines are **composed, not chosen**: the scanner runs every available engine and
 merges their findings, because a CBOMkit hit and a Semgrep taint path about the
 same call site are complementary evidence rather than duplicates. Where both
@@ -70,7 +90,7 @@ without one still gets a complete Semgrep inventory.
 
 ```sh
 # Tests (no external services required)
-go test ./cbom-go/... ./source/... ./container/...
+go test ./cbom-go/... ./source/... ./container/... ./cloudhsm/...
 
 # Rule-pack lint — enforces the two load-bearing rule constraints
 python ../scripts/lint_rules.py ../rules
@@ -127,3 +147,6 @@ time.
   forbids.
 - **A library finding never implies an algorithm**, and `pqc_since: null` in the
   knowledge base means *not recorded*, never *unsupported*.
+- **Metadata only from a KMS or an HSM.** Both exist so key material never
+  leaves them; a scanner that extracted a key would defeat the control it is
+  inventorying. Credentials are redacted in logs and never written anywhere.

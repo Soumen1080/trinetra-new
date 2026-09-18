@@ -11,7 +11,11 @@
         "libcrypto",
         "openssl-libs",
         "libssl1.1",
-        "libssl3"
+        "libssl3",
+        "libcrypto3",
+        "libcrypto1.1",
+        "libssl1.0",
+        "openssl3"
       ],
       "ecosystems": [
         "deb",
@@ -322,7 +326,8 @@
         "gpgme",
         "gnupg",
         "gpg",
-        "libgpgme11"
+        "libgpgme11",
+        "gpgv"
       ],
       "ecosystems": [
         "deb",
@@ -341,7 +346,9 @@
         "krb5-libs",
         "libkrb5-3",
         "libgssapi-krb5-2",
-        "krb5"
+        "krb5",
+        "libk5crypto3",
+        "libkrb5support0"
       ],
       "ecosystems": [
         "deb",

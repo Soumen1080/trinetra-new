@@ -1,0 +1,84 @@
+{
+  "collector": "pkcs11-tool 0.23.0 on hsm-01.internal (operator: platform-security)",
+  "collected_at": "2026-03-14T10:30:00Z",
+  "slots": [
+    {
+      "slot_id": 0,
+      "description": "Luna PCIe HSM slot 0",
+      "manufacturer_id": "Thales",
+      "token_label": "payments-hsm",
+      "token_model": "Luna K7",
+      "token_serial": "1234567890",
+      "firmware_version": "7.8.4",
+      "hardware_version": "3.2",
+      "fips_certificate": "4708",
+      "fips_level": "3",
+      "supported_mechanisms": [
+        "CKM_RSA_PKCS", "CKM_RSA_PKCS_PSS", "CKM_ECDSA",
+        "CKM_AES_GCM", "CKM_AES_KEY_WRAP", "CKM_SHA256"
+      ],
+      "objects": [
+        {
+          "label": "payments-signing",
+          "class": "CKO_PRIVATE_KEY",
+          "key_type": "CKK_RSA",
+          "modulus_bits": 2048,
+          "id": "01",
+          "extractable": false,
+          "sensitive": true
+        },
+        {
+          "label": "payments-signing-pub",
+          "class": "CKO_PUBLIC_KEY",
+          "key_type": "CKK_RSA",
+          "modulus_bits": 2048,
+          "id": "01"
+        },
+        {
+          "label": "token-signing",
+          "class": "CKO_PRIVATE_KEY",
+          "key_type": "CKK_EC",
+          "ec_params": "prime256v1",
+          "id": "02",
+          "extractable": false,
+          "sensitive": true
+        },
+        {
+          "label": "legacy-wrapping",
+          "class": "CKO_SECRET_KEY",
+          "key_type": "CKK_AES",
+          "modulus_bits": 256,
+          "id": "03",
+          "extractable": true,
+          "sensitive": false
+        }
+      ]
+    },
+    {
+      "slot_id": 1,
+      "description": "Utimaco CryptoServer slot 1",
+      "manufacturer_id": "Utimaco",
+      "token_label": "pqc-pilot-hsm",
+      "token_model": "CryptoServer CP5",
+      "token_serial": "9876543210",
+      "firmware_version": "5.4.0",
+      "fips_certificate": "4506",
+      "fips_level": "3",
+      "supported_mechanisms": [
+        "CKM_RSA_PKCS", "CKM_ECDSA", "CKM_AES_GCM",
+        "CKM_ML_DSA", "CKM_ML_KEM", "CKM_SHA384"
+      ],
+      "objects": [
+        {
+          "label": "pqc-pilot-signing",
+          "class": "CKO_PRIVATE_KEY",
+          "key_type": "CKK_EC",
+          "ec_params": "secp384r1",
+          "id": "10",
+          "extractable": false,
+          "sensitive": true
+        }
+      ]
+    }
+  ]
+}

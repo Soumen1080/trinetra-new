@@ -80,6 +80,8 @@ const (
 	DetectSBOMIngest     DetectionMethod = "sbom_ingest"
 	DetectCertificate    DetectionMethod = "certificate_parse"
 	DetectConfigParse    DetectionMethod = "config_parse"
+	DetectPKCS11         DetectionMethod = "pkcs11_enumeration"
+	DetectCloudAPI       DetectionMethod = "cloud_api"
 	DetectOther          DetectionMethod = "other"
 )
 
@@ -135,6 +137,13 @@ type Finding struct {
 	// Redacted marks a finding whose snippet was withheld because it contained
 	// key material. Trinetra stores no secrets.
 	Redacted bool `json:"redacted,omitempty"`
+
+	// Extra carries engine-specific attributes that CycloneDX has no
+	// structural place for -- a KMS key's region and ownership, for instance.
+	// Keys MUST already be namespaced (trinetra:...); the document builder
+	// rejects anything else, because an unnamespaced property is not safely
+	// ignorable by a consumer that does not know Trinetra.
+	Extra map[string]string `json:"extra,omitempty"`
 }
 
 // IsLibrary reports whether this finding is dependency evidence rather than an

@@ -19,6 +19,18 @@ const TrinetraDataCategoryProperty = "trinetra:data-category"
 // parameterSetIdentifier is a string and overloaded; this stays unambiguous.
 const TrinetraKeySizeProperty = "trinetra:key-size-bits"
 
+// Cloud-service attributes. CycloneDX has no structural place for these, so a
+// managed key's provider, region and ownership travel as namespaced properties.
+// KeyManagement in particular is load-bearing: who controls a key decides
+// whether migrating it is a code change or a vendor negotiation.
+const (
+	TrinetraCloudProviderProperty = "trinetra:cloud-provider"
+	TrinetraCloudServiceProperty  = "trinetra:cloud-service"
+	TrinetraKeyManagementProperty = "trinetra:key-management"
+	TrinetraResourceProperty      = "trinetra:resource-id"
+	TrinetraRegionProperty        = "trinetra:region"
+)
+
 var assetTypeToWire = map[AssetType]string{
 	AssetAlgorithm:       "algorithm",
 	AssetKey:             "related-crypto-material",

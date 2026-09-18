@@ -125,16 +125,16 @@ func TestSyftEvidenceDistinguishesUnknownPQCFromUnsupported(t *testing.T) {
 
 	openssl, ok := byName["OpenSSL"]
 	if !ok {
-		t.Fatal("OpenSSL missing")
+		t.Fatalf("OpenSSL missing; got %v", keysOf(byName))
 	}
 	// 1.1.1w is known to predate PQC support, so the evidence must say so.
 	if !strings.Contains(openssl.Snippet, "predates PQC support") {
 		t.Errorf("OpenSSL 1.1.1w evidence = %q", openssl.Snippet)
 	}
 
-	pyca, ok := byName["pyca/cryptography"]
+	pyca, ok := byName["cryptography (pyca/cryptography)"]
 	if !ok {
-		t.Fatal("pyca/cryptography missing")
+		t.Fatalf("pyca/cryptography missing; got %v", keysOf(byName))
 	}
 	// No pqc_since entry: the honest phrasing is "not recorded".
 	if !strings.Contains(pyca.Snippet, "not recorded") {
@@ -224,12 +224,43 @@ func TestSyftRealScanFindsCryptoLibraries(t *testing.T) {
 		}
 	}
 
-	if !names["pyca/cryptography"] || !names["PyCryptodome"] {
+	if !names["cryptography (pyca/cryptography)"] || !names["PyCryptodome"] {
 		t.Errorf("expected both crypto libraries, got %v", names)
 	}
 	// requests is not a crypto library and must be filtered out.
-	if names["requests"] {
-		t.Error("a non-crypto package reached the inventory")
+	for name := range names {
+		if strings.Contains(strings.ToLower(name), "requests") {
+			t.Error("a non-crypto package reached the inventory")
+		}
+	}
+}
+
+func keysOf(m map[string]cbom.Finding) []string {
+	out := make([]string, 0, len(m))
+	for k := range m {
+		out = append(out, k)
+	}
+	return out
+}
+
+// A library name must identify the PACKAGE, not just the product. An image can
+// ship several packages from one project, and two findings both called
+// "OpenSSL" leave a reader unable to tell which is installed.
+func TestLibraryNameQualifiesThePackage(t *testing.T) {
+	cases := []struct{ pkg, display, want string }{
+		{"libcrypto3", "OpenSSL", "libcrypto3 (OpenSSL)"},
+		{"libssl3", "OpenSSL", "libssl3 (OpenSSL)"},
+		{"libk5crypto3", "Kerberos (MIT krb5)", "libk5crypto3 (Kerberos (MIT krb5))"},
+		// No pointless repetition when the two already agree.
+		{"PyCryptodome", "PyCryptodome", "PyCryptodome"},
+		{"pycryptodome", "PyCryptodome", "PyCryptodome"},
+		{"", "OpenSSL", "OpenSSL"},
+	}
+
+	for _, tc := range cases {
+		if got := libraryName(tc.pkg, tc.display); got != tc.want {
+			t.Errorf("libraryName(%q,%q) = %q, want %q", tc.pkg, tc.display, got, tc.want)
+		}
 	}
 }
 

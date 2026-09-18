@@ -188,7 +188,12 @@ func (e *SyftEngine) adapt(doc syftDocument) Result {
 
 		finding := cbom.Finding{
 			AssetType: cbom.AssetLibrary,
-			Name:      profile.DisplayName,
+			// The PACKAGE name, qualified by the profile it matched. A bare
+			// display name is ambiguous in a real image: alpine ships both
+			// libcrypto3 and libssl3 from OpenSSL, and reporting two findings
+			// called "OpenSSL" leaves a reader unable to tell which package was
+			// actually installed or where to look.
+			Name: libraryName(artifact.Name, profile.DisplayName),
 			// Algorithm stays empty. Normalise() enforces it too, but stating
 			// it here documents the reason: a package name is not an algorithm.
 			DetectionMethod: cbom.DetectDependency,
@@ -205,6 +210,24 @@ func (e *SyftEngine) adapt(doc syftDocument) Result {
 	}
 
 	return result
+}
+
+// libraryName renders a library finding's display name.
+//
+// The package name leads, because that is what a reader greps for and what
+// `apk info` or `dpkg -l` will confirm. The profile name follows in parentheses
+// so the product is still obvious when the package name is cryptic
+// ("libk5crypto3 (Kerberos (MIT krb5))"). Where the two already agree, the name
+// is not repeated.
+func libraryName(packageName, displayName string) string {
+	packageName = strings.TrimSpace(packageName)
+	if packageName == "" {
+		return displayName
+	}
+	if strings.EqualFold(packageName, displayName) {
+		return displayName
+	}
+	return packageName + " (" + displayName + ")"
 }
 
 // describeLibrary builds the evidence note shown beside the finding.

@@ -155,10 +155,21 @@ func serialNumberFor(scanID string) string {
 // and keying on them would make the two records distinct and defeat the merge
 // that exists precisely to combine them. Identity is *which asset, where*.
 func findingKey(f Finding) string {
+	// Libraries are identified by NAME rather than algorithm, because a library
+	// finding never carries one. Every package in an OS package database shares
+	// one location (lib/apk/db/installed, var/lib/dpkg/status), so keying a
+	// library on path alone collapses an entire image's inventory into a single
+	// arbitrary entry -- observed on a real alpine image, where three crypto
+	// packages became one finding under the wrong name.
+	discriminator := strings.ToLower(f.Algorithm)
+	if f.IsLibrary() {
+		discriminator = strings.ToLower(f.Name)
+	}
+
 	return f.Location.Path + "\x00" +
 		strconv.Itoa(f.Location.Line) + "\x00" +
 		string(f.AssetType) + "\x00" +
-		strings.ToLower(f.Algorithm)
+		discriminator
 }
 
 // dedupe merges findings that describe the same asset at the same place.
@@ -319,6 +330,16 @@ func buildProperties(f Finding) []Property {
 	}
 	if f.Algorithm != "" {
 		props = append(props, Property{"trinetra:algorithm", f.Algorithm})
+	}
+
+	// Engine-specific attributes. Anything not already namespaced is dropped
+	// rather than emitted: a bare property name would not be safely ignorable
+	// by a consumer that does not know Trinetra, and Validate rejects it.
+	for name, value := range f.Extra {
+		if value == "" || !strings.HasPrefix(name, "trinetra:") {
+			continue
+		}
+		props = append(props, Property{name, value})
 	}
 
 	sort.SliceStable(props, func(i, j int) bool { return props[i].Name < props[j].Name })

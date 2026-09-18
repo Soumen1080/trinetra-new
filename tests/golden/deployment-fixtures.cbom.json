@@ -197,8 +197,8 @@
     },
     {
       "type": "cryptographic-asset",
-      "bom-ref": "trinetra:5842120f32cceb6e19fa41094c15c997",
-      "name": "Go x/crypto",
+      "bom-ref": "trinetra:2528424243141be908e8d0eaa08e5cac",
+      "name": "golang.org/x/crypto (Go x/crypto)",
       "cryptoProperties": {
         "assetType": "library"
       },
@@ -227,8 +227,8 @@
     },
     {
       "type": "cryptographic-asset",
-      "bom-ref": "trinetra:98047169554d011cf7e5d49f6d78f632",
-      "name": "pyca/cryptography",
+      "bom-ref": "trinetra:31038e081a532cde2ff0a1d0c9892b66",
+      "name": "cryptography (pyca/cryptography)",
       "cryptoProperties": {
         "assetType": "library"
       },
@@ -237,6 +237,36 @@
           {
             "location": "opt/app/requirements.txt",
             "additionalContext": "package cryptography; version 41.0.7; pkg:pypi/cryptography@41.0.7; PQC support not recorded for this version"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "dependency_manifest"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "syft:python"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:7f016cc1b798a912dcea669fad24e5f8",
+      "name": "PyCryptodome",
+      "cryptoProperties": {
+        "assetType": "library"
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "opt/app/requirements.txt",
+            "additionalContext": "package pycryptodome; version 3.19.0; pkg:pypi/pycryptodome@3.19.0; PQC support not recorded for this version"
           }
         ]
       },

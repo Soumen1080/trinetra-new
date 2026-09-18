@@ -1,0 +1,493 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:4668c73a-fae0-0ccb-72eb-d5027bbcbe44",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-03-14T10:30:00Z",
+    "tools": [
+      {
+        "vendor": "Trinetra",
+        "name": "cloudhsm-scanner",
+        "version": "0.1.0",
+        "licence": "Apache-2.0"
+      },
+      {
+        "vendor": "Trinetra",
+        "name": "aws-kms-scanner",
+        "version": "0.1.0",
+        "licence": "Apache-2.0"
+      },
+      {
+        "vendor": "Trinetra",
+        "name": "pkcs11-scanner",
+        "version": "0.1.0",
+        "licence": "Apache-2.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "aws:ap-south-1@http://localhost:4566"
+    }
+  },
+  "components": [
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:ad3d30460b28b76f8b0abfbae57864ea",
+      "name": "data-at-rest",
+      "cryptoProperties": {
+        "assetType": "related-crypto-material",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "SYMMETRIC_DEFAULT",
+          "cryptoFunctions": [
+            "encrypt",
+            "decrypt"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "aws/kms/ap-south-1/04b37493-e1bd-4433-be07-9c85156b1718",
+            "additionalContext": "aws kms key 04b37493-e1bd-4433-be07-9c85156b1718; spec SYMMETRIC_DEFAULT; usage ENCRYPT_DECRYPT; management customer_managed; origin aws_generated; state enabled; description data-at-rest"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:asset-type",
+          "value": "cloud_service"
+        },
+        {
+          "name": "trinetra:cloud-provider",
+          "value": "aws"
+        },
+        {
+          "name": "trinetra:cloud-service",
+          "value": "kms"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "cloud_api"
+        },
+        {
+          "name": "trinetra:key-management",
+          "value": "customer_managed"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "256"
+        },
+        {
+          "name": "trinetra:region",
+          "value": "ap-south-1"
+        },
+        {
+          "name": "trinetra:resource-id",
+          "value": "arn:aws:kms:ap-south-1:000000000000:key/04b37493-e1bd-4433-be07-9c85156b1718"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "aws:kms"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:c74aab853d0319028d10007be27a5e4c",
+      "name": "token-signing",
+      "cryptoProperties": {
+        "assetType": "related-crypto-material",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "ECC_NIST_P256",
+          "curve": "P-256",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "aws/kms/ap-south-1/be9d31a6-06cd-4631-80ad-7c230a69d5cf",
+            "additionalContext": "aws kms key be9d31a6-06cd-4631-80ad-7c230a69d5cf; spec ECC_NIST_P256; usage SIGN_VERIFY; management customer_managed; origin aws_generated; state enabled; description token-signing"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "ecdsa"
+        },
+        {
+          "name": "trinetra:asset-type",
+          "value": "cloud_service"
+        },
+        {
+          "name": "trinetra:cloud-provider",
+          "value": "aws"
+        },
+        {
+          "name": "trinetra:cloud-service",
+          "value": "kms"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "cloud_api"
+        },
+        {
+          "name": "trinetra:key-management",
+          "value": "customer_managed"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "256"
+        },
+        {
+          "name": "trinetra:region",
+          "value": "ap-south-1"
+        },
+        {
+          "name": "trinetra:resource-id",
+          "value": "arn:aws:kms:ap-south-1:000000000000:key/be9d31a6-06cd-4631-80ad-7c230a69d5cf"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "aws:kms"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:194de3f44db0243c6d22bcaa6c83ddbf",
+      "name": "payments-signing",
+      "cryptoProperties": {
+        "assetType": "related-crypto-material",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "RSA_2048",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "aws/kms/ap-south-1/cedf7ede-72ae-498e-ba3d-fd230af86070",
+            "additionalContext": "aws kms key cedf7ede-72ae-498e-ba3d-fd230af86070; spec RSA_2048; usage SIGN_VERIFY; management customer_managed; origin aws_generated; state enabled; description payments-signing"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:asset-type",
+          "value": "cloud_service"
+        },
+        {
+          "name": "trinetra:cloud-provider",
+          "value": "aws"
+        },
+        {
+          "name": "trinetra:cloud-service",
+          "value": "kms"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "cloud_api"
+        },
+        {
+          "name": "trinetra:key-management",
+          "value": "customer_managed"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "2048"
+        },
+        {
+          "name": "trinetra:region",
+          "value": "ap-south-1"
+        },
+        {
+          "name": "trinetra:resource-id",
+          "value": "arn:aws:kms:ap-south-1:000000000000:key/cedf7ede-72ae-498e-ba3d-fd230af86070"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "aws:kms"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:faacd8d17c50d90277846959752e5b6e",
+      "name": "payments-hsm",
+      "cryptoProperties": {
+        "assetType": "related-crypto-material"
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pkcs11/slot-0",
+            "additionalContext": "pkcs#11 slot 0; vendor Thales; model Luna K7; firmware 7.8.4; FIPS certificate 4708 (level 3); no PQC mechanisms among the 6 advertised; migrating this module is a firmware or hardware change, not a code change"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:asset-type",
+          "value": "hardware_module"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "pkcs11_enumeration"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "pkcs11:token"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:0a389039db883e5b27e14a75e819410c",
+      "name": "legacy-wrapping (AES)",
+      "cryptoProperties": {
+        "assetType": "related-crypto-material",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "256"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pkcs11/slot-0/legacy-wrapping",
+            "additionalContext": "key material held in hardware; contents never read; class CKO_SECRET_KEY; type CKK_AES; EXTRACTABLE: this key can be exported from the module; NOT SENSITIVE: the module may disclose this key's value"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "aes"
+        },
+        {
+          "name": "trinetra:asset-type",
+          "value": "key"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "pkcs11_enumeration"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "256"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "pkcs11:key"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:d78e44b7997a01dc4b595ad16df37dbb",
+      "name": "payments-signing (RSA)",
+      "cryptoProperties": {
+        "assetType": "related-crypto-material",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "2048"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pkcs11/slot-0/payments-signing",
+            "additionalContext": "key material held in hardware; contents never read; class CKO_PRIVATE_KEY; type CKK_RSA"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:asset-type",
+          "value": "key"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "pkcs11_enumeration"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "2048"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "pkcs11:key"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:b35114ce109827bbff5c5bc4e26ead38",
+      "name": "token-signing (ECDSA)",
+      "cryptoProperties": {
+        "assetType": "related-crypto-material",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "256",
+          "curve": "P-256"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pkcs11/slot-0/token-signing",
+            "additionalContext": "key material held in hardware; contents never read; class CKO_PRIVATE_KEY; type CKK_EC"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "ecdsa"
+        },
+        {
+          "name": "trinetra:asset-type",
+          "value": "key"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "pkcs11_enumeration"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "256"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "pkcs11:key"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:6a73b199ca7bd78cec0db0a413643358",
+      "name": "pqc-pilot-hsm",
+      "cryptoProperties": {
+        "assetType": "related-crypto-material"
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pkcs11/slot-1",
+            "additionalContext": "pkcs#11 slot 1; vendor Utimaco; model CryptoServer CP5; firmware 5.4.0; FIPS certificate 4506 (level 3); advertises PQC mechanisms: CKM_ML_DSA, CKM_ML_KEM"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:asset-type",
+          "value": "hardware_module"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "pkcs11_enumeration"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "pkcs11:token"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:aaccf4eed2089a7d4ed92096cf7d2424",
+      "name": "pqc-pilot-signing (ECDSA)",
+      "cryptoProperties": {
+        "assetType": "related-crypto-material",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "384",
+          "curve": "P-384"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pkcs11/slot-1/pqc-pilot-signing",
+            "additionalContext": "key material held in hardware; contents never read; class CKO_PRIVATE_KEY; type CKK_EC"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "ecdsa"
+        },
+        {
+          "name": "trinetra:asset-type",
+          "value": "key"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "pkcs11_enumeration"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "384"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "pkcs11:key"
+        }
+      ]
+    }
+  ]
+}
