@@ -25,9 +25,17 @@ from app.models.enums import (
     AssetType,
     Confidence,
     DetectionMethod,
+    ProtocolName,
     ScannerKind,
 )
-from app.schemas.artefact import AlgorithmDetail, CryptoArtefact, LibraryDetail
+from app.schemas.artefact import (
+    AlgorithmDetail,
+    CertificateDetail,
+    CryptoArtefact,
+    KeyDetail,
+    LibraryDetail,
+    ProtocolDetail,
+)
 from app.schemas.common import Evidence, SourceLocation
 from app.schemas.scan import CoverageGap, ToolVersion
 from app.schemas.vocab import (
@@ -242,10 +250,10 @@ def _component_to_artefact(
         fields["detail"] = LibraryDetail(package_name=name)
     else:
         fields["algorithm"] = _resolve_algorithm(name, properties)
-        if asset_type is AssetType.ALGORITHM:
-            detail = _build_algorithm_detail(algo_props, properties)
-            if detail is not None:
-                fields["detail"] = detail
+
+        detail = _build_detail(asset_type, name, algo_props, crypto, properties)
+        if detail is not None:
+            fields["detail"] = detail
 
     artefact = CryptoArtefact.from_evidence(
         scan_target=scan_target,
@@ -258,6 +266,137 @@ def _component_to_artefact(
         **fields,
     )
     return artefact
+
+
+def _build_detail(
+    asset_type: AssetType,
+    name: str,
+    algo_props: dict[str, Any],
+    crypto: dict[str, Any],
+    properties: dict[str, str],
+) -> Any | None:
+    """Build the typed detail for an asset type.
+
+    Certificates and protocols are not algorithms, but they carry the R19
+    fields that matter most: a certificate's public-key size is what makes
+    RSA-2048 legible as Shor-breakable, and a protocol's version is what makes
+    TLS 1.0 legible as a finding. Routing every non-library asset through the
+    algorithm branch would silently drop both.
+    """
+    if asset_type is AssetType.CERTIFICATE:
+        return _build_certificate_detail(name, algo_props, crypto, properties)
+    if asset_type is AssetType.PROTOCOL:
+        return _build_protocol_detail(name, algo_props, properties)
+    if asset_type is AssetType.KEY:
+        return _build_key_detail(algo_props, properties)
+    if asset_type is AssetType.ALGORITHM:
+        return _build_algorithm_detail(algo_props, properties)
+    return None
+
+
+def _build_certificate_detail(
+    name: str,
+    algo_props: dict[str, Any],
+    crypto: dict[str, Any],
+    properties: dict[str, str],
+) -> CertificateDetail | None:
+    """Build a certificate detail, keeping both algorithms separate.
+
+    The signature algorithm is an authenticity risk that matters at CRQC time;
+    the public-key algorithm is a retroactive confidentiality risk. They are
+    stored in different fields so the risk engine can tell them apart.
+    """
+    cert_props = crypto.get("certificateProperties") or {}
+
+    key_size = _parse_positive_int(properties.get(TRINETRA_KEY_SIZE_PROPERTY))
+    if key_size is None:
+        key_size = _parse_positive_int(algo_props.get("parameterSetIdentifier"))
+
+    detail = CertificateDetail(
+        subject=cert_props.get("subjectName") or name or None,
+        issuer=cert_props.get("issuerName") or None,
+        not_before=_parse_optional_datetime(cert_props.get("notValidBefore")),
+        not_after=_parse_optional_datetime(cert_props.get("notValidAfter")),
+        signature_algorithm=cert_props.get("signatureAlgorithmRef") or None,
+        public_key_algorithm=cert_props.get("subjectPublicKeyRef") or None,
+        public_key_size_bits=key_size,
+        public_key_curve=algo_props.get("curve") or None,
+    )
+
+    populated = detail.model_dump(
+        exclude={"detail_type"}, exclude_none=True, exclude_defaults=True
+    )
+    if populated:
+        return detail
+    return None
+
+
+def _build_protocol_detail(
+    name: str, algo_props: dict[str, Any], properties: dict[str, str]
+) -> ProtocolDetail | None:
+    """Build a protocol detail.
+
+    ``is_observed`` stays False: everything a container or source scan sees is
+    *declared* configuration. Only a live handshake (Phase 11A) observes, and
+    the two routinely differ.
+    """
+    protocol_name = _parse_protocol_name(name)
+    version = algo_props.get("parameterSetIdentifier") or None
+
+    if version is None and " " in name:
+        # "TLS 1.2" -> version 1.2
+        candidate = name.rsplit(" ", 1)[-1].strip()
+        if candidate and candidate[0].isdigit():
+            version = candidate
+
+    return ProtocolDetail(
+        protocol=protocol_name,
+        version=version,
+        is_observed=False,
+    )
+
+
+def _build_key_detail(
+    algo_props: dict[str, Any], properties: dict[str, str]
+) -> KeyDetail | None:
+    """Build a key detail. Never carries key material -- only its parameters."""
+    key_size = _parse_positive_int(properties.get(TRINETRA_KEY_SIZE_PROPERTY))
+    if key_size is None:
+        key_size = _parse_positive_int(algo_props.get("parameterSetIdentifier"))
+
+    detail = KeyDetail(size_bits=key_size)
+
+    populated = detail.model_dump(
+        exclude={"detail_type"}, exclude_none=True, exclude_defaults=True
+    )
+    if populated:
+        return detail
+    return None
+
+
+def _parse_protocol_name(name: str) -> ProtocolName:
+    """Map a display name to the canonical protocol, defaulting to OTHER."""
+    token = name.strip().lower().split()[0] if name.strip() else ""
+    for separator in ("-", "_", "/"):
+        token = token.split(separator)[0]
+
+    if ProtocolName.has_value(token):
+        return ProtocolName(token)
+    return ProtocolName.OTHER
+
+
+def _parse_optional_datetime(raw: Any) -> datetime | None:
+    """Parse an ISO timestamp, returning None when absent or malformed.
+
+    A malformed date must not become a plausible one: an invented validity
+    window would let a certificate look current when nobody read its expiry.
+    """
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return None
 
 
 def _build_algorithm_detail(

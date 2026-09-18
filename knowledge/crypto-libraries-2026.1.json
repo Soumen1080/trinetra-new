@@ -1,0 +1,358 @@
+{
+  "version": "crypto-libraries-2026.1",
+  "description": "Curated crypto-library knowledge base. Syft produces a package list; this decides which packages are cryptographic implementations and what each version is known to provide.",
+  "discipline": "A library finding is DEPENDENCY EVIDENCE, NOT AN ALGORITHM. OpenSSL being installed proves a crypto implementation exists, not that any particular algorithm is used. Nothing in this file may be read as an algorithm in use, which is why no entry lists one.",
+  "pqc_support_semantics": "pqc_since is the first version known to ship NIST PQC primitives. A null value means the knowledge base has no entry -- NOT that the library lacks support. Absent means unobserved (P3).",
+  "libraries": [
+    {
+      "names": [
+        "openssl",
+        "libssl",
+        "libcrypto",
+        "openssl-libs",
+        "libssl1.1",
+        "libssl3"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic"
+      ],
+      "display_name": "OpenSSL",
+      "pqc_since": "3.5.0",
+      "pqc_note": "OpenSSL 3.5 ships ML-KEM, ML-DSA and SLH-DSA as native providers.",
+      "fips_capable": true,
+      "citation": "https://openssl-library.org/post/2025-04-08-openssl-35-final-release/"
+    },
+    {
+      "names": [
+        "bouncycastle",
+        "bcprov-jdk18on",
+        "bcprov-jdk15on",
+        "bcpkix-jdk18on",
+        "bctls-jdk18on"
+      ],
+      "ecosystems": [
+        "maven",
+        "java-archive"
+      ],
+      "display_name": "BouncyCastle",
+      "pqc_since": "1.72",
+      "pqc_note": "PQC algorithms available from 1.72; FIPS-validated builds lag the general releases.",
+      "fips_capable": true,
+      "citation": "https://www.bouncycastle.org/download/bouncy-castle-java/"
+    },
+    {
+      "names": [
+        "cryptography"
+      ],
+      "ecosystems": [
+        "pypi",
+        "python"
+      ],
+      "display_name": "pyca/cryptography",
+      "pqc_since": null,
+      "pqc_note": "Tracks the OpenSSL it links against; no independent PQC API as of this profile version.",
+      "fips_capable": false,
+      "citation": "https://cryptography.io/"
+    },
+    {
+      "names": [
+        "pycryptodome",
+        "pycryptodomex",
+        "pycrypto"
+      ],
+      "ecosystems": [
+        "pypi",
+        "python"
+      ],
+      "display_name": "PyCryptodome",
+      "pqc_since": null,
+      "fips_capable": false,
+      "deprecated_names": [
+        "pycrypto"
+      ],
+      "deprecation_note": "pycrypto is unmaintained since 2014 and has known vulnerabilities; pycryptodome is the maintained successor.",
+      "citation": "https://pycryptodome.readthedocs.io/"
+    },
+    {
+      "names": [
+        "libsodium",
+        "sodium",
+        "pynacl"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "pypi",
+        "generic"
+      ],
+      "display_name": "libsodium",
+      "pqc_since": null,
+      "fips_capable": false,
+      "citation": "https://doc.libsodium.org/"
+    },
+    {
+      "names": [
+        "mbedtls",
+        "libmbedtls",
+        "libmbedcrypto"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic"
+      ],
+      "display_name": "Mbed TLS",
+      "pqc_since": null,
+      "fips_capable": false,
+      "citation": "https://www.trustedfirmware.org/projects/mbed-tls/"
+    },
+    {
+      "names": [
+        "nss",
+        "libnss3",
+        "nss-tools",
+        "libnss"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic"
+      ],
+      "display_name": "NSS",
+      "pqc_since": "3.108",
+      "pqc_note": "Hybrid X25519MLKEM768 key exchange support.",
+      "fips_capable": true,
+      "citation": "https://firefox-source-docs.mozilla.org/security/nss/"
+    },
+    {
+      "names": [
+        "wolfssl",
+        "libwolfssl"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic"
+      ],
+      "display_name": "wolfSSL",
+      "pqc_since": "5.6.0",
+      "fips_capable": true,
+      "citation": "https://www.wolfssl.com/"
+    },
+    {
+      "names": [
+        "botan",
+        "libbotan",
+        "libbotan-2"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic"
+      ],
+      "display_name": "Botan",
+      "pqc_since": "3.0.0",
+      "fips_capable": false,
+      "citation": "https://botan.randombit.net/"
+    },
+    {
+      "names": [
+        "gnutls",
+        "libgnutls30",
+        "libgnutls",
+        "gnutls-bin"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic"
+      ],
+      "display_name": "GnuTLS",
+      "pqc_since": null,
+      "fips_capable": true,
+      "citation": "https://gnutls.org/"
+    },
+    {
+      "names": [
+        "libgcrypt",
+        "libgcrypt20",
+        "gcrypt"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic"
+      ],
+      "display_name": "Libgcrypt",
+      "pqc_since": null,
+      "fips_capable": true,
+      "citation": "https://gnupg.org/software/libgcrypt/"
+    },
+    {
+      "names": [
+        "liboqs",
+        "oqs-provider"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic",
+        "pypi"
+      ],
+      "display_name": "liboqs (Open Quantum Safe)",
+      "pqc_since": "0.7.0",
+      "pqc_note": "A PQC library by definition; its presence is evidence of PQC capability, still not of any algorithm in use.",
+      "fips_capable": false,
+      "citation": "https://openquantumsafe.org/liboqs/"
+    },
+    {
+      "names": [
+        "golang.org/x/crypto"
+      ],
+      "ecosystems": [
+        "go-module",
+        "golang"
+      ],
+      "display_name": "Go x/crypto",
+      "pqc_since": null,
+      "fips_capable": false,
+      "citation": "https://pkg.go.dev/golang.org/x/crypto"
+    },
+    {
+      "names": [
+        "node-forge",
+        "forge"
+      ],
+      "ecosystems": [
+        "npm"
+      ],
+      "display_name": "node-forge",
+      "pqc_since": null,
+      "fips_capable": false,
+      "citation": "https://github.com/digitalbazaar/forge"
+    },
+    {
+      "names": [
+        "jsrsasign",
+        "crypto-js",
+        "sjcl",
+        "elliptic",
+        "tweetnacl"
+      ],
+      "ecosystems": [
+        "npm"
+      ],
+      "display_name": "JavaScript crypto library",
+      "pqc_since": null,
+      "fips_capable": false,
+      "citation": "https://www.npmjs.com/"
+    },
+    {
+      "names": [
+        "jsonwebtoken",
+        "jose",
+        "pyjwt",
+        "python-jose",
+        "jjwt-api",
+        "nimbus-jose-jwt"
+      ],
+      "ecosystems": [
+        "npm",
+        "pypi",
+        "maven"
+      ],
+      "display_name": "JWT library",
+      "pqc_since": null,
+      "pqc_note": "Signs and verifies tokens; the algorithms it uses are configured by the application, not implied by its presence.",
+      "fips_capable": false,
+      "citation": "https://jwt.io/libraries"
+    },
+    {
+      "names": [
+        "ring",
+        "rustls",
+        "openssl-sys",
+        "aws-lc-rs"
+      ],
+      "ecosystems": [
+        "cargo",
+        "rust-crate"
+      ],
+      "display_name": "Rust crypto crate",
+      "pqc_since": null,
+      "fips_capable": false,
+      "citation": "https://crates.io/"
+    },
+    {
+      "names": [
+        "bcrypt",
+        "scrypt",
+        "argon2",
+        "argon2-cffi",
+        "passlib",
+        "libargon2"
+      ],
+      "ecosystems": [
+        "pypi",
+        "npm",
+        "deb",
+        "rpm",
+        "apk",
+        "maven"
+      ],
+      "display_name": "Password hashing library",
+      "pqc_since": null,
+      "pqc_note": "Password hashing is not affected by Shor; Grover halves brute-force cost, which sound parameters already absorb.",
+      "fips_capable": false,
+      "citation": "https://www.rfc-editor.org/rfc/rfc9106.html"
+    },
+    {
+      "names": [
+        "gpgme",
+        "gnupg",
+        "gpg",
+        "libgpgme11"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic"
+      ],
+      "display_name": "GnuPG",
+      "pqc_since": "2.5.0",
+      "pqc_note": "GnuPG 2.5 adds Kyber-based composite keys.",
+      "fips_capable": false,
+      "citation": "https://gnupg.org/"
+    },
+    {
+      "names": [
+        "krb5-libs",
+        "libkrb5-3",
+        "libgssapi-krb5-2",
+        "krb5"
+      ],
+      "ecosystems": [
+        "deb",
+        "rpm",
+        "apk",
+        "generic"
+      ],
+      "display_name": "Kerberos (MIT krb5)",
+      "pqc_since": null,
+      "fips_capable": true,
+      "citation": "https://web.mit.edu/kerberos/"
+    }
+  ]
+}

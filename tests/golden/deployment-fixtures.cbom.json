@@ -1,0 +1,259 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:6d7b2781-b439-f35f-4328-04b8bd680dec",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-03-14T10:30:00Z",
+    "tools": [
+      {
+        "vendor": "Trinetra",
+        "name": "container-scanner",
+        "version": "0.1.0",
+        "licence": "Apache-2.0"
+      },
+      {
+        "vendor": "Anchore",
+        "name": "syft",
+        "version": "1.51.0",
+        "licence": "Apache-2.0"
+      },
+      {
+        "vendor": "Trinetra",
+        "name": "pki-scanner",
+        "version": "0.1.0",
+        "licence": "Apache-2.0"
+      },
+      {
+        "vendor": "Trinetra",
+        "name": "config-scanner",
+        "version": "0.1.0",
+        "licence": "Apache-2.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "target"
+    }
+  },
+  "components": [
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:e7dd7533f5637754a944e09792f7d9c5",
+      "name": "TLS 1.2",
+      "cryptoProperties": {
+        "assetType": "protocol",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "1.2"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "etc/nginx/nginx.conf",
+            "line": 5,
+            "additionalContext": "declared in configuration: ssl_protocols TLSv1.2 TLSv1.3;"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "tls"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "medium"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "config_parse"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "config:tls"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:eaf7ffca0d475b76b878334c146b399e",
+      "name": "TLS",
+      "cryptoProperties": {
+        "assetType": "protocol"
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "etc/nginx/nginx.conf",
+            "line": 6,
+            "additionalContext": "declared cipher suite ECDHE-RSA-AES128-GCM-SHA256"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "tls"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "medium"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "config_parse"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "config:tls"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:b3a5c92a81ceff2f4d979b6a95aa40ea",
+      "name": "internal-ca.example.org",
+      "cryptoProperties": {
+        "assetType": "certificate",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "256",
+          "curve": "P-256"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "etc/ssl/certs/ca.pem",
+            "line": 1,
+            "additionalContext": "issuer internal-ca.example.org; not_before 2026-01-01; not_after 2030-12-31; signature ECDSA-SHA256; public_key ECDSA; CA; self-signed; fingerprint sha256:e067412bc3e298463b11c1f8c10c65f6"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "ecdsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "certificate_parse"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "256"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "pki:x509"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:2f186110f5922c3a8ae80612b63c97b4",
+      "name": "payments.example.org",
+      "cryptoProperties": {
+        "assetType": "certificate",
+        "algorithmProperties": {
+          "parameterSetIdentifier": "2048"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "etc/ssl/certs/server.crt",
+            "line": 1,
+            "additionalContext": "issuer payments.example.org; not_before 2026-01-01; not_after 2027-01-01; signature SHA256-RSA; public_key RSA; self-signed; fingerprint sha256:5af5547de0a474658e625fad094b37f2"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:algorithm",
+          "value": "rsa"
+        },
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "certificate_parse"
+        },
+        {
+          "name": "trinetra:key-size-bits",
+          "value": "2048"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "pki:x509"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:5842120f32cceb6e19fa41094c15c997",
+      "name": "Go x/crypto",
+      "cryptoProperties": {
+        "assetType": "library"
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "opt/app/go.mod",
+            "additionalContext": "package golang.org/x/crypto; version v0.17.0; pkg:golang/golang.org/x/crypto@v0.17.0; PQC support not recorded for this version"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "dependency_manifest"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "syft:go-module"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "trinetra:98047169554d011cf7e5d49f6d78f632",
+      "name": "pyca/cryptography",
+      "cryptoProperties": {
+        "assetType": "library"
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "opt/app/requirements.txt",
+            "additionalContext": "package cryptography; version 41.0.7; pkg:pypi/cryptography@41.0.7; PQC support not recorded for this version"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "trinetra:confidence",
+          "value": "high"
+        },
+        {
+          "name": "trinetra:detection-method",
+          "value": "dependency_manifest"
+        },
+        {
+          "name": "trinetra:rule-id",
+          "value": "syft:python"
+        }
+      ]
+    }
+  ]
+}

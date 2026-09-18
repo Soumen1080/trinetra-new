@@ -16,7 +16,15 @@ scanners/
     internal/engine/      the pluggable detection-engine boundary
     cmd/                  the service binary
     cmd/gencbom/          regenerates the golden CBOM the Python tests read
+  container/              the deployment-artefact scanner service
+    internal/engine/      syft, x509/pki, config and theia engines
+    cmd/                  the service binary
+    cmd/gencbom/          regenerates the golden container CBOM
 ```
+
+Two services, not one, because their blast radii differ: the container scanner
+needs registry egress to pull images and the source scanner needs none, so a
+compromised image pull cannot reach the source tree.
 
 ## Detection engines
 
@@ -24,10 +32,21 @@ Trinetra does not write its own detector. It runs maintained upstream engines
 behind thin adapters, and §7.1 governs each one: **every upstream tool is a
 source of evidence, never a source of verdicts.**
 
+**Source scanner:**
+
 | Engine | Covers | Status |
 |---|---|---|
 | `SemgrepEngine` | Python, Java, Go, JS/TS, C/C++ — plus the PII→crypto taint analysis | Working |
 | `CBOMkitEngine` | Java, Python, Go (symbol-resolved) | Set `TRINETRA_CBOMKIT_BINARY` |
+
+**Container scanner:**
+
+| Engine | Covers | Status |
+|---|---|---|
+| `SyftEngine` | crypto libraries, OS packages, language dependencies | Working |
+| `PKIEngine` | X.509 certificates, public and private key material | Working |
+| `ConfigEngine` | declared TLS versions, cipher suites, SSH algorithms | Working |
+| `TheiaEngine` | image-layer certs, gitleaks secrets, Java security config | Set `TRINETRA_THEIA_BINARY` |
 
 Engines are **composed, not chosen**: the scanner runs every available engine and
 merges their findings, because a CBOMkit hit and a Semgrep taint path about the
@@ -51,7 +70,7 @@ without one still gets a complete Semgrep inventory.
 
 ```sh
 # Tests (no external services required)
-go test ./cbom-go/... ./source/...
+go test ./cbom-go/... ./source/... ./container/...
 
 # Rule-pack lint — enforces the two load-bearing rule constraints
 python ../scripts/lint_rules.py ../rules
@@ -97,4 +116,14 @@ time.
 - **Artifacts are immutable.** A retried scan finds the existing document and
   resumes at ingest rather than overwriting it.
 - **Evidence never carries a host path**, and client-facing errors never carry
-  one either.
+  one either. Paths are forward-slashed everywhere, so a finding reads the same
+  whether it was produced in a Linux container or on a Windows laptop.
+- **Trinetra stores no secret material.** A private key yields a finding with a
+  fingerprint, its parameters and `Redacted=true` — the key bytes are never read
+  into a finding in the first place.
+- **Declared crypto is not observed crypto.** Everything the config and
+  container engines find is `is_observed=false`; only a live handshake
+  (Phase 11A) observes, and a load balancer routinely accepts what a config
+  forbids.
+- **A library finding never implies an algorithm**, and `pqc_since: null` in the
+  knowledge base means *not recorded*, never *unsupported*.
