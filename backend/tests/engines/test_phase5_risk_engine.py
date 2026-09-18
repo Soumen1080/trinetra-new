@@ -112,7 +112,7 @@ def test_profiles_are_validated_and_legacy_versions_load() -> None:
     legacy_quantum = load_profile("quantum-capability-2026.1")
     assert legacy_quantum.version == "quantum-capability-2026.2"
     assert load_profile("builtin-0.1.0").version == "current-security-2026.1"
-    assert load_profile("nist-pqc-fit-2026.1").version == "current-security-2026.1"
+    assert load_profile("nist-pqc-fit-2026.1").version == "nist-pqc-fit-2026.1"
 
 
 def test_missing_x_yields_no_score_not_a_default() -> None:
@@ -452,5 +452,9 @@ def test_cbom_cli_produces_end_to_end_verdicts(tmp_path: Path, capsys) -> None:
     assert result == 0
     assert any(
         item["final_score"] == 58 and item["priority"] == "p1"
+        for item in verdicts
+    )
+    assert any(
+        item["priority"] == "p1" and item["recommendation"] is not None
         for item in verdicts
     )

@@ -22,9 +22,14 @@ from pathlib import Path
 from typing import Any
 
 from app.engines.final_risk_engine import RiskSettings, classify_risk
-from app.engines.profiles import load_risk_profiles
+from app.engines.profiles import load_pqc_evidence_profile, load_risk_profiles
+from app.engines.recommendation_engine import (
+    recommend_replacement,
+    recommendation_id_for_assessment,
+)
 from app.models.enums import ResourceScenario
 from app.schemas.context import ArtefactContext
+from app.schemas.recommendation import RecommendationContext
 from app.services.cbom_ingest import ingest_document
 
 
@@ -97,6 +102,7 @@ def main(argv: list[str] | None = None) -> int:
         contexts = _contexts_by_artefact(_json_file(args.contexts))
         ingested = ingest_document(document, scan_target=args.scan_target)
         profiles = load_risk_profiles()
+        recommendation_profile = load_pqc_evidence_profile()
         settings = RiskSettings(
             planning_horizon_years=args.planning_horizon,
             scenario=ResourceScenario(args.scenario),
@@ -115,7 +121,26 @@ def main(argv: list[str] | None = None) -> int:
                 assessment_id=f"preview-{artefact.artefact_id}",
                 assessed_at=assessed_at,
             )
-            assessments.append(assessment.model_dump(mode="json"))
+            recommendation = recommend_replacement(
+                RecommendationContext(
+                    recommendation_id=recommendation_id_for_assessment(
+                        assessment.assessment_id
+                    ),
+                    artefact=artefact,
+                    assessment=assessment,
+                ),
+                recommendation_profile,
+            )
+            assessments.append(
+                {
+                    **assessment.model_dump(mode="json"),
+                    "recommendation": (
+                        recommendation.model_dump(mode="json")
+                        if recommendation is not None
+                        else None
+                    ),
+                }
+            )
     except ValueError as error:
         print(f"trinetra risk: {error}", file=sys.stderr)
         return 2

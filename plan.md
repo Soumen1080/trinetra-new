@@ -40,7 +40,7 @@ Every clause of the problem statement must be satisfied. This table is the **acc
 | R10 | Highlight **risks to sensitive data** (HNDL) | Phase 2.3 (taint rules **done**) + Phase 5.5 | [x] **done** |
 | R11 | **Classify** artefacts by type, lifetime, business criticality | Phase 5.5c + context chain | [x] **done** |
 | R12 | **Mosca's algorithm** (X + Y vs Z) applied & categorized | Phase 5.2 (Track A) | [x] **done** |
-| R13 | **Recommend PQC / hybrid alternatives** by risk, latency, cost | Phase 6 | [ ] |
+| R13 | **Recommend PQC / hybrid alternatives** by risk, latency, cost | Phase 6 | [x] |
 | R14 | Scan **source code repositories** | Phase 2 | [x] **done** |
 | R15 | Scan **binaries** | **Phase 11B** (Ghidra; §7.4 extension, not core) | [ ] |
 | R16 | Scan **libraries** | Phase 3.4 (Syft) | [x] **done** |
@@ -699,7 +699,7 @@ Additive, **not averaged** — the tracks are independent evidence about differe
 
 ### 5.6 `rescore_all` — the demoable moment
 - [x] **5.6a** New settings → **new immutable** `org_setting_versions` row, old one deactivated
-- [~] **5.6b** Rebuild each artefact's context **from stored provenance**, re-run `classify_risk` + `recommend_replacement` *(risk reclassification is done; recommendations begin in Phase 6)*
+- [x] **5.6b** Rebuild each artefact's context **from stored provenance**, re-run `classify_risk` + `recommend_replacement`
 - [x] **5.6c** **Append** a new assessment per artefact; history preserved
 - [x] **5.6d** Return `artefacts_rescored`
 - [x] **5.6e** Because the engines are pure and X, Y and Z were stored, this is a **genuine recalculation, not a relabel** — move the horizon slider, watch every verdict honestly change
@@ -734,40 +734,40 @@ No fixtures needed; every one is a plain function call.
 what the team still has to test.*
 
 ### 6.1 Scope
-- [ ] **6.1a** Runs **only on actionable findings (P0 / P1)** — recommending a fix for an unassessed artefact implies a verdict that was never reached
-- [ ] **6.1b** Pure function of `(context, profile)`, like every other engine (P2)
+- [x] **6.1a** Runs **only on actionable findings (P0 / P1)** — recommending a fix for an unassessed artefact implies a verdict that was never reached
+- [x] **6.1b** Pure function of `(context, profile)`, like every other engine (P2)
 
 ### 6.2 The evidence profile *(schema v2, `nist-pqc-evidence-2026.2`)*
-- [ ] **6.2a** Built from **liboqs**: public key, ciphertext and signature sizes per parameter set
-- [ ] **6.2b** Every entry cited to **FIPS 203 / 204 / 205**
-- [ ] **6.2c** Requires a named `selection_policy` with `required_security_category`
-- [ ] **6.2d** **`FitResult.total` is null by design.** `fit_score` is nullable in the database for this reason
-- [ ] **6.2e** Schema v1 (`2026.1`, five weighted dimensions summing to 1.0 within 1e-9) retained for **read compatibility only**; new assessments use v2
+- [x] **6.2a** Built from **liboqs**: public key, ciphertext and signature sizes per parameter set
+- [x] **6.2b** Every entry cited to **FIPS 203 / 204 / 205**
+- [x] **6.2c** Requires a named `selection_policy` with `required_security_category`
+- [x] **6.2d** **`FitResult.total` is null by design.** `fit_score` is nullable in the database for this reason
+- [x] **6.2e** Schema v1 (`2026.1`, five weighted dimensions summing to 1.0 within 1e-9) retained for **read compatibility only**; new assessments use v2
 
 ### 6.3 Mapping, gated by security category
-- [ ] **6.3a** RSA / ECC / ECDH / DH / X25519, key exchange → **ML-KEM** (FIPS 203): category 1 → 512, 3 → 768, 5 → 1024
-- [ ] **6.3b** RSA / ECC / ECDSA / DSA / Ed25519, signature → **ML-DSA** (FIPS 204): 1 → 44, 3 → 65, 5 → 87
-- [ ] **6.3c** Where statelessness is required → **SLH-DSA** (FIPS 205): SHA2-128s / 192s / 256s
-- [ ] **6.3d** AES-128 → **AES-256**, direct
-- [ ] **6.3e** Hybrid mode pairs the PQC algorithm with a classical partner (`DEFAULT_CLASSICAL_PARTNER = X25519`) when the context calls for it
-- [ ] **6.3f** **An unknown algorithm escalates to `MANUAL_REVIEW`** rather than silently scoring 100
+- [x] **6.3a** RSA / ECC / ECDH / DH / X25519, key exchange → **ML-KEM** (FIPS 203): category 1 → 512, 3 → 768, 5 → 1024
+- [x] **6.3b** RSA / ECC / ECDSA / DSA / Ed25519, signature → **ML-DSA** (FIPS 204): 1 → 44, 3 → 65, 5 → 87
+- [x] **6.3c** Where statelessness is required → **SLH-DSA** (FIPS 205): SHA2-128s / 192s / 256s
+- [x] **6.3d** AES-128 → **AES-256**, direct
+- [x] **6.3e** Hybrid mode pairs the PQC algorithm with a classical partner (`DEFAULT_CLASSICAL_PARTNER = X25519`) when the context calls for it
+- [x] **6.3f** **An unknown algorithm escalates to `MANUAL_REVIEW`** rather than silently scoring 100
 
 ### 6.4 Measured, not modelled
-- [ ] **6.4a** Publish FIPS object sizes as **fact**, with citation
-- [ ] **6.4b** Label latency, protocol compatibility and MTU impact as **unmeasured** — do not model them
-- [ ] **6.4c** *Optional and correct:* **benchmark liboqs on the deployment's own hardware**, converting an unmeasured dimension into a measured one. That is the right way to get a latency number — measure it, do not model it
-- [ ] **6.4d** The UI shows current vs recommended **side by side with published sizes and cited sources**, and labels unmeasured dimensions as unmeasured (§15 S6)
+- [x] **6.4a** Publish FIPS object sizes as **fact**, with citation
+- [x] **6.4b** Label latency, protocol compatibility and MTU impact as **unmeasured** — do not model them
+- [~] **6.4c** *Optional and correct:* **benchmark liboqs on the deployment's own hardware**, converting an unmeasured dimension into a measured one. That is the right way to get a latency number — measure it, do not model it *(measurement schema is ready; a benchmark requires a target deployment and is intentionally not fabricated)*
+- [~] **6.4d** The UI shows current vs recommended **side by side with published sizes and cited sources**, and labels unmeasured dimensions as unmeasured (§15 S6) *(the Phase-6 CLI/API-ready JSON exposes this shape; the visual workspace is Phase 10)*
 
 ### 6.5 Migration planning
-- [ ] **6.5a** Migration waves sequenced by Mosca deadline and dependency order
-- [ ] **6.5b** HSM firmware that is not PQC-capable is a **hardware purchase, not a code change**, and dominates the cost picture — surface it as such
-- [ ] **6.5c** Crypto-agility observation: a hardcoded algorithm constant is harder to change again later than a config-driven provider
+- [x] **6.5a** Migration waves sequenced by Mosca deadline and dependency order
+- [x] **6.5b** HSM firmware that is not PQC-capable is a **hardware purchase, not a code change**, and dominates the cost picture — surface it as such
+- [x] **6.5c** Crypto-agility observation: a hardcoded algorithm constant is harder to change again later than a config-driven provider
 
 ### 6.6 Tests
-- [ ] **6.6a** Every classical algorithm in the profile yields a valid, cited recommendation
-- [ ] **6.6b** **An unknown algorithm escalates to manual review** — never a silent fit score of 100
-- [ ] **6.6c** No composite confidence score is ever emitted
-- [ ] **6.6d** Recommendations are produced for P0/P1 only
+- [x] **6.6a** Every classical algorithm in the profile yields a valid, cited recommendation
+- [x] **6.6b** **An unknown algorithm escalates to manual review** — never a silent fit score of 100
+- [x] **6.6c** No composite confidence score is ever emitted
+- [x] **6.6d** Recommendations are produced for P0/P1 only
 
 **Exit criteria:** every actionable artefact carries a cited, category-gated recommendation, with unmeasured dimensions visibly labelled rather than scored.
 

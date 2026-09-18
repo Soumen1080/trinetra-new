@@ -6,7 +6,8 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.models import tables
-from app.schemas.mapping import assessment_to_row
+from app.schemas.mapping import assessment_to_row, recommendation_to_row
+from app.schemas.recommendation import PqcRecommendation
 from app.schemas.risk import RiskAssessment
 
 
@@ -43,4 +44,18 @@ def append_assessment(
     return row
 
 
-__all__ = ["activate_setting_version", "append_assessment", "artefacts_for_rescore"]
+def append_recommendation(
+    session: Session, recommendation: PqcRecommendation
+) -> tables.Recommendation:
+    """Insert the single evidence-backed recommendation for one assessment."""
+    row = recommendation_to_row(recommendation)
+    session.add(row)
+    return row
+
+
+__all__ = [
+    "activate_setting_version",
+    "append_assessment",
+    "append_recommendation",
+    "artefacts_for_rescore",
+]

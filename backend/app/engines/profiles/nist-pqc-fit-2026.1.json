@@ -1,0 +1,20 @@
+{
+  "profile_type": "nist_pqc_fit",
+  "schema_version": 1,
+  "version": "nist-pqc-fit-2026.1",
+  "sources": [
+    {
+      "source_id": "legacy-fit-method",
+      "title": "Trinetra legacy PQC fit profile 2026.1",
+      "url": "https://github.com/open-quantum-safe/liboqs",
+      "citation": "Historic weighted fit profile retained only so previously stored settings remain readable."
+    }
+  ],
+  "fit_weights": {
+    "security": 0.4,
+    "performance": 0.2,
+    "compatibility": 0.15,
+    "implementation_maturity": 0.15,
+    "cost": 0.1
+  }
+}

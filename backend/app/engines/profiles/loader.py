@@ -158,11 +158,142 @@ class CurrentSecurityProfile(TrinetraModel):
     quantum_resistant_algorithms: list[str] = Field(min_length=1)
 
 
+class PqcSelectionPolicy(TrinetraModel):
+    """The named policy used to select a FIPS parameter set."""
+
+    name: str = Field(min_length=1)
+    required_security_category: Literal[1, 3, 5]
+
+
+class PqcParameterSet(TrinetraModel):
+    algorithm: Literal["ml-kem", "ml-dsa", "slh-dsa", "aes"]
+    parameter_set: str = Field(min_length=1)
+    security_category: Literal[1, 3, 5] | None = None
+    public_key_bytes: int | None = Field(default=None, gt=0)
+    private_key_bytes: int | None = Field(default=None, gt=0)
+    ciphertext_bytes: int | None = Field(default=None, gt=0)
+    signature_bytes: int | None = Field(default=None, gt=0)
+    symmetric_key_bytes: int | None = Field(default=None, gt=0)
+    source_id: str = Field(min_length=1)
+    implementation_source_id: str = "liboqs"
+
+    @model_validator(mode="after")
+    def _carries_an_object_size(self) -> PqcParameterSet:
+        if all(
+            value is None
+            for value in (
+                self.public_key_bytes,
+                self.private_key_bytes,
+                self.ciphertext_bytes,
+                self.signature_bytes,
+                self.symmetric_key_bytes,
+            )
+        ):
+            raise ValueError(
+                "a parameter set must carry at least one published object size"
+            )
+        return self
+
+
+class PqcRecommendationRule(TrinetraModel):
+    rule_id: str = Field(min_length=1)
+    current_algorithms: list[str] = Field(min_length=1)
+    purposes: list[str] = Field(min_length=1)
+    recommended_algorithm: Literal["ml-kem", "ml-dsa", "slh-dsa", "aes"]
+    requires_key_size_bits: int | None = Field(default=None, gt=0)
+    requires_stateless: bool | None = None
+
+
+class PqcEvidenceProfile(TrinetraModel):
+    """Schema v2: FIPS-cited facts, never a universal deployment fit score."""
+
+    profile_type: Literal["nist_pqc_evidence"]
+    schema_version: Literal[2]
+    version: str = Field(pattern=r"^nist-pqc-evidence-\d{4}\.\d+$")
+    sources: list[ProfileSource] = Field(min_length=1)
+    selection_policy: PqcSelectionPolicy
+    parameter_sets: list[PqcParameterSet] = Field(min_length=1)
+    recommendation_rules: list[PqcRecommendationRule] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _facts_and_rules_are_citable(self) -> PqcEvidenceProfile:
+        source_ids = {source.source_id for source in self.sources}
+        unknown_sources = sorted(
+            source_id
+            for entry in self.parameter_sets
+            for source_id in (entry.source_id, entry.implementation_source_id)
+            if source_id not in source_ids
+        )
+        if unknown_sources:
+            raise ValueError(
+                f"parameter sets reference unknown sources: {unknown_sources}"
+            )
+        standard_source_for_algorithm = {
+            "ml-kem": "fips-203",
+            "ml-dsa": "fips-204",
+            "slh-dsa": "fips-205",
+            "aes": "fips-197",
+        }
+        invalid_citations = [
+            entry.parameter_set
+            for entry in self.parameter_sets
+            if entry.source_id != standard_source_for_algorithm[entry.algorithm]
+        ]
+        if invalid_citations:
+            raise ValueError(
+                "PQC parameter sets must cite their applicable FIPS standard: "
+                f"{invalid_citations}"
+            )
+        if "liboqs" not in source_ids or any(
+            entry.implementation_source_id != "liboqs"
+            for entry in self.parameter_sets
+        ):
+            raise ValueError(
+                "PQC parameter sets must record liboqs as their implementation "
+                "cross-check"
+            )
+        parameter_keys = [
+            (entry.algorithm, entry.parameter_set, entry.security_category)
+            for entry in self.parameter_sets
+        ]
+        if len(parameter_keys) != len(set(parameter_keys)):
+            raise ValueError("PQC parameter sets must not duplicate a selection")
+        required_category = self.selection_policy.required_security_category
+        for algorithm in ("ml-kem", "ml-dsa"):
+            if not any(
+                entry.algorithm == algorithm
+                and entry.security_category == required_category
+                for entry in self.parameter_sets
+            ):
+                raise ValueError(
+                    f"selection policy category has no {algorithm} parameter set"
+                )
+        return self
+
+
+class PqcFitV1Profile(TrinetraModel):
+    """Schema v1, retained solely to open historic settings rows."""
+
+    profile_type: Literal["nist_pqc_fit"]
+    schema_version: Literal[1]
+    version: Literal["nist-pqc-fit-2026.1"]
+    sources: list[ProfileSource] = Field(min_length=1)
+    fit_weights: dict[str, float] = Field(min_length=5)
+
+    @model_validator(mode="after")
+    def _legacy_weights_total_one(self) -> PqcFitV1Profile:
+        if abs(sum(self.fit_weights.values()) - 1.0) > 1e-9:
+            raise ValueError("schema-v1 fit weights must total 1.0 within 1e-9")
+        return self
+
+
 type Profile = (
     RetentionProfile
     | QuantumCapabilityProfile
     | RiskWeightsProfile
     | CurrentSecurityProfile
+    | PqcEvidenceProfile
+    | PqcFitV1Profile
 )
 
 
@@ -181,6 +312,8 @@ _PROFILE_FILES = {
     "quantum-capability-2026.2": "quantum-capability-2026.2.json",
     "risk-weights-2026.1": "risk-weights-2026.1.json",
     "current-security-2026.1": "current-security-2026.1.json",
+    "nist-pqc-fit-2026.1": "nist-pqc-fit-2026.1.json",
+    "nist-pqc-evidence-2026.2": "nist-pqc-evidence-2026.2.json",
 }
 
 # These names have been persisted in early settings rows.  They deliberately
@@ -189,7 +322,6 @@ _PROFILE_FILES = {
 _PROFILE_ALIASES = {
     "builtin-0.1.0": "current-security-2026.1",
     "quantum-capability-2026.1": "quantum-capability-2026.2",
-    "nist-pqc-fit-2026.1": "current-security-2026.1",
 }
 
 
@@ -219,6 +351,8 @@ def load_profile(version: str) -> Profile:
         "quantum_capability": QuantumCapabilityProfile,
         "risk_weights": RiskWeightsProfile,
         "current_security": CurrentSecurityProfile,
+        "nist_pqc_fit": PqcFitV1Profile,
+        "nist_pqc_evidence": PqcEvidenceProfile,
     }
     profile_type = payload.get("profile_type") if isinstance(payload, dict) else None
     model = model_by_type.get(profile_type)
@@ -266,14 +400,39 @@ def load_risk_profiles(
     )
 
 
+def load_pqc_evidence_profile(
+    version: str = "nist-pqc-evidence-2026.2",
+) -> PqcEvidenceProfile:
+    """Load schema v2 for new recommendations.
+
+    Schema v1 remains readable through :func:`load_profile`, but cannot be used
+    to produce new fit results because that schema modelled a composite score.
+    """
+    profile = load_profile(version)
+    if isinstance(profile, PqcEvidenceProfile):
+        return profile
+    if isinstance(profile, PqcFitV1Profile):
+        raise ProfileError(
+            "nist-pqc-fit-2026.1 is read-compatible only; new recommendations "
+            "require nist-pqc-evidence-2026.2"
+        )
+    raise ProfileError(f"profile {version!r} is not a PQC evidence profile")
+
+
 __all__ = [
     "CurrentSecurityProfile",
+    "PqcEvidenceProfile",
+    "PqcFitV1Profile",
+    "PqcParameterSet",
+    "PqcRecommendationRule",
+    "PqcSelectionPolicy",
     "ProfileError",
     "QuantumCapabilityProfile",
     "RetentionProfile",
     "RiskProfiles",
     "RiskWeightsProfile",
     "canonical_profile_version",
+    "load_pqc_evidence_profile",
     "load_profile",
     "load_risk_profiles",
 ]

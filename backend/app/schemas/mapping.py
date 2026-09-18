@@ -43,6 +43,11 @@ from app.schemas.artefact import (
 )
 from app.schemas.common import Evidence, Provenance, SourceLocation
 from app.schemas.context import ArtefactContext, RetentionEvidence
+from app.schemas.recommendation import (
+    DeploymentDimension,
+    PqcRecommendation,
+    PublishedPqcFacts,
+)
 from app.schemas.risk import MoscaTrack, ResourceTrack, RiskAssessment, ScoreContribution
 
 _DETAIL_MODELS: dict[AssetType, type] = {
@@ -337,6 +342,68 @@ def assessment_from_row(row: tables.RiskAssessment) -> RiskAssessment:
     )
 
 
+# ---------------------------------------------------------------------------
+# Recommendation
+# ---------------------------------------------------------------------------
+
+
+def recommendation_to_row(recommendation: PqcRecommendation) -> tables.Recommendation:
+    """Store the complete evidence shape while retaining queryable core fields."""
+    dimensions = {
+        dimension.name: _dump(dimension)
+        for dimension in recommendation.deployment_dimensions
+    }
+    return tables.Recommendation(
+        id=recommendation.recommendation_id,
+        assessment_id=recommendation.assessment_id,
+        recommended_algorithm=recommendation.recommended_algorithm,
+        recommended_parameter_set=recommendation.recommended_parameter_set,
+        security_category=recommendation.security_category,
+        classical_partner=recommendation.classical_partner,
+        is_hybrid=recommendation.is_hybrid,
+        requires_manual_review=recommendation.requires_manual_review,
+        rationale=recommendation.rationale,
+        fit_score=None,
+        fit_breakdown_json={
+            "fit_score": None,
+            "published_facts": _dump(recommendation.published_facts),
+            "deployment_dimensions": dimensions,
+        },
+        latency_impact_json=dimensions.get("latency"),
+        cost_estimate_json=dimensions.get("cost"),
+        profile_version=recommendation.profile_version,
+    )
+
+
+def recommendation_from_row(row: tables.Recommendation) -> PqcRecommendation:
+    """Rebuild a Phase-6 recommendation without synthesising a fit score."""
+    breakdown = row.fit_breakdown_json or {}
+    facts_payload = breakdown.get("published_facts")
+    dimension_payloads = breakdown.get("deployment_dimensions") or {}
+    return PqcRecommendation(
+        recommendation_id=row.id,
+        assessment_id=row.assessment_id,
+        recommended_algorithm=row.recommended_algorithm,
+        recommended_parameter_set=row.recommended_parameter_set,
+        security_category=row.security_category,
+        classical_partner=row.classical_partner,
+        is_hybrid=row.is_hybrid,
+        requires_manual_review=row.requires_manual_review,
+        rationale=row.rationale or "Recommendation rationale was not persisted.",
+        published_facts=(
+            PublishedPqcFacts.model_validate(facts_payload)
+            if facts_payload is not None
+            else None
+        ),
+        deployment_dimensions=[
+            DeploymentDimension.model_validate(payload)
+            for payload in dimension_payloads.values()
+        ],
+        fit_score=row.fit_score,
+        profile_version=row.profile_version or "legacy-unknown",
+    )
+
+
 __all__ = [
     "artefact_from_row",
     "artefact_to_row",
@@ -344,4 +411,6 @@ __all__ = [
     "assessment_to_row",
     "context_from_row",
     "context_to_row",
+    "recommendation_from_row",
+    "recommendation_to_row",
 ]

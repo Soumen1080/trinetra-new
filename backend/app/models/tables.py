@@ -408,12 +408,17 @@ class Recommendation(Base, TimestampMixin):
 
     recommended_algorithm: Mapped[str | None] = mapped_column(String(255))
     recommended_parameter_set: Mapped[str | None] = mapped_column(String(128))
+    security_category: Mapped[int | None] = mapped_column(Integer)
+    classical_partner: Mapped[str | None] = mapped_column(String(128))
     is_hybrid: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     requires_manual_review: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False
     )
 
     rationale: Mapped[str | None] = mapped_column(Text)
+    # Always NULL for schema-v2 recommendations: deployment fit is measured,
+    # not derived from published FIPS object sizes.
+    fit_score: Mapped[float | None] = mapped_column(Float)
     fit_breakdown_json: Mapped[dict | None] = mapped_column(JSONColumn)
     latency_impact_json: Mapped[dict | None] = mapped_column(JSONColumn)
     cost_estimate_json: Mapped[dict | None] = mapped_column(JSONColumn)

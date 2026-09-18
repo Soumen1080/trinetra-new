@@ -1,0 +1,60 @@
+{
+  "profile_type": "nist_pqc_evidence",
+  "schema_version": 2,
+  "version": "nist-pqc-evidence-2026.2",
+  "sources": [
+    {
+      "source_id": "fips-203",
+      "title": "FIPS 203, Module-Lattice-Based Key-Encapsulation Mechanism Standard",
+      "url": "https://doi.org/10.6028/NIST.FIPS.203",
+      "citation": "Table 3, sizes in bytes for ML-KEM encapsulation keys, decapsulation keys and ciphertexts."
+    },
+    {
+      "source_id": "fips-204",
+      "title": "FIPS 204, Module-Lattice-Based Digital Signature Standard",
+      "url": "https://doi.org/10.6028/NIST.FIPS.204",
+      "citation": "Table 2, sizes in bytes for ML-DSA keys and signatures."
+    },
+    {
+      "source_id": "fips-205",
+      "title": "FIPS 205, Stateless Hash-Based Digital Signature Standard",
+      "url": "https://doi.org/10.6028/NIST.FIPS.205",
+      "citation": "Table 2, public-key and signature sizes for SLH-DSA SHA2 parameter sets."
+    },
+    {
+      "source_id": "fips-197",
+      "title": "FIPS 197, Advanced Encryption Standard (AES)",
+      "url": "https://doi.org/10.6028/NIST.FIPS.197-upd1",
+      "citation": "AES accepts 128-, 192- and 256-bit keys; this direct recommendation upgrades AES-128 to AES-256."
+    },
+    {
+      "source_id": "liboqs",
+      "title": "Open Quantum Safe liboqs",
+      "url": "https://github.com/open-quantum-safe/liboqs",
+      "citation": "Implementation catalogue cross-check; FIPS publications remain the authoritative source of published object sizes."
+    }
+  ],
+  "selection_policy": {
+    "name": "trinetra-default-category-3",
+    "required_security_category": 3
+  },
+  "parameter_sets": [
+    {"algorithm": "ml-kem", "parameter_set": "ML-KEM-512", "security_category": 1, "public_key_bytes": 800, "private_key_bytes": 1632, "ciphertext_bytes": 768, "source_id": "fips-203"},
+    {"algorithm": "ml-kem", "parameter_set": "ML-KEM-768", "security_category": 3, "public_key_bytes": 1184, "private_key_bytes": 2400, "ciphertext_bytes": 1088, "source_id": "fips-203"},
+    {"algorithm": "ml-kem", "parameter_set": "ML-KEM-1024", "security_category": 5, "public_key_bytes": 1568, "private_key_bytes": 3168, "ciphertext_bytes": 1568, "source_id": "fips-203"},
+    {"algorithm": "ml-dsa", "parameter_set": "ML-DSA-44", "security_category": 1, "public_key_bytes": 1312, "private_key_bytes": 2560, "signature_bytes": 2420, "source_id": "fips-204"},
+    {"algorithm": "ml-dsa", "parameter_set": "ML-DSA-65", "security_category": 3, "public_key_bytes": 1952, "private_key_bytes": 4032, "signature_bytes": 3309, "source_id": "fips-204"},
+    {"algorithm": "ml-dsa", "parameter_set": "ML-DSA-87", "security_category": 5, "public_key_bytes": 2592, "private_key_bytes": 4896, "signature_bytes": 4627, "source_id": "fips-204"},
+    {"algorithm": "slh-dsa", "parameter_set": "SLH-DSA-SHA2-128s", "security_category": 1, "public_key_bytes": 32, "signature_bytes": 7856, "source_id": "fips-205"},
+    {"algorithm": "slh-dsa", "parameter_set": "SLH-DSA-SHA2-192s", "security_category": 3, "public_key_bytes": 48, "signature_bytes": 16224, "source_id": "fips-205"},
+    {"algorithm": "slh-dsa", "parameter_set": "SLH-DSA-SHA2-256s", "security_category": 5, "public_key_bytes": 64, "signature_bytes": 29792, "source_id": "fips-205"},
+    {"algorithm": "aes", "parameter_set": "AES-256", "symmetric_key_bytes": 32, "source_id": "fips-197"}
+  ],
+  "recommendation_rules": [
+    {"rule_id": "classical-kex-to-ml-kem", "current_algorithms": ["rsa", "ecc", "ecdh", "dh", "x25519"], "purposes": ["key_agreement", "key_encapsulation"], "recommended_algorithm": "ml-kem"},
+    {"rule_id": "rsa-encryption-to-ml-kem", "current_algorithms": ["rsa"], "purposes": ["encryption", "decryption"], "recommended_algorithm": "ml-kem"},
+    {"rule_id": "classical-signature-to-ml-dsa", "current_algorithms": ["rsa", "ecc", "ecdsa", "dsa", "ed25519"], "purposes": ["digital_signature", "verify"], "recommended_algorithm": "ml-dsa", "requires_stateless": false},
+    {"rule_id": "stateless-signature-to-slh-dsa", "current_algorithms": ["rsa", "ecc", "ecdsa", "dsa", "ed25519"], "purposes": ["digital_signature", "verify"], "recommended_algorithm": "slh-dsa", "requires_stateless": true},
+    {"rule_id": "aes-128-to-aes-256", "current_algorithms": ["aes"], "purposes": ["encryption", "decryption"], "recommended_algorithm": "aes", "requires_key_size_bits": 128}
+  ]
+}
