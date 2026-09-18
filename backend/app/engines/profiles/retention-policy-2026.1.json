@@ -1,0 +1,108 @@
+{
+  "profile_type": "retention_policy",
+  "version": "retention-policy-2026.1",
+  "warning": "Indian statutes mandate retention minimums, not confidentiality lifetimes. Retention entries are planning inputs, not proof that confidentiality is legally required for the same duration.",
+  "sources": [
+    {
+      "source_id": "companies-act-2013",
+      "title": "Companies Act, 2013, section 128(5)",
+      "url": "https://www.indiacode.nic.in/handle/123456789/2114",
+      "citation": "Books of account are retained for eight financial years."
+    },
+    {
+      "source_id": "income-tax-act",
+      "title": "Income-tax Act, 1961, section 149",
+      "url": "https://www.indiacode.nic.in/handle/123456789/1565",
+      "citation": "Assessment and record-retention horizon used as a six-year minimum."
+    },
+    {
+      "source_id": "rbi-kyc",
+      "title": "RBI Master Direction - Know Your Customer",
+      "url": "https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=11566",
+      "citation": "Regulated entities retain identification records for at least five years."
+    },
+    {
+      "source_id": "uidai-act",
+      "title": "Aadhaar (Targeted Delivery of Financial and Other Subsidies, Benefits and Services) Act, 2016",
+      "url": "https://www.indiacode.nic.in/handle/123456789/2155",
+      "citation": "Aadhaar information is sensitive identity data; this profile does not infer a statutory confidentiality lifetime."
+    },
+    {
+      "source_id": "trinetra-planning-assumptions-2026.1",
+      "title": "Trinetra retention planning assumptions 2026.1",
+      "url": "https://github.com/trinetra/trinetra-new/blob/main/backend/app/engines/profiles/retention-policy-2026.1.json",
+      "citation": "Reviewed planning assumptions, not Indian statutory confidentiality requirements."
+    }
+  ],
+  "categories": {
+    "aadhaar_pii": {
+      "lifetime_years": 8,
+      "basis": "assumption",
+      "source_id": "uidai-act",
+      "sensitivity": "restricted",
+      "caveat": "Planning assumption; the cited Act does not supply an eight-year confidentiality lifetime."
+    },
+    "health_record": {
+      "lifetime_years": 10,
+      "basis": "assumption",
+      "source_id": "trinetra-planning-assumptions-2026.1",
+      "sensitivity": "restricted",
+      "caveat": "Planning assumption pending an organisation-specific retention and confidentiality policy."
+    },
+    "financial_record": {
+      "lifetime_years": 8,
+      "basis": "legal",
+      "source_id": "companies-act-2013",
+      "sensitivity": "confidential"
+    },
+    "tax_record": {
+      "lifetime_years": 6,
+      "basis": "regulatory_minimum",
+      "source_id": "income-tax-act",
+      "sensitivity": "confidential",
+      "caveat": "Tax retention is a statutory minimum, not a measured confidentiality lifetime."
+    },
+    "payment_card_data": {
+      "lifetime_years": 3,
+      "basis": "assumption",
+      "source_id": "trinetra-planning-assumptions-2026.1",
+      "sensitivity": "restricted",
+      "caveat": "Planning assumption; use the merchant's card-data policy where available."
+    },
+    "biometric": {
+      "lifetime_years": 30,
+      "basis": "assumption",
+      "source_id": "trinetra-planning-assumptions-2026.1",
+      "sensitivity": "restricted",
+      "caveat": "Trinetra planning assumption; no Indian statute is asserted as its basis."
+    },
+    "credential_secret": {
+      "lifetime_years": 5,
+      "basis": "assumption",
+      "source_id": "trinetra-planning-assumptions-2026.1",
+      "sensitivity": "restricted",
+      "caveat": "Trinetra planning assumption; no Indian statute is asserted as its basis."
+    },
+    "session_token": {
+      "lifetime_years": 1,
+      "basis": "assumption",
+      "source_id": "trinetra-planning-assumptions-2026.1",
+      "sensitivity": "confidential",
+      "caveat": "Planning fallback only; an application-specific session lifetime should replace it."
+    },
+    "employee_record": {
+      "lifetime_years": 7,
+      "basis": "assumption",
+      "source_id": "trinetra-planning-assumptions-2026.1",
+      "sensitivity": "confidential",
+      "caveat": "Planning assumption pending HR and contractual retention requirements."
+    },
+    "source_code_secret": {
+      "lifetime_years": 10,
+      "basis": "assumption",
+      "source_id": "trinetra-planning-assumptions-2026.1",
+      "sensitivity": "restricted",
+      "caveat": "Planning assumption; rotate exposed secrets immediately regardless of this horizon."
+    }
+  }
+}

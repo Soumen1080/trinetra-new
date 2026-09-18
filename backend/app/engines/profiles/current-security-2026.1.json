@@ -1,0 +1,20 @@
+{
+  "profile_type": "current_security",
+  "version": "current-security-2026.1",
+  "sources": [
+    {
+      "source_id": "nist-sp-800-131a-r2",
+      "title": "NIST SP 800-131A Rev. 2, Transitioning the Use of Cryptographic Algorithms and Key Lengths",
+      "url": "https://doi.org/10.6028/NIST.SP.800-131Ar2",
+      "citation": "Legacy algorithms that are disallowed or unsuitable are policy decisions, not quantum-risk scores."
+    },
+    {
+      "source_id": "nist-pqc-standards",
+      "title": "NIST PQC standards FIPS 203, 204 and 205",
+      "url": "https://csrc.nist.gov/projects/post-quantum-cryptography/selected-algorithms-2022",
+      "citation": "The listed ML-KEM, ML-DSA and SLH-DSA algorithms are treated as quantum-resistant by this policy profile."
+    }
+  ],
+  "classically_broken_algorithms": ["md5", "sha1", "sha-1", "des", "3des", "triple-des"],
+  "quantum_resistant_algorithms": ["ml-kem", "ml-dsa", "slh-dsa", "kyber", "dilithium", "sphincs+"]
+}

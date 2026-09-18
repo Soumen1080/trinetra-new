@@ -36,10 +36,10 @@ Every clause of the problem statement must be satisfied. This table is the **acc
 | R6 | Identify & catalogue **hardware modules** (HSM/TPM/PKCS#11) | Phase 4.2–4.3 (PKCS#11 export) | [x] **done** |
 | R7 | Identify & catalogue **cloud services** (KMS/ACM/Key Vault) | Phase 4.4 (AWS, verified live) + 11C.4 (Azure, GCP) | [x] **done** |
 | R8 | Coverage of **internal AND external facing** apps/infra | Phases 2–4 (internal **done**) + **11A (external)** | [~] internal done |
-| R9 | **Quantum risk assessment** — systems prone to quantum attack | Phase 5.3 (Track B, resource model) | [ ] |
-| R10 | Highlight **risks to sensitive data** (HNDL) | Phase 2.3 (taint rules **done**) + Phase 5.5 | [~] evidence done |
-| R11 | **Classify** artefacts by type, lifetime, business criticality | Phase 5.5c + context chain | [ ] |
-| R12 | **Mosca's algorithm** (X + Y vs Z) applied & categorized | Phase 5.2 (Track A) | [ ] |
+| R9 | **Quantum risk assessment** — systems prone to quantum attack | Phase 5.3 (Track B, resource model) | [x] **done** |
+| R10 | Highlight **risks to sensitive data** (HNDL) | Phase 2.3 (taint rules **done**) + Phase 5.5 | [x] **done** |
+| R11 | **Classify** artefacts by type, lifetime, business criticality | Phase 5.5c + context chain | [x] **done** |
+| R12 | **Mosca's algorithm** (X + Y vs Z) applied & categorized | Phase 5.2 (Track A) | [x] **done** |
 | R13 | **Recommend PQC / hybrid alternatives** by risk, latency, cost | Phase 6 | [ ] |
 | R14 | Scan **source code repositories** | Phase 2 | [x] **done** |
 | R15 | Scan **binaries** | **Phase 11B** (Ghidra; §7.4 extension, not core) | [ ] |
@@ -630,13 +630,13 @@ The golden CBOM combines that with the HSM fixture: **9 components** — 3
 *Goal: pure functions of `(context, profile)` that produce auditable verdicts.*
 
 ### 5.0 The profile system *(build first — every engine reads a profile)*
-- [ ] **5.0a** `backend/app/engines/profiles/` with a `@cache`d **validating** loader — a malformed profile fails **at load, not at scoring time**
-- [ ] **5.0b** `retention-policy-2026.1.json` — 10 categories, each declaring basis (`legal` / `regulatory_minimum` / `assumption`) and citing a source. Validation requires categories + sources
-- [ ] **5.0c** The profile carries its own printed warning: **"Indian statutes mandate retention *minimums*, not confidentiality lifetimes."** `biometric` (30y) and `credential_secret` (5y) are explicitly labelled Trinetra planning assumptions with no statute behind them
-- [ ] **5.0d** `quantum-capability-2026.2.json` — P(t) curve, attack models, scenarios. Validation requires curve + scenarios
-- [ ] **5.0e** `risk-weights-2026.1.json` — **weights must total the band max** (validated, not assumed)
-- [ ] **5.0f** `current-security-2026.1.json` — already-broken algorithms per NIST SP 800-131A
-- [ ] **5.0g** Read compatibility for older version strings (`builtin-0.1.0`, `quantum-capability-2026.1`, `nist-pqc-fit-2026.1`) so settings rows written before the newer profiles still load
+- [x] **5.0a** `backend/app/engines/profiles/` with a `@cache`d **validating** loader — a malformed profile fails **at load, not at scoring time**
+- [x] **5.0b** `retention-policy-2026.1.json` — 10 categories, each declaring basis (`legal` / `regulatory_minimum` / `assumption`) and citing a source. Validation requires categories + sources
+- [x] **5.0c** The profile carries its own printed warning: **"Indian statutes mandate retention *minimums*, not confidentiality lifetimes."** `biometric` (30y) and `credential_secret` (5y) are explicitly labelled Trinetra planning assumptions with no statute behind them
+- [x] **5.0d** `quantum-capability-2026.2.json` — P(t) curve, attack models, scenarios. Validation requires curve + scenarios
+- [x] **5.0e** `risk-weights-2026.1.json` — **weights must total the band max** (validated, not assumed)
+- [x] **5.0f** `current-security-2026.1.json` — already-broken algorithms per NIST SP 800-131A
+- [x] **5.0g** Read compatibility for older version strings (`builtin-0.1.0`, `quantum-capability-2026.1`, `nist-pqc-fit-2026.1`) so settings rows written before the newer profiles still load
 
 ### 5.1 Q generation — transcribe published estimates, do not compute them
 > **Cost decision.** The architecture says run Microsoft QDK offline. That is
@@ -646,14 +646,14 @@ The golden CBOM combines that with the HSM fixture: **9 components** — 3
 > transcription is **more** auditable, because a reviewer can check your JSON
 > against the paper, which they cannot do with a number your code computed.
 
-- [ ] **5.1a** **No quantum toolchain in the scan path, and none in the build either.** Hand-build `quantum-capability-2026.2.json` from cited literature
-- [ ] **5.1b** Per algorithm + key size: logical qubit count, logical gate count (Toffoli or T), **the construction cited by name and DOI**
-- [ ] **5.1c** Sources:
+- [x] **5.1a** **No quantum toolchain in the scan path, and none in the build either.** Hand-build `quantum-capability-2026.2.json` from cited literature
+- [x] **5.1b** Per algorithm + key size: logical qubit count, logical gate count (Toffoli or T), **the construction cited by name and DOI**
+- [x] **5.1c** Sources:
   - **RSA** — Gidney 2025, *"How to factor 2048-bit RSA integers with less than a million noisy qubits"* ([arXiv:2505.15917](https://arxiv.org/abs/2505.15917)); code and data on Zenodo, DOI `10.5281/zenodo.15347487`
   - **RSA (historical)** — Gidney–Ekerå 2019/2021 (20M qubits, 8 hours), kept as a second scenario so the **change between them is visible**
   - **ECC** — Roetteler 2017 closed-form formulas; a few lines of Python, no quantum library
-- [ ] **5.1d** **Every entry carries an assumptions block** — error-correction scheme, logical-qubit definition, physical error rate, caveats. *A profile entry without an assumptions block fails validation on load*
-- [ ] **5.1e** The profile is a **versioned, reviewable, citable artefact**, committed to the repo
+- [x] **5.1d** **Every entry carries an assumptions block** — error-correction scheme, logical-qubit definition, physical error rate, caveats. *A profile entry without an assumptions block fails validation on load*
+- [x] **5.1e** The profile is a **versioned, reviewable, citable artefact**, committed to the repo
 - [ ] **5.1f** *Optional, later:* add the **open-source [Azure Quantum Resource Estimator](https://learn.microsoft.com/en-us/azure/quantum/intro-to-resource-estimation)** (`pip install qsharp`, runs locally, has `FactoringFromLogicalCounts`) only for key sizes no paper covers. Qualtran is more rigorous still but is a circuit-construction research tool — overkill for ~20 rows
 
 > **Note — your architecture doc's RSA figure is already superseded.** It cites
@@ -664,59 +664,59 @@ The golden CBOM combines that with the HSM fixture: **9 components** — 3
 > everything. It is also the single most persuasive thing to show in a demo.
 
 ### 5.2 `mosca_engine` — Track A
-- [ ] **5.2a** Pure function of `(context, profile)`. No database, no HTTP, no clock reads that matter
-- [ ] **5.2b** **Resolving X** from four ranked sources: `EVIDENCE_USER` (high) → `EVIDENCE_SCANNER` data-flow (medium) → `EVIDENCE_ORG_POLICY` (high) → `EVIDENCE_LEGAL_PROFILE` (low)
-- [ ] **5.2c** Precedence is strict, and **within the strongest tier that produced anything, the longest lifetime governs** — if an artefact protects both session tokens and health records, the health record decides
-- [ ] **5.2d** **Y is user- or organisation-supplied — never inferred.** Trinetra cannot see team capacity, budget cycles or vendor roadmaps
-- [ ] **5.2e** Z = configured planning horizon, else M from Track B. **Z records its own basis**: `org_horizon` / `resource_model` / `unavailable`
-- [ ] **5.2f** `X + Y > Z` → urgent; compute shortfall in years
-- [ ] **5.2g** **When no evidence supports an X, report none. Do not default** *(already enforced by the Phase 1 `MoscaTrack` validator)*
+- [x] **5.2a** Pure function of `(context, profile)`. No database, no HTTP, no clock reads that matter
+- [x] **5.2b** **Resolving X** from four ranked sources: `EVIDENCE_USER` (high) → `EVIDENCE_SCANNER` data-flow (medium) → `EVIDENCE_ORG_POLICY` (high) → `EVIDENCE_LEGAL_PROFILE` (low)
+- [x] **5.2c** Precedence is strict, and **within the strongest tier that produced anything, the longest lifetime governs** — if an artefact protects both session tokens and health records, the health record decides
+- [x] **5.2d** **Y is user- or organisation-supplied — never inferred.** Trinetra cannot see team capacity, budget cycles or vendor roadmaps
+- [x] **5.2e** Z = configured planning horizon, else M from Track B. **Z records its own basis**: `org_horizon` / `resource_model` / `unavailable`
+- [x] **5.2f** `X + Y > Z` → urgent; compute shortfall in years
+- [x] **5.2g** **When no evidence supports an X, report none. Do not default** *(already enforced by the Phase 1 `MoscaTrack` validator)*
 
 ### 5.3 `resource_engine` — Track B
-- [ ] **5.3a** Q = logical resources the attack requires, from the 5.1 profile
-- [ ] **5.3b** P(t) = projected capability per year 2026–2045: IBM roadmap anchors → interpolated → extrapolated tail
-- [ ] **5.3c** Scenario scales P(t): conservative 0.5× · baseline 1× · aggressive 2×
-- [ ] **5.3d** **A scenario scales P(t) and never Q.** The attack requirement is a property of the algorithm, not of anyone's roadmap optimism
-- [ ] **5.3e** M = first year where `P(t) ≥ Q`, with **both dimensions met** — several curve years publish a gate count but no comparable logical-qubit count, and **half an answer is not an answer**
-- [ ] **5.3f** Status: `calculated` / `beyond_horizon` / `model_unavailable` / `not_required`
-- [ ] **5.3g** Curve-point confidence maps `roadmap|moderate → medium`, `low → low`. A crossing year **in the extrapolated tail is low confidence by construction**, because the curve itself says so
+- [x] **5.3a** Q = logical resources the attack requires, from the 5.1 profile
+- [x] **5.3b** P(t) = projected capability per year 2026–2045: IBM roadmap anchors → interpolated → extrapolated tail
+- [x] **5.3c** Scenario scales P(t): conservative 0.5× · baseline 1× · aggressive 2×
+- [x] **5.3d** **A scenario scales P(t) and never Q.** The attack requirement is a property of the algorithm, not of anyone's roadmap optimism
+- [x] **5.3e** M = first year where `P(t) ≥ Q`, with **both dimensions met** — several curve years publish a gate count but no comparable logical-qubit count, and **half an answer is not an answer**
+- [x] **5.3f** Status: `calculated` / `beyond_horizon` / `model_unavailable` / `not_required`
+- [x] **5.3g** Curve-point confidence maps `roadmap|moderate → medium`, `low → low`. A crossing year **in the extrapolated tail is low confidence by construction**, because the curve itself says so
 
 ### 5.4 `final_risk_engine` — combination
 Additive, **not averaged** — the tracks are independent evidence about different things.
 
-- [ ] **5.4a** The 100-point scale: quantum vulnerability 25 · Mosca timing 20 · resource feasibility 15 · data sensitivity 12 · business criticality 10 · exposure 10 · migration complexity 8
-- [ ] **5.4b** Bands: **≥75 → P0 · 50–74 → P1 · <50 → P2**
-- [ ] **5.4c** **Policy short-circuits run first.** An already-broken algorithm (MD5, SHA-1, DES, 3DES), a known quantum-resistant one, or a dependency-only finding is decided by policy and returns **no score**
-- [ ] **5.4d** A factor with no evidence contributes **zero and says so** — never a midpoint *(Phase 1 `ScoreContribution` enforces this)*
-- [ ] **5.4e** **The score is `None` unless both tracks produced a result** *(Phase 1 `RiskAssessment` enforces this)*
-- [ ] **5.4f** Confidence = the **weaker** of the two tracks, dropped one level further when any factor lacked evidence
-- [ ] **5.4g** Append a new `risk_assessments` row — never update (P5)
+- [x] **5.4a** The 100-point scale: quantum vulnerability 25 · Mosca timing 20 · resource feasibility 15 · data sensitivity 12 · business criticality 10 · exposure 10 · migration complexity 8
+- [x] **5.4b** Bands: **≥75 → P0 · 50–74 → P1 · <50 → P2**
+- [x] **5.4c** **Policy short-circuits run first.** An already-broken algorithm (MD5, SHA-1, DES, 3DES), a known quantum-resistant one, or a dependency-only finding is decided by policy and returns **no score**
+- [x] **5.4d** A factor with no evidence contributes **zero and says so** — never a midpoint *(Phase 1 `ScoreContribution` enforces this)*
+- [x] **5.4e** **The score is `None` unless both tracks produced a result** *(Phase 1 `RiskAssessment` enforces this)*
+- [x] **5.4f** Confidence = the **weaker** of the two tracks, dropped one level further when any factor lacked evidence
+- [x] **5.4g** Append a new `risk_assessments` row — never update (P5)
 
 ### 5.5 HNDL and classification *(R10, R11)*
-- [ ] **5.5a** Flag long-lived sensitive data in transit under classical key exchange
-- [ ] **5.5b** **Separate confidentiality risk (retroactive, urgent) from authenticity risk (only matters at CRQC time)** — signatures are a later problem than key exchange, and the tool should say so
-- [ ] **5.5c** Classify by type, lifetime and business criticality; criticality inherits down the dependency graph
+- [x] **5.5a** Flag long-lived sensitive data in transit under classical key exchange
+- [x] **5.5b** **Separate confidentiality risk (retroactive, urgent) from authenticity risk (only matters at CRQC time)** — signatures are a later problem than key exchange, and the tool should say so
+- [x] **5.5c** Classify by type, lifetime and business criticality; criticality inherits down the dependency graph
 
 ### 5.6 `rescore_all` — the demoable moment
-- [ ] **5.6a** New settings → **new immutable** `org_setting_versions` row, old one deactivated
-- [ ] **5.6b** Rebuild each artefact's context **from stored provenance**, re-run `classify_risk` + `recommend_replacement`
-- [ ] **5.6c** **Append** a new assessment per artefact; history preserved
-- [ ] **5.6d** Return `artefacts_rescored`
-- [ ] **5.6e** Because the engines are pure and X, Y and Z were stored, this is a **genuine recalculation, not a relabel** — move the horizon slider, watch every verdict honestly change
+- [x] **5.6a** New settings → **new immutable** `org_setting_versions` row, old one deactivated
+- [~] **5.6b** Rebuild each artefact's context **from stored provenance**, re-run `classify_risk` + `recommend_replacement` *(risk reclassification is done; recommendations begin in Phase 6)*
+- [x] **5.6c** **Append** a new assessment per artefact; history preserved
+- [x] **5.6d** Return `artefacts_rescored`
+- [x] **5.6e** Because the engines are pure and X, Y and Z were stored, this is a **genuine recalculation, not a relabel** — move the horizon slider, watch every verdict honestly change
 
 ### 5.7 Engine tests — pure, so exhaustively testable
 No fixtures needed; every one is a plain function call.
 
-- [ ] **5.7a** Missing evidence yields `None`, never a number
-- [ ] **5.7b** A factor with no evidence contributes zero **and is labelled**
-- [ ] **5.7c** No score unless **both** tracks produced a result
-- [ ] **5.7d** Policy short-circuits return no score
-- [ ] **5.7e** **Identical inputs → identical outputs** (what makes `rescore_all` real)
-- [ ] **5.7f** Confidence is the weaker track, downgraded on missing evidence
-- [ ] **5.7g** A capability year missing either dimension cannot satisfy Q
-- [ ] **5.7h** A scenario scales P(t) and **never** Q
-- [ ] **5.7i** Within the strongest evidence tier, the longest lifetime governs
-- [ ] **5.7j** **The §10 worked example reproduces exactly** — RSA-2048, X=8, Y=4, Z=12, Q=6,190 qubits, M=10y, total 58/100, confidence low, P1. This single test catches any regression in the whole combination path
+- [x] **5.7a** Missing evidence yields `None`, never a number
+- [x] **5.7b** A factor with no evidence contributes zero **and is labelled**
+- [x] **5.7c** No score unless **both** tracks produced a result
+- [x] **5.7d** Policy short-circuits return no score
+- [x] **5.7e** **Identical inputs → identical outputs** (what makes `rescore_all` real)
+- [x] **5.7f** Confidence is the weaker track, downgraded on missing evidence
+- [x] **5.7g** A capability year missing either dimension cannot satisfy Q
+- [x] **5.7h** A scenario scales P(t) and **never** Q
+- [x] **5.7i** Within the strongest evidence tier, the longest lifetime governs
+- [x] **5.7j** **The §10 worked example reproduces exactly** — RSA-2048, X=8, Y=4, Z=12, Q=6,190 qubits, M=10y, total 58/100, confidence low, P1. This single test catches any regression in the whole combination path
 
 **Exit criteria (vertical slice #2):** the fixture repo produces per-artefact two-track verdicts with full arithmetic stored; the worked example reproduces exactly; changing a profile re-scores everything and appends new history.
 

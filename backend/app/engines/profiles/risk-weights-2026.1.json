@@ -1,0 +1,58 @@
+{
+  "profile_type": "risk_weights",
+  "version": "risk-weights-2026.1",
+  "sources": [
+    {
+      "source_id": "trinetra-risk-method-2026.1",
+      "title": "Trinetra two-track risk method 2026.1",
+      "url": "https://github.com/trinetra/trinetra-new/blob/main/full%20architecher.md",
+      "citation": "The seven independent factors sum to the fixed 100-point scale."
+    }
+  ],
+  "weights": {
+    "algorithm_quantum_vulnerability": 25,
+    "mosca_timing_risk": 20,
+    "resource_feasibility": 15,
+    "data_sensitivity": 12,
+    "business_criticality": 10,
+    "exposure": 10,
+    "migration_complexity": 8
+  },
+  "bands": {
+    "p0": 75,
+    "p1": 50
+  },
+  "scoring": {
+    "mosca_points_per_shortfall_year": 4,
+    "resource_feasibility": {
+      "within_5_years": 15,
+      "within_10_years": 8,
+      "within_15_years": 4,
+      "later_within_horizon": 1
+    },
+    "data_classification": {
+      "restricted": 12,
+      "confidential": 8,
+      "internal": 4,
+      "public": 0
+    },
+    "business_criticality": {
+      "critical": 10,
+      "high": 7,
+      "medium": 4,
+      "low": 1
+    },
+    "exposure": {
+      "internet": 7,
+      "partner": 5,
+      "internal": 2,
+      "isolated": 0
+    },
+    "migration_complexity": {
+      "source_algorithm": 4,
+      "provider_managed_key": 6,
+      "non_pqc_hsm": 8,
+      "pqc_capable_hsm": 2
+    }
+  }
+}

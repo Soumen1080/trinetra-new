@@ -155,19 +155,34 @@ class ResourceTrack(TrinetraModel):
     )
     caveats: list[str] = Field(default_factory=list)
     confidence: Confidence | None = None
+    forecast_capability: dict[str, int | float | str | None] = Field(
+        default_factory=dict,
+        description="The first qualifying (or horizon-end) P(t) point, including "
+        "its stated confidence and basis. Stored so a crossing can be audited.",
+    )
 
     @property
     def is_resolved(self) -> bool:
-        return (
-            self.status is QuantumProjectionStatus.CALCULATED
-            and self.m_years is not None
-        )
+        """Whether Track B produced a comparable result.
+
+        ``beyond_horizon`` is an answer -- the model was present and the attack
+        did not become feasible in its stated horizon.  It must therefore not be
+        conflated with ``model_unavailable``.  Known quantum-safe assets are
+        normally policy-short-circuited before a combined score is attempted.
+        """
+        if self.status is QuantumProjectionStatus.CALCULATED:
+            return self.m_years is not None
+        return self.status is QuantumProjectionStatus.BEYOND_HORIZON
 
     @model_validator(mode="after")
     def _calculated_results_carry_assumptions(self) -> Self:
         """A computed Q must travel with the assumptions behind it (P4)."""
         if (
-            self.status is QuantumProjectionStatus.CALCULATED
+            self.status
+            in {
+                QuantumProjectionStatus.CALCULATED,
+                QuantumProjectionStatus.BEYOND_HORIZON,
+            }
             and self.logical_qubits_required is not None
             and not self.assumptions
         ):

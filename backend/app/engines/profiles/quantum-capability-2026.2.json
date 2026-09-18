@@ -1,0 +1,80 @@
+{
+  "profile_type": "quantum_capability",
+  "version": "quantum-capability-2026.2",
+  "reference_year": 2026,
+  "sources": [
+    {
+      "source_id": "gidney-ekera-2019",
+      "title": "How to factor 2048 bit RSA integers in 8 hours using 20 million noisy qubits",
+      "url": "https://arxiv.org/abs/1905.09749",
+      "citation": "Gidney and Ekerå 2019, logical-circuit formulas: 3n + 0.002n log2(n) logical qubits and 0.3n^3 + 0.0005n^3 log2(n) Toffolis."
+    },
+    {
+      "source_id": "gidney-2025",
+      "title": "How to factor 2048-bit RSA integers with less than a million noisy qubits",
+      "url": "https://arxiv.org/abs/2505.15917",
+      "citation": "Gidney 2025; accompanying code and data DOI 10.5281/zenodo.15347487. The physical-qubit estimate is retained as an explicit caveat and is not mixed with logical-Q thresholds."
+    },
+    {
+      "source_id": "roetteler-2017",
+      "title": "Quantum resource estimates for computing elliptic curve discrete logarithms",
+      "url": "https://arxiv.org/abs/1706.06752",
+      "citation": "Roetteler, Naehrig, Svore and Lauter 2017: at most 9n + 2 ceil(log2(n)) + 10 qubits and 448n^3 log2(n) + 4090n^3 Toffoli gates."
+    },
+    {
+      "source_id": "ibm-roadmap-2025",
+      "title": "IBM Quantum development roadmap",
+      "url": "https://www.ibm.com/quantum/roadmap",
+      "citation": "Roadmap anchors inform the capability curve; interpolated and extrapolated points are visibly labelled below."
+    }
+  ],
+  "scenarios": {
+    "conservative": 0.5,
+    "baseline": 1.0,
+    "aggressive": 2.0
+  },
+  "capability_curve": [
+    {"year": 2026, "logical_qubits": 100, "logical_gates": 1000000, "confidence": "roadmap", "basis": "IBM roadmap anchor"},
+    {"year": 2027, "logical_qubits": 160, "logical_gates": 2500000, "confidence": "moderate", "basis": "interpolated between roadmap anchors"},
+    {"year": 2028, "logical_qubits": 250, "logical_gates": 6000000, "confidence": "roadmap", "basis": "IBM roadmap anchor"},
+    {"year": 2029, "logical_qubits": 400, "logical_gates": 15000000, "confidence": "moderate", "basis": "interpolated between roadmap anchors"},
+    {"year": 2030, "logical_qubits": 650, "logical_gates": 40000000, "confidence": "roadmap", "basis": "IBM roadmap anchor"},
+    {"year": 2031, "logical_qubits": 1000, "logical_gates": 100000000, "confidence": "moderate", "basis": "interpolated between roadmap anchors"},
+    {"year": 2032, "logical_qubits": 1600, "logical_gates": 300000000, "confidence": "moderate", "basis": "interpolated between roadmap anchors"},
+    {"year": 2033, "logical_qubits": 2800, "logical_gates": 800000000, "confidence": "moderate", "basis": "interpolated between roadmap anchors"},
+    {"year": 2034, "logical_qubits": 4500, "logical_gates": null, "confidence": "low", "basis": "logical-qubit projection only; no comparable gate estimate"},
+    {"year": 2035, "logical_qubits": 6000, "logical_gates": 2400000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2036, "logical_qubits": 7000, "logical_gates": 3000000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2037, "logical_qubits": 10000, "logical_gates": 6000000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2038, "logical_qubits": 18000, "logical_gates": 15000000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2039, "logical_qubits": 30000, "logical_gates": 40000000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2040, "logical_qubits": 50000, "logical_gates": 120000000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2041, "logical_qubits": 75000, "logical_gates": 300000000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2042, "logical_qubits": 100000, "logical_gates": 700000000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2043, "logical_qubits": 150000, "logical_gates": 1500000000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2044, "logical_qubits": 250000, "logical_gates": 4000000000000, "confidence": "low", "basis": "extrapolated tail"},
+    {"year": 2045, "logical_qubits": 400000, "logical_gates": 10000000000000, "confidence": "low", "basis": "extrapolated tail"}
+  ],
+  "attack_models": [
+    {"algorithm": "rsa", "key_size_bits": 1024, "logical_qubits": 3093, "logical_gates": 327491256, "construction": "Gidney-Ekera 2019 logical factoring circuit", "source_id": "gidney-ekera-2019", "assumptions": {"error_correction": "logical circuit model; physical overhead excluded", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Use the 2025 physical-resource scenario separately; physical and logical qubits are not interchangeable."]},
+    {"algorithm": "rsa", "key_size_bits": 2048, "logical_qubits": 6190, "logical_gates": 2624225018, "construction": "Gidney-Ekera 2019 logical factoring circuit", "source_id": "gidney-ekera-2019", "assumptions": {"error_correction": "logical circuit model; physical overhead excluded", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Gidney 2025 materially reduces a physical-qubit scenario; it does not make this logical threshold a physical-qubit estimate."]},
+    {"algorithm": "rsa", "key_size_bits": 3072, "logical_qubits": 9288, "logical_gates": 8865238768, "construction": "Gidney-Ekera 2019 logical factoring circuit", "source_id": "gidney-ekera-2019", "assumptions": {"error_correction": "logical circuit model; physical overhead excluded", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Estimate is a formula transcription, not a quantum-toolchain calculation in the scan path."]},
+    {"algorithm": "rsa", "key_size_bits": 4096, "logical_qubits": 12387, "logical_gates": 21028159881, "construction": "Gidney-Ekera 2019 logical factoring circuit", "source_id": "gidney-ekera-2019", "assumptions": {"error_correction": "logical circuit model; physical overhead excluded", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Estimate is a formula transcription, not a quantum-toolchain calculation in the scan path."]},
+    {"algorithm": "rsa", "key_size_bits": 7680, "logical_qubits": 23239, "logical_gates": 138818762434, "construction": "Gidney-Ekera 2019 logical factoring circuit", "source_id": "gidney-ekera-2019", "assumptions": {"error_correction": "logical circuit model; physical overhead excluded", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Estimate is a formula transcription, not a quantum-toolchain calculation in the scan path."]},
+    {"algorithm": "rsa", "key_size_bits": 15360, "logical_qubits": 46508, "logical_gates": 1112362038800, "construction": "Gidney-Ekera 2019 logical factoring circuit", "source_id": "gidney-ekera-2019", "assumptions": {"error_correction": "logical circuit model; physical overhead excluded", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Estimate is a formula transcription, not a quantum-toolchain calculation in the scan path."]},
+    {"algorithm": "ecc", "key_size_bits": 160, "logical_qubits": 1466, "logical_gates": 30188436630, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Prime-field curve formula; deployment-specific curve choices may change the construction."]},
+    {"algorithm": "ecc", "key_size_bits": 192, "logical_qubits": 1754, "logical_gates": 52999672669, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Prime-field curve formula; deployment-specific curve choices may change the construction."]},
+    {"algorithm": "ecc", "key_size_bits": 224, "logical_qubits": 2042, "logical_gates": 85281321345, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Prime-field curve formula; deployment-specific curve choices may change the construction."]},
+    {"algorithm": "ecc", "key_size_bits": 255, "logical_qubits": 2321, "logical_gates": 127203526504, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Curve25519 is represented by its field size; the formula is a conservative prime-field proxy."]},
+    {"algorithm": "ecc", "key_size_bits": 256, "logical_qubits": 2330, "logical_gates": 128748355584, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Prime-field curve formula; deployment-specific curve choices may change the construction."]},
+    {"algorithm": "ecc", "key_size_bits": 384, "logical_qubits": 3484, "logical_gates": 449364531942, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Prime-field curve formula; deployment-specific curve choices may change the construction."]},
+    {"algorithm": "ecc", "key_size_bits": 521, "logical_qubits": 4719, "logical_gates": 1150212175543, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Prime-field curve formula; deployment-specific curve choices may change the construction."]},
+    {"algorithm": "ecdh", "key_size_bits": 256, "logical_qubits": 2330, "logical_gates": 128748355584, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["The ECDLP construction is shared with ECC; this row records the key-agreement use explicitly."]},
+    {"algorithm": "ecdsa", "key_size_bits": 256, "logical_qubits": 2330, "logical_gates": 128748355584, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["The ECDLP construction is shared with ECC; signatures are an authenticity risk at CRQC time."]},
+    {"algorithm": "x25519", "key_size_bits": 255, "logical_qubits": 2321, "logical_gates": 127203526504, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Curve25519 is represented by its field size; this is a conservative prime-field proxy."]},
+    {"algorithm": "ed25519", "key_size_bits": 255, "logical_qubits": 2321, "logical_gates": 127203526504, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["Curve25519 is represented by its field size; signatures are an authenticity risk at CRQC time."]},
+    {"algorithm": "ecdh", "key_size_bits": 384, "logical_qubits": 3484, "logical_gates": 449364531942, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["The ECDLP construction is shared with ECC; this row records the key-agreement use explicitly."]},
+    {"algorithm": "ecdsa", "key_size_bits": 384, "logical_qubits": 3484, "logical_gates": 449364531942, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["The ECDLP construction is shared with ECC; signatures are an authenticity risk at CRQC time."]},
+    {"algorithm": "ecdh", "key_size_bits": 521, "logical_qubits": 4719, "logical_gates": 1150212175543, "construction": "Roetteler et al. 2017 ECDLP upper-bound formula", "source_id": "roetteler-2017", "assumptions": {"error_correction": "logical circuit model", "logical_qubit_definition": "circuit-width logical qubits", "physical_error_rate": "not modelled in Q"}, "caveats": ["The ECDLP construction is shared with ECC; this row records the key-agreement use explicitly."]}
+  ]
+}

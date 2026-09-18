@@ -265,6 +265,7 @@ def assessment_to_row(assessment: RiskAssessment) -> tables.RiskAssessment:
             or resource.confidence is not None
             else None
         ),
+        forecast_capability_json=dict(resource.forecast_capability) or None,
         projected_break_year=resource.projected_break_year,
         migration_deadline_year=resource.migration_deadline_year,
         quantum_projection_status=resource.status.value,
@@ -320,6 +321,7 @@ def assessment_from_row(row: tables.RiskAssessment) -> RiskAssessment:
                 if threshold.get("confidence")
                 else None
             ),
+            forecast_capability=dict(row.forecast_capability_json or {}),
         ),
         contributions=[
             ScoreContribution.model_validate(c)
