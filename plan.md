@@ -11,6 +11,9 @@
 >   assumption was wrong and is corrected there: `cbomkit-lib` is a Java library,
 >   not a CLI, so detection is built behind a pluggable `Engine` interface with
 >   Semgrep working today and CBOMkit activated by configuration.
+> - **Every deferred item from Phases 3–4 now has a scheduled home**: see
+>   **Phase 11C**, plus 4.7 which moved to 8.10a. A deferred item with no home
+>   is indistinguishable from a forgotten one.
 > - **Phases 3 and 4 are implemented and verified**: container image scanning
 >   against live alpine and debian images, and AWS KMS against a live KMS API.
 >   `cbomkit-theia` activates by configuration; Syft, X.509, config, KMS and
@@ -26,12 +29,12 @@ Every clause of the problem statement must be satisfied. This table is the **acc
 | # | Requirement clause | Where it is built | Done |
 |---|---|---|---|
 | R1 | Identify & catalogue **algorithms** | Phase 2 (Semgrep + CBOMkit engines) | [x] **done** |
-| R2 | Identify & catalogue **keys** | Phase 3.2c (PKI engine; theia adds gitleaks) | [x] **done** |
+| R2 | Identify & catalogue **keys** | Phase 3.2c (PKI engine; theia adds gitleaks → 11C.3) | [x] **done** |
 | R3 | Identify & catalogue **certificates** | Phase 3.2b (Go `crypto/x509`) | [x] **done** |
 | R4 | Identify & catalogue **protocols** (TLS/SSH/IPsec) | Phase 3.2d (declared **done**) + **Phase 11A (observed)** | [~] declared done |
-| R5 | Identify & catalogue **libraries** (OpenSSL, BouncyCastle…) | Phase 3.4 (Syft + knowledge base) — *never with an algorithm* | [x] **done** |
+| R5 | Identify & catalogue **libraries** (OpenSSL, BouncyCastle…) | Phase 3.4 (Syft + knowledge base) — *never with an algorithm* | [x] **done** *(direct deps; transitive → 11C.1)* |
 | R6 | Identify & catalogue **hardware modules** (HSM/TPM/PKCS#11) | Phase 4.2–4.3 (PKCS#11 export) | [x] **done** |
-| R7 | Identify & catalogue **cloud services** (KMS/ACM/Key Vault) | Phase 4.4 (AWS KMS; verified live) | [x] **done** |
+| R7 | Identify & catalogue **cloud services** (KMS/ACM/Key Vault) | Phase 4.4 (AWS KMS; verified live) | [x] **done** *(AWS; Azure/GCP → 11C.4)* |
 | R8 | Coverage of **internal AND external facing** apps/infra | Phases 2–4 (internal **done**) + **11A (external)** | [~] internal done |
 | R9 | **Quantum risk assessment** — systems prone to quantum attack | Phase 5.3 (Track B, resource model) | [ ] |
 | R10 | Highlight **risks to sensitive data** (HNDL) | Phase 2.3 (taint rules **done**) + Phase 5.5 | [~] evidence done |
@@ -491,16 +494,16 @@ Worth recording, because each was silent and each would have shipped:
 - [x] **3.2d** Protocol findings carry **`is_observed=false`** end to end — Go sets it, Python ingest preserves it, and a test asserts no protocol claims to be observed
 - [x] **3.2e** `library` findings carry **no algorithm** — enforced in `Normalise()`, in `Validate()`, in Pydantic, and as a DB CHECK
 
-### 3.3 Dependency crypto *(deferred, as the plan allows)*
+### 3.3 Dependency crypto *(deferred → **Phase 11C.1**)*
 - [x] **3.3a** Syft enumerates dependencies and PURLs — `go.mod`, `requirements.txt` and image packages all resolve
-- [ ] **3.3b** Per-PURL CBOM cache
-- [ ] **3.3c** Scan uncached dependencies with the Phase 2 engine
+- [ ] **3.3b** Per-PURL CBOM cache → **owned by 11C.1a**
+- [ ] **3.3c** Scan uncached dependencies with the Phase 2 engine → **owned by 11C.1c**
 - [x] **3.3d** Entirely offline — no Azure, no external service (P7). CBOMkit's own Pipeline runs in Azure and was rejected for this reason; the *pattern* is adopted, not the implementation
 - [x] **3.3e** **Deferred deliberately**: a direct-dependency inventory is a defensible first release, and transitive scanning multiplies scan time
 
 ### 3.4 Manifests and knowledge base ✅
 - [x] **3.4a** `requirements.txt`, `go.mod`, `package-lock.json`, `pom.xml`, `Cargo.toml` — all via Syft rather than hand-written parsers
-- [ ] **3.4b** Ingest existing CycloneDX / SPDX SBOMs as an input source
+- [ ] **3.4b** Ingest existing CycloneDX / SPDX SBOMs as an input source → **owned by 11C.2**
 - [x] **3.4c** **`knowledge/crypto-libraries-2026.1.json`** — 20 curated crypto libraries across deb/rpm/apk/pypi/npm/maven/cargo/go, each with a **citation**, PQC-since version and FIPS capability
   - [x] Validated **at load, not at use**: a malformed profile fails at startup rather than mis-classifying packages mid-scan
   - [x] **`pqc_since: null` means "not recorded", never "unsupported"** — `SupportsPQC` returns `(supported, known)` so the recommendation engine cannot assert a fact nobody established (P3)
@@ -534,7 +537,7 @@ letter-release version fix resolves `1.1.1w-0+deb11u8` correctly.
 `tests/.../image_test.go` pins all of this, skipping cleanly where Docker is absent.
 
 ### What is deliberately not done here
-- **`cbomkit-theia`** is not installed, so image-layer certificate and gitleaks secret detection is wired and unit-tested but not exercised. Syft covers the package inventory in the meantime.
+- **`cbomkit-theia`** is not installed, so image-layer certificate and gitleaks secret detection is wired and unit-tested but not exercised. Syft covers the package inventory in the meantime. → **scheduled as 11C.3**
 - **Binary analysis** remains Phase 11B per §7.4, and R15 is still unmet — see the note in §1.
 
 ---
@@ -561,8 +564,8 @@ repository or an image.*
 - [x] **4.3** `hardware_module` artefacts with vendor, model, firmware, FIPS certificate number and **PQC-capable firmware flag** — an HSM that cannot be upgraded is a hardware purchase, not a code change, and the evidence says so in those words
 - [x] **4.4** AWS KMS key metadata → `cloud_service` artefacts with key spec, region, ARN and **`customer_managed` vs `provider_managed`**
 - [x] **4.5** **Metadata only.** Read-only IAM surface documented in code (`kms:ListKeys`, `kms:DescribeKey`, `kms:ListAliases`); credentials redacted in logs and never written anywhere
-- [ ] **4.6** Azure Key Vault and GCP KMS *(optional; AWS first, as the plan allows)*
-- [ ] **4.7** Asset-inventory import (CSV/CMDB) — deferred to Phase 5, where business criticality is actually consumed
+- [ ] **4.6** Azure Key Vault and GCP KMS *(optional; AWS first)* → **owned by 11C.4**
+- [ ] **4.7** Asset-inventory import (CSV/CMDB) → **moved to 8.10a**. It belongs in the API, not a scanner: business context is supplied by a human or an inventory system, and the Phase 1 schema forbids a scanner supplying anything but `data_category`
 
 ### Two design decisions worth recording
 
@@ -601,14 +604,19 @@ The golden CBOM combines that with the HSM fixture: **9 components** — 3
 | **Cloud attributes had nowhere to travel** | CycloneDX has no structural place for provider, region or key ownership. Added `Finding.Extra` for namespaced properties; without it a KMS key ingested with no owner, and **ownership is what decides whether migration is a code change or a vendor negotiation** |
 | **A `KeyDetail` was returned for a cloud service** | The Phase 1 discriminated union rejected it outright. The schema was right and the shortcut was wrong: `CloudServiceDetail` exists precisely so a managed key carries provider, region and ownership |
 
-### Honest gaps
-- **Azure and GCP** are not implemented (4.6, optional in the plan).
+### Honest gaps — each now has a home
+- **Azure and GCP** are not implemented → **Phase 11C.4**.
 - **No real AWS account** was used: LocalStack implements the KMS API faithfully
   enough to exercise signing and parsing, but a production account may return
-  fields the emulator does not.
-- **PKCS#11 live enumeration** is not implemented by design; the export format is
-  the supported path and `TRINETRA_PKCS11_EXPORT` configures it.
-- **4.7 asset-inventory import** deferred to Phase 5.
+  fields, error shapes and pagination behaviour the emulator does not
+  → **Phase 11C.5**.
+- **4.7 asset-inventory import** → **Phase 8.10a**, where the API already owns
+  application CRUD.
+- **PKCS#11 live enumeration** is **not a gap and has no follow-up task**: it is
+  a permanent architectural decision. Loading a vendor native library into a
+  service that holds cloud credentials is unnecessary attack surface, HSMs
+  usually sit on networks the scanner cannot reach, and an export is reviewable
+  by a human first. The export format is the supported path.
 
 ---
 
@@ -799,6 +807,14 @@ what the team still has to test.*
 - [ ] **8.8** Recommendation endpoints
 - [ ] **8.9** Export endpoints (all Phase 7 formats)
 - [ ] **8.10** Asset / application CRUD (criticality, data classification, owner)
+  - [ ] **8.10a** **Bulk import from CSV / CMDB export** — *this is Phase 4.7, which
+        belongs here rather than in a scanner: business context is supplied by a
+        human or an inventory system, never observed by a scanner (the Phase 1
+        schema forbids a scanner supplying anything but `data_category`)*
+  - [ ] **8.10b** Every imported field records `org_preset` provenance, so a
+        CMDB-supplied criticality is distinguishable from a user-confirmed one (P4)
+  - [ ] **8.10c** Import is idempotent and re-runnable; a re-import updates rather
+        than duplicating applications
 - [ ] **8.11** Settings API: Mosca defaults, risk weights, rule-pack toggles
 - [ ] **8.12** Persistence layer + historical scan retention for trend analysis
 - [ ] **8.13** Rate limiting, request validation, audit log of every action
@@ -958,6 +974,87 @@ configures.
 
 ---
 
+# PHASE 11C — Coverage Extension: Deferred Discovery Gaps *(closes Phases 3–4)*
+
+> **This phase exists because the gaps were real.** Phases 3 and 4 shipped with
+> seven items deliberately deferred. Each was recorded honestly at the time, but
+> a deferred item with no scheduled home is indistinguishable from a forgotten
+> one — so each now has an owner, a task and an exit criterion here.
+>
+> **None of these block the P0 path.** The core answer to the problem statement
+> (inventory → two-track risk → recommendation → report → GUI) does not depend on
+> any of them. They widen coverage, which is exactly what §7.4 extensions are for.
+
+### 11C.1 Transitive dependency crypto *(closes 3.3b, 3.3c)*
+Syft already enumerates dependencies and their PURLs (3.3a, done). What is
+missing is scanning *inside* those dependencies: CBOMkit's own blog notes the
+plugin "detects only cryptographic assets invoked directly from the source
+code", so a repository that calls a library that calls RSA shows nothing today.
+
+- [ ] **11C.1a** Per-PURL CBOM cache keyed by `purl@version`, stored in the artifact store
+- [ ] **11C.1b** Resolve the dependency tree from Syft output; skip any PURL already cached
+- [ ] **11C.1c** Fetch and scan uncached dependencies with the Phase 2 engine
+- [ ] **11C.1d** **Entirely offline** — CBOMkit's Pipeline runs in Azure and was rejected for this reason (P7). Sources come from a local mirror or a vendored cache, never a public registry at scan time
+- [ ] **11C.1e** Attribute transitive findings to the dependency, not the application, so a reader can tell "our code does this" from "something we depend on does this"
+- [ ] **11C.1f** Bound the work: a depth limit and a per-scan budget, because a full tree multiplies scan time by the dependency count
+
+**Exit criteria:** scanning a repo whose only crypto is inside a dependency produces findings attributed to that dependency, and a second scan reuses the cache.
+
+### 11C.2 External SBOM ingest *(closes 3.4b)*
+An organisation that already produces SBOMs should not have to rescan. This is
+also the cheapest possible coverage win for an estate Trinetra cannot reach.
+
+- [ ] **11C.2a** Accept CycloneDX 1.4–1.6 and SPDX 2.3 as a scan *input*, not just an output format
+- [ ] **11C.2b** Map third-party components through the Phase 3 knowledge base, so an externally produced SBOM yields the same `library` artefacts a Syft scan would
+- [ ] **11C.2c** **Record provenance**: an ingested SBOM is someone else's evidence. `metadata.tools` must name the producing tool, and the UI must distinguish "Trinetra observed this" from "an SBOM asserted this"
+- [ ] **11C.2d** Confidence is **medium at best** for ingested components — Trinetra did not verify them, and a finding's confidence must reflect who actually looked
+- [ ] **11C.2e** Non-`cryptographic-asset` components are skipped, not rejected (the Phase 2 rule, unchanged)
+
+**Exit criteria:** a CycloneDX SBOM from another tool ingests into `artefacts` with correct provenance and a confidence that reflects its second-hand origin.
+
+### 11C.3 Verify cbomkit-theia end to end *(closes the Phase 3 "not exercised" gap)*
+The adapter is written and unit-tested against recorded output, but theia has
+never actually run: it is not installed in the development environment. Until it
+does, image-layer certificate detection and gitleaks secret detection are
+**claimed, not demonstrated**.
+
+- [ ] **11C.3a** Install and pin `cbomkit-theia`; vendor the binary for air-gapped installs
+- [ ] **11C.3b** Run it against the same alpine and debian images Phase 3 verified with Syft
+- [ ] **11C.3c** **Compare its output to the PKI and config engines** on a shared fixture — where both see a certificate, they must agree, and any disagreement is a bug in one of them
+- [ ] **11C.3d** Confirm gitleaks-grade secret detection finds material the PKI engine's PEM-extension scan misses
+- [ ] **11C.3e** Promote the recorded-output tests to live tests that skip when the binary is absent, matching the Docker and LocalStack pattern already used
+
+**Exit criteria:** theia runs against a real image, its findings are reconciled against ours, and the Phase 3 gap note is removed rather than reworded.
+
+### 11C.4 Azure Key Vault and GCP KMS *(closes 4.6)*
+AWS-first was the right call and remains so. But an estate on Azure or GCP gets
+**nothing** from Phase 4 today, and "no keys found" is the most dangerous
+possible output for a cloud scanner.
+
+- [ ] **11C.4a** Azure Key Vault: keys, certificates and secrets metadata; Managed HSM
+- [ ] **11C.4b** GCP Cloud KMS: keyrings, crypto keys, protection level (`SOFTWARE` vs `HSM`)
+- [ ] **11C.4c** Map both to `cloud_service` artefacts through the same `CloudServiceDetail`, so the risk engine sees one shape regardless of provider
+- [ ] **11C.4d** **Metadata only**, same as AWS: read-only credentials, documented least-privilege role, nothing persisted
+- [ ] **11C.4e** An unconfigured provider is a **named coverage gap**, never silence — the Phase 4 rule that a missing credential must not read as "you have no keys"
+
+**Exit criteria:** an Azure and a GCP account each yield `cloud_service` artefacts with provider, region and ownership resolved.
+
+### 11C.5 Verify against a real AWS account *(closes the LocalStack-only gap)*
+LocalStack implements the KMS API faithfully enough to exercise SigV4 signing
+and response parsing, and that is genuinely more than a stub proves. It is not
+the same as production: a real account returns fields, error shapes and
+pagination behaviour the emulator may not.
+
+- [ ] **11C.5a** Run the KMS engine against a real AWS account with the documented read-only policy
+- [ ] **11C.5b** Confirm the IAM policy is **sufficient and minimal** — every call succeeds, and removing any one permission breaks something
+- [ ] **11C.5c** Exercise pagination with >1000 keys, or confirm the bound behaves on a smaller account
+- [ ] **11C.5d** Verify multi-region and `EXTERNAL`/`AWS_CLOUDHSM` origin keys, which the emulator does not model
+- [ ] **11C.5e** Confirm no credential appears in any log line, artifact or finding under real conditions
+
+**Exit criteria:** a real account inventories correctly under the documented least-privilege policy, with no credential leakage.
+
+---
+
 # PHASE 12 — Documentation & Delivery
 
 - [ ] **12.1** `README` — problem, solution, quickstart, screenshots
@@ -981,7 +1078,7 @@ configures.
 | **M1** | Foundation | 0, 1 | Repo runs; contract frozen | **done** (161 py tests) |
 | **M1B** | The wire contract | 2.0, 2.1 | Go and Python agree byte-for-byte on one CBOM shape | **done** |
 | **M2** | It finds crypto | 2 | Scanner writes a schema-valid CBOM; ingest populates `artefacts`; 100%/100% on the corpus | **done** |
-| **M3** | It finds crypto everywhere | 3, 4 | Certs, keys, libraries, declared TLS, HSM, KMS | **done** |
+| **M3** | It finds crypto everywhere | 3, 4 | Certs, keys, libraries, declared TLS, HSM, KMS — *direct dependencies and AWS only; see M10* | **done** |
 | **M4** | **It assesses quantum risk** | 5 | Two-track verdicts; the §10 worked example reproduces exactly | |
 | **M5** | It tells you what to do | 6 | PQC recommendations, FIPS-cited, unmeasured dimensions labelled | |
 | **M6** | It produces standard reports | 7 | Valid CycloneDX CBOM + executive PDF | |
@@ -989,7 +1086,7 @@ configures.
 | **M8** | It visualises risk | 10 | Mosca timeline, heatmap, dependency graph, planner | |
 | **M8B** | **It is genuinely easy to use** | 10B | 5 testers complete the core tasks unaided; accessibility audit passes | |
 | **M9** | It is production-ready | 11, 12 | Benchmarked, documented, deployable | |
-| **M10** | Wider coverage | 11A, 11B | Live TLS, binaries, CVEs, NER PII | |
+| **M10** | Wider coverage | 11A, 11B, **11C** | Live TLS · binaries, CVEs, NER PII · **transitive deps, SBOM ingest, theia, Azure/GCP, real AWS** | |
 
 > **The architecture's own definition of the minimum viable platform** (§7.7):
 > the CBOM contract, Semgrep, the Q capability profile, and liboqs — i.e. M1B
@@ -1020,10 +1117,10 @@ Phases 0, 1, **2.0–2.1 (contract + CBOMkit evaluation)**, 2, **2.3 (taint rule
 Phase 3 (containers and libraries are named explicitly in the deliverable), tasks 10.5–10.8, remaining 10B items, 12.1–12.3
 
 **P2 — differentiators:**
-Phase 4 (cloud / HSM), **Phase 11A (live TLS — the highest-value coverage extension)**, tasks 10.9–10.10, 11.4, 11.6
+Phase 4 (cloud / HSM), **Phase 11A (live TLS — the highest-value coverage extension)**, **11C.3 (verify theia) and 11C.5 (verify against a real AWS account)** — both close a *claimed-but-unproven* gap rather than adding new surface, tasks 10.9–10.10, 11.4, 11.6
 
 **P3 — polish and wider coverage:**
-Phase 11B (binaries, CVE, NER), the remainder of Phases 11 and 12
+Phase 11B (binaries, CVE, NER), **11C.1 · 11C.2 · 11C.4** (transitive deps, SBOM ingest, Azure/GCP), the remainder of Phases 11 and 12
 
 > **If the schedule slips, cut scanner *breadth* (fewer languages, skip cloud connectors) before cutting risk *depth*. A tool that inventories five languages and reasons rigorously about quantum risk answers this problem statement. A tool that inventories twelve languages and shows a risk badge does not.**
 >
