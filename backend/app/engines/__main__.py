@@ -1,10 +1,20 @@
-"""Command-line boundary for Phase 5's scan-to-verdict vertical slice.
+"""Command-line boundary for scan-to-verdict and export (Phases 5-7).
 
 Example::
 
-    python -m app.engines --cbom scan.cbom.json --scan-target repo://patients \
-        --contexts contexts.json \
+    python -m app.engines --cbom scan.cbom.json --scan-target repo://patients \\
+        --contexts contexts.json \\
         --planning-horizon 12 --assessed-at 2026-01-01T00:00:00+00:00
+
+    # Phase 7 — export to CycloneDX:
+    python -m app.engines --cbom scan.cbom.json --scan-target repo://patients \\
+        --contexts contexts.json --assessed-at 2026-01-01T00:00:00+00:00 \\
+        --format cyclonedx --output out.cbom.json
+
+    # Phase 7 — diff against a baseline:
+    python -m app.engines --cbom scan.cbom.json --scan-target repo://patients \\
+        --contexts contexts.json --assessed-at 2026-01-01T00:00:00+00:00 \\
+        --format json --output out.json --diff-baseline baseline.cbom.json
 
 ``contexts.json`` is either a list of ``ArtefactContext`` objects or an object
 whose keys are artefact ids and whose values are context fields.  The command
@@ -27,10 +37,16 @@ from app.engines.recommendation_engine import (
     recommend_replacement,
     recommendation_id_for_assessment,
 )
+from app.exporters import ExportFormat, export
+from app.exporters.diff import compute_diff, export_diff_json
 from app.models.enums import ResourceScenario
 from app.schemas.context import ArtefactContext
-from app.schemas.recommendation import RecommendationContext
+from app.schemas.recommendation import PqcRecommendation, RecommendationContext
+from app.schemas.risk import RiskAssessment
 from app.services.cbom_ingest import ingest_document
+
+#: Formats that produce binary output (written in 'wb' mode).
+_BINARY_FORMATS = {ExportFormat.EXCEL, ExportFormat.PDF_EXECUTIVE, ExportFormat.PDF_TECHNICAL}
 
 
 def _json_file(path: Path) -> Any:
@@ -72,7 +88,8 @@ def _assessed_at(raw: str) -> datetime:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Classify a CycloneDX CBOM using Trinetra Phase-5 risk profiles."
+        description="Classify a CycloneDX CBOM using Trinetra risk profiles "
+        "and export to standard formats (Phase 7)."
     )
     parser.add_argument("--cbom", type=Path, required=True)
     parser.add_argument(
@@ -92,7 +109,71 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="Explicit ISO-8601 timestamp; the engine never reads the clock.",
     )
+
+    # Phase 7 — export flags
+    parser.add_argument(
+        "--format",
+        choices=[f.value for f in ExportFormat],
+        default=None,
+        help="Export format. When omitted, raw assessment JSON is written to "
+        "stdout (backward compatible with Phase 5).",
+    )
+    parser.add_argument(
+        "--output", "-o",
+        type=Path,
+        default=None,
+        help="Output file path. When omitted, text formats go to stdout.",
+    )
+    parser.add_argument(
+        "--diff-baseline",
+        type=Path,
+        default=None,
+        help="Path to a baseline CBOM for diff report (plan task 7.8).",
+    )
     return parser
+
+
+def _run_engines(
+    ingested: Any,
+    contexts: dict[str, ArtefactContext],
+    profiles: Any,
+    recommendation_profile: Any,
+    settings: RiskSettings,
+    assessed_at: datetime,
+) -> tuple[list[RiskAssessment], list[PqcRecommendation]]:
+    """Run risk classification and recommendation for all artefacts."""
+    assessments: list[RiskAssessment] = []
+    recommendations: list[PqcRecommendation] = []
+
+    for artefact in ingested.artefacts:
+        context = contexts.get(artefact.artefact_id)
+        if context is None:
+            context = ArtefactContext(artefact_id=artefact.artefact_id)
+
+        assessment = classify_risk(
+            artefact,
+            context,
+            profiles,
+            settings,
+            assessment_id=f"preview-{artefact.artefact_id}",
+            assessed_at=assessed_at,
+        )
+        assessments.append(assessment)
+
+        recommendation = recommend_replacement(
+            RecommendationContext(
+                recommendation_id=recommendation_id_for_assessment(
+                    assessment.assessment_id
+                ),
+                artefact=artefact,
+                assessment=assessment,
+            ),
+            recommendation_profile,
+        )
+        if recommendation is not None:
+            recommendations.append(recommendation)
+
+    return assessments, recommendations
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -108,46 +189,87 @@ def main(argv: list[str] | None = None) -> int:
             scenario=ResourceScenario(args.scenario),
         )
         assessed_at = _assessed_at(args.assessed_at)
-        assessments = []
-        for artefact in ingested.artefacts:
-            context = contexts.get(artefact.artefact_id)
-            if context is None:
-                context = ArtefactContext(artefact_id=artefact.artefact_id)
-            assessment = classify_risk(
-                artefact,
-                context,
-                profiles,
-                settings,
-                assessment_id=f"preview-{artefact.artefact_id}",
-                assessed_at=assessed_at,
+
+        assessments, recommendations = _run_engines(
+            ingested, contexts, profiles, recommendation_profile,
+            settings, assessed_at,
+        )
+
+        # ── Phase 7 export path ──────────────────────────────────
+        if args.format is not None:
+            fmt = ExportFormat(args.format)
+
+            # Diff report: compute delta before exporting
+            if args.diff_baseline is not None:
+                baseline_doc = _json_file(args.diff_baseline)
+                baseline_ingested = ingest_document(
+                    baseline_doc, scan_target=args.scan_target
+                )
+                diff = compute_diff(baseline_ingested, ingested)
+                diff_output = export_diff_json(diff)
+
+                # If the requested format is JSON, inject diff into output
+                if fmt is ExportFormat.NATIVE_JSON:
+                    native = export(
+                        ingested, assessments, recommendations, fmt,
+                    )
+                    # Merge diff into native JSON
+                    combined = json.loads(native)
+                    combined["diff"] = json.loads(diff_output)
+                    output = json.dumps(
+                        combined, indent=2, sort_keys=False, default=str
+                    )
+                    _write_output(output, args.output, binary=False)
+                    return 0
+
+            output = export(
+                ingested, assessments, recommendations, fmt,
             )
-            recommendation = recommend_replacement(
-                RecommendationContext(
-                    recommendation_id=recommendation_id_for_assessment(
-                        assessment.assessment_id
-                    ),
-                    artefact=artefact,
-                    assessment=assessment,
-                ),
-                recommendation_profile,
-            )
-            assessments.append(
+            binary = fmt in _BINARY_FORMATS
+            _write_output(output, args.output, binary=binary)
+            return 0
+
+        # ── Legacy Phase 5 JSON path (backward compatible) ───────
+        legacy_output = []
+        rec_map = {r.assessment_id: r for r in recommendations}
+        for assessment in assessments:
+            rec = rec_map.get(assessment.assessment_id)
+            legacy_output.append(
                 {
                     **assessment.model_dump(mode="json"),
                     "recommendation": (
-                        recommendation.model_dump(mode="json")
-                        if recommendation is not None
+                        rec.model_dump(mode="json")
+                        if rec is not None
                         else None
                     ),
                 }
             )
+        json.dump(legacy_output, sys.stdout, indent=2, sort_keys=True)
+        print()
+
     except ValueError as error:
         print(f"trinetra risk: {error}", file=sys.stderr)
         return 2
 
-    json.dump(assessments, sys.stdout, indent=2, sort_keys=True)
-    print()
     return 0
+
+
+def _write_output(
+    content: str | bytes, output_path: Path | None, *, binary: bool
+) -> None:
+    """Write content to a file or stdout."""
+    if output_path is not None:
+        mode = "wb" if binary else "w"
+        encoding = None if binary else "utf-8"
+        output_path.write_bytes(content) if binary else output_path.write_text(
+            content, encoding="utf-8"  # type: ignore[arg-type]
+        )
+        print(f"trinetra: wrote {output_path}", file=sys.stderr)
+    elif binary:
+        sys.stdout.buffer.write(content)  # type: ignore[arg-type]
+    else:
+        sys.stdout.write(content)  # type: ignore[arg-type]
+        print()
 
 
 if __name__ == "__main__":  # pragma: no cover - module execution boundary

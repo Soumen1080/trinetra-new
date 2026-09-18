@@ -767,63 +767,58 @@ what the team still has to test.*
 - [x] **6.6a** Every classical algorithm in the profile yields a valid, cited recommendation
 - [x] **6.6b** **An unknown algorithm escalates to manual review** — never a silent fit score of 100
 - [x] **6.6c** No composite confidence score is ever emitted
-- [x] **6.6d** Recommendations are produced for P0/P1 only
-
-**Exit criteria:** every actionable artefact carries a cited, category-gated recommendation, with unmeasured dimensions visibly labelled rather than scored.
-
----
-
-# PHASE 7 — Standardised Reporting & Export *(R18, R19)*
-*Goal: output that other tools and auditors accept.*
-
-- [ ] **7.1** **CycloneDX 1.6 CBOM export** — the standard. `cryptoProperties`: `assetType`, `algorithmProperties` (primitive, parameterSetIdentifier, curve, executionEnvironment, certificationLevel, mode, padding, cryptoFunctions), `certificateProperties`, `relatedCryptoMaterialProperties`, `protocolProperties`. Include `evidence` and `occurrences`. **Validate against the official JSON schema in CI.**
-- [ ] **7.2** SPDX 3.0 export (secondary)
-- [ ] **7.3** Native JSON export (full fidelity — carries risk and recommendations that the standard format cannot)
-- [ ] **7.4** CSV / Excel artefact register for GRC teams
-- [ ] **7.5** **Executive PDF report**: posture summary, Mosca timeline, top risks, budget and roadmap — written for a CISO, not an engineer
-- [ ] **7.6** **Technical PDF / HTML report**: full inventory with file:line evidence and remediation steps
-- [ ] **7.7** SARIF export for CI / code-scanning integration
-- [ ] **7.8** Diff reports: scan N vs scan N−1 (what appeared, what was fixed, posture delta)
-- [ ] **7.9** Report templating (Jinja2 + WeasyPrint)
-- [ ] **7.10** Schema-conformance tests against the published CycloneDX validator
-
-**Exit criteria (vertical slice #3):** `trinetra scan repo X --format cyclonedx` emits a file that passes official CycloneDX validation and contains versions and modes.
-
----
-
-# PHASE 8 — Backend API & Orchestration
-*Goal: turn the library into a service the GUI can drive.*
-
-- [ ] **8.1** FastAPI skeleton, OpenAPI generation, CORS
-- [ ] **8.2** AuthN / AuthZ: JWT, roles (admin / analyst / viewer), multi-tenant project scoping
-- [ ] **8.3** Scan lifecycle endpoints: `POST /scans`, `GET /scans/{id}`, cancel, list, rescan
-- [ ] **8.4** Async worker execution (Celery / RQ) with **progress reporting** — a ten-minute scan with no feedback is unusable
-- [ ] **8.5** WebSocket / SSE live scan progress and log stream — **must emit percentage, current stage and running counts**, not just "running", because §4.5a depends on it
-- [ ] **8.6** Artefact query API: filter by type / risk / app / algorithm, paginate, sort, full-text search
-  - [ ] **Facet counts returned with results** so the UI can show "Critical (42)" beside each filter *(§4.2, orientation before drill-down)*
-  - [ ] **Partial/streaming results available while a scan is still running** *(§4.5b)*
-  - [ ] Server-side default sort = risk descending *(§4.2e)*
-- [ ] **8.7** Risk and Mosca endpoints, including **what-if recalculation** when Z or X changes — must be fast, because it drives a UI slider
-- [ ] **8.8** Recommendation endpoints
-- [ ] **8.9** Export endpoints (all Phase 7 formats)
-- [ ] **8.10** Asset / application CRUD (criticality, data classification, owner)
-  - [ ] **8.10a** **Bulk import from CSV / CMDB export** — *this is Phase 4.7, which
-        belongs here rather than in a scanner: business context is supplied by a
-        human or an inventory system, never observed by a scanner (the Phase 1
-        schema forbids a scanner supplying anything but `data_category`)*
-  - [ ] **8.10b** Every imported field records `org_preset` provenance, so a
-        CMDB-supplied criticality is distinguishable from a user-confirmed one (P4)
-  - [ ] **8.10c** Import is idempotent and re-runnable; a re-import updates rather
-        than duplicating applications
-- [ ] **8.11** Settings API: Mosca defaults, risk weights, rule-pack toggles
-- [ ] **8.12** Persistence layer + historical scan retention for trend analysis
-- [ ] **8.13** Rate limiting, request validation, audit log of every action
-- [ ] **8.14** API integration tests
-
-**Exit criteria:** a UI-ready OpenAPI spec; a scan can be started, watched and queried over HTTP.
-
----
-
+- [x] **6.6d** Recommendations are produced for P0/P1 only
+
+**Exit criteria:** every actionable artefact carries a cited, category-gated recommendation, with unmeasured dimensions visibly labelled rather than scored.
+
+---
+
+# PHASE 7 — Standardised Reporting & Export *(R18, R19)*
+*Goal: output that other tools and auditors accept.*
+
+- [x] **7.1** **CycloneDX 1.6 CBOM export** — the standard. `cryptoProperties`: `assetType`, `algorithmProperties` (primitive, parameterSetIdentifier, curve, executionEnvironment, certificationLevel, mode, padding, cryptoFunctions), `certificateProperties`, `relatedCryptoMaterialProperties`, `protocolProperties`. Include `evidence` and `occurrences`. **Validate against the official JSON schema in CI.**
+- [x] **7.2** SPDX 3.0 export (secondary)
+- [x] **7.3** Native JSON export (full fidelity — carries risk and recommendations that the standard format cannot)
+- [x] **7.4** CSV / Excel artefact register for GRC teams
+- [x] **7.5** **Executive PDF report**: posture summary, Mosca timeline, top risks, budget and roadmap — written for a CISO, not an engineer
+- [x] **7.6** **Technical PDF / HTML report**: full inventory with file:line evidence and remediation steps
+- [x] **7.7** SARIF export for CI / code-scanning integration
+- [x] **7.8** Diff reports: scan N vs scan N−1 (what appeared, what was fixed, posture delta)
+- [x] **7.9** Report templating (Jinja2 + WeasyPrint)
+- [x] **7.10** Schema-conformance tests against the published CycloneDX validator
+
+**Exit criteria (vertical slice #3):** `trinetra scan repo X --format cyclonedx` emits a file that passes official CycloneDX validation and contains versions and modes.
+
+---
+
+# PHASE 8 — Backend API & Orchestration
+*Goal: turn the library into a service the GUI can drive.*
+
+- [ ] **8.1** FastAPI skeleton, OpenAPI generation, CORS
+- [ ] **8.2** AuthN / AuthZ: JWT, roles (admin / analyst / viewer), multi-tenant project scoping
+- [ ] **8.3** Scan lifecycle endpoints: `POST /scans`, `GET /scans/{id}`, cancel, list, rescan
+- [ ] **8.4** Async worker execution (Celery / RQ) with **progress reporting** — a ten-minute scan with no feedback is unusable
+- [ ] **8.5** WebSocket / SSE live scan progress and log stream — **must emit percentage, current stage and running counts**, not just "running", because §4.5a depends on it
+- [ ] **8.6** Artefact query API: filter by type / risk / app / algorithm, paginate, sort, full-text search
+  - [ ] **Facet counts returned with results** so the UI can show "Critical (42)" beside each filter *(§4.2, orientation before drill-down)*
+  - [ ] **Partial/streaming results available while a scan is still running** *(§4.5b)*
+  - [ ] Server-side default sort = risk descending *(§4.2e)*
+- [ ] **8.7** Risk and Mosca endpoints, including **what-if recalculation** when Z or X changes — must be fast, because it drives a UI slider
+- [ ] **8.8** Recommendation endpoints
+- [ ] **8.9** Export endpoints (all Phase 7 formats)
+- [ ] **8.10** Asset / application CRUD (criticality, data classification, owner)
+  - [ ] **8.10a** **Bulk import from CSV / CMDB export** — *this is Phase 4.7, which belongs here rather than in a scanner: business context is supplied by a human or an inventory system, never observed by a scanner (the Phase 1 schema forbids a scanner supplying anything but `data_category`)*
+  - [ ] **8.10b** Every imported field records `org_preset` provenance, so a CMDB-supplied criticality is distinguishable from a user-confirmed one (P4)
+  - [ ] **8.10c** Import is idempotent and re-runnable; a re-import updates rather than duplicating applications
+- [ ] **8.11** Settings API: Mosca defaults, risk weights, rule-pack toggles
+- [ ] **8.12** Persistence layer + historical scan retention for trend analysis
+- [ ] **8.13** Rate limiting, request validation, audit log of every action
+- [ ] **8.14** API integration tests
+
+**Exit criteria:** a UI-ready OpenAPI spec; a scan can be started, watched and queried over HTTP.
+
+---
+
 # PHASE 9 — Interactive GUI: Core *(R20, R21)*
 *Goal: the interactive visualisation platform the deliverable demands — and one a non-expert can actually use.*
 *Every task below is bound by the §4 UX Doctrine.*

@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: trinetra-backend
+Version: 0.1.0
+Summary: Trinetra — PQC Cryptographic Bill of Materials analytics platform
+Requires-Python: >=3.12
+Requires-Dist: pydantic>=2.9
+Requires-Dist: sqlalchemy>=2.0.36
+Requires-Dist: alembic>=1.14
+Requires-Dist: jinja2>=3.1
+Provides-Extra: dev
+Requires-Dist: pytest>=8.3; extra == "dev"
+Requires-Dist: pytest-cov>=6.0; extra == "dev"
+Requires-Dist: ruff>=0.8; extra == "dev"
+Requires-Dist: mypy>=1.13; extra == "dev"
+Requires-Dist: jsonschema>=4.23; extra == "dev"
+Provides-Extra: report
+Requires-Dist: weasyprint>=62; extra == "report"
+Requires-Dist: openpyxl>=3.1; extra == "report"
+Provides-Extra: postgres
+Requires-Dist: psycopg[binary]>=3.2; extra == "postgres"

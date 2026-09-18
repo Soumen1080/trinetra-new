@@ -1,0 +1,217 @@
+{% extends "base.html.j2" %}
+
+{% block title %}Trinetra Technical Report{% endblock %}
+{% block header_title %}Cryptographic Inventory — Technical Report{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .evidence-block {
+        background: #f8f9fa;
+        border-left: 3px solid var(--color-accent);
+        padding: 6px 10px;
+        margin: 4px 0;
+        font-size: 8pt;
+    }
+    .snippet {
+        font-family: var(--font-mono);
+        font-size: 8pt;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+    .factor-bar {
+        display: inline-block;
+        height: 8px;
+        border-radius: 2px;
+        margin-right: 4px;
+    }
+    .artefact-card {
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 12px;
+        margin: 12px 0;
+        page-break-inside: avoid;
+    }
+    .artefact-card h3 {
+        margin-top: 0;
+        border-bottom: none;
+    }
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        font-size: 9pt;
+        margin: 8px 0;
+    }
+    .detail-grid .label {
+        color: var(--color-muted);
+        font-size: 7pt;
+        text-transform: uppercase;
+    }
+    .remediation {
+        background: var(--color-safe-bg);
+        border-left: 3px solid var(--color-safe);
+        padding: 8px 12px;
+        margin: 8px 0;
+        font-size: 9pt;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── Summary ─────────────────────────────────────────────── #}
+<h2>Inventory Summary</h2>
+<div class="stat-grid">
+    <div class="stat-tile">
+        <div class="value">{{ summary.total_artefacts }}</div>
+        <div class="label">Total Artefacts</div>
+    </div>
+    <div class="stat-tile danger">
+        <div class="value">{{ summary.quantum_vulnerable }}</div>
+        <div class="label">Quantum-Vulnerable</div>
+    </div>
+    <div class="stat-tile">
+        <div class="value">{{ summary.assessed }}</div>
+        <div class="label">Risk-Assessed</div>
+    </div>
+    <div class="stat-tile">
+        <div class="value">{{ summary.needs_context }}</div>
+        <div class="label">Needs Context</div>
+    </div>
+</div>
+
+
+{# ── Full Inventory ──────────────────────────────────────── #}
+<h2>Full Inventory</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Algorithm</th>
+            <th>Key Size</th>
+            <th>Mode</th>
+            <th>QV Status</th>
+            <th>Priority</th>
+            <th>Score</th>
+            <th>Location</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in inventory %}
+        <tr>
+            <td><strong>{{ item.name }}</strong></td>
+            <td>{{ item.asset_type | replace("_", " ") }}</td>
+            <td>{{ item.algorithm or "—" }}</td>
+            <td>{{ item.key_size or "—" }}</td>
+            <td>{{ item.mode or "—" }}</td>
+            <td>{{ item.quantum_vulnerability | replace("_", " ") }}</td>
+            <td>
+                {% if item.priority and item.priority != "none" %}
+                <span class="badge badge-{{ item.priority }}">{{ item.priority | upper }}</span>
+                {% else %}
+                —
+                {% endif %}
+            </td>
+            <td>{{ item.score if item.score is not none else "—" }}</td>
+            <td><code>{{ item.location }}</code></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{# ── Detailed Artefact Cards ─────────────────────────────── #}
+<div class="page-break"></div>
+<h2>Artefact Details</h2>
+
+{% for item in detailed_artefacts %}
+<div class="artefact-card">
+    <h3>
+        {{ item.name }}
+        {% if item.priority and item.priority != "none" %}
+        <span class="badge badge-{{ item.priority }}">{{ item.priority | upper }}</span>
+        {% endif %}
+    </h3>
+
+    <div class="detail-grid">
+        <div>
+            <div class="label">Asset Type</div>
+            {{ item.asset_type | replace("_", " ") | title }}
+        </div>
+        <div>
+            <div class="label">Algorithm</div>
+            {{ item.algorithm or "—" }}
+        </div>
+        <div>
+            <div class="label">Primitive</div>
+            {{ item.primitive or "—" }}
+        </div>
+        <div>
+            <div class="label">Key Size</div>
+            {{ item.key_size or "—" }}
+        </div>
+        <div>
+            <div class="label">Mode</div>
+            {{ item.mode or "—" }}
+        </div>
+        <div>
+            <div class="label">Quantum Vulnerability</div>
+            {{ item.quantum_vulnerability | replace("_", " ") }}
+        </div>
+    </div>
+
+    {# Evidence #}
+    <h4 style="font-size:9pt;margin:8px 0 4px;">Evidence</h4>
+    {% for ev in item.evidence %}
+    <div class="evidence-block">
+        <strong>{{ ev.location }}</strong>
+        ({{ ev.method }}, confidence: {{ ev.confidence }})
+        {% if ev.rule_id %}<br>Rule: <code>{{ ev.rule_id }}</code>{% endif %}
+        {% if ev.snippet %}
+        <div class="snippet">{{ ev.snippet }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    {# Risk breakdown #}
+    {% if item.contributions %}
+    <h4 style="font-size:9pt;margin:8px 0 4px;">Risk Score: {{ item.score }}</h4>
+    <table style="font-size:8pt;">
+        <thead>
+            <tr><th>Factor</th><th>Points</th><th>Max</th><th>Evidence?</th><th>Reason</th></tr>
+        </thead>
+        <tbody>
+        {% for c in item.contributions %}
+            <tr>
+                <td>{{ c.factor | replace("_", " ") | title }}</td>
+                <td>{{ c.points }}</td>
+                <td>{{ c.max_points }}</td>
+                <td>{{ "✓" if c.has_evidence else "✗" }}</td>
+                <td>{{ c.reason }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {# Remediation #}
+    {% if item.recommendation %}
+    <div class="remediation">
+        <strong>Recommended:</strong> Migrate to
+        <strong>{{ item.recommendation.algorithm }}</strong>
+        {% if item.recommendation.parameter_set %}
+            ({{ item.recommendation.parameter_set }})
+        {% endif %}
+        {% if item.recommendation.is_hybrid %}
+            + {{ item.recommendation.classical_partner }} (hybrid)
+        {% endif %}
+        <br>
+        {{ item.recommendation.rationale }}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -7,6 +7,7 @@ dependencies = [
     "pydantic>=2.9",
     "sqlalchemy>=2.0.36",
     "alembic>=1.14",
+    "jinja2>=3.1",
 ]
 
 [project.optional-dependencies]
@@ -15,6 +16,11 @@ dev = [
     "pytest-cov>=6.0",
     "ruff>=0.8",
     "mypy>=1.13",
+    "jsonschema>=4.23",
+]
+report = [
+    "weasyprint>=62",
+    "openpyxl>=3.1",
 ]
 postgres = ["psycopg[binary]>=3.2"]
 

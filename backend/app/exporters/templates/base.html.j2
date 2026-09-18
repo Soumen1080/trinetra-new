@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Trinetra Report{% endblock %}</title>
+    <style>
+        :root {
+            --color-bg: #ffffff;
+            --color-text: #1a1a2e;
+            --color-muted: #6c757d;
+            --color-border: #dee2e6;
+            --color-accent: #2c3e50;
+            --color-p0: #e74c3c;
+            --color-p0-bg: #fdecea;
+            --color-p1: #f39c12;
+            --color-p1-bg: #fef9e7;
+            --color-p2: #3498db;
+            --color-p2-bg: #ebf5fb;
+            --color-safe: #27ae60;
+            --color-safe-bg: #eafaf1;
+            --font-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Consolas', 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--color-text);
+            background: var(--color-bg);
+            line-height: 1.6;
+            font-size: 11pt;
+        }
+
+        .page {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 15mm 20mm;
+        }
+
+        /* Header */
+        .report-header {
+            border-bottom: 3px solid var(--color-accent);
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+        .report-header h1 {
+            font-size: 22pt;
+            color: var(--color-accent);
+            margin-bottom: 4px;
+        }
+        .report-header .subtitle {
+            color: var(--color-muted);
+            font-size: 10pt;
+        }
+
+        /* Footer */
+        .report-footer {
+            border-top: 1px solid var(--color-border);
+            padding-top: 8px;
+            margin-top: 32px;
+            color: var(--color-muted);
+            font-size: 8pt;
+            text-align: center;
+        }
+
+        /* Typography */
+        h2 {
+            font-size: 16pt;
+            color: var(--color-accent);
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 6px;
+            margin: 24px 0 12px;
+        }
+        h3 {
+            font-size: 12pt;
+            color: var(--color-accent);
+            margin: 16px 0 8px;
+        }
+        p { margin-bottom: 8px; }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 9pt;
+        }
+        th {
+            background: var(--color-accent);
+            color: white;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 5px 8px;
+            border-bottom: 1px solid var(--color-border);
+            vertical-align: top;
+        }
+        tr:nth-child(even) { background: #f8f9fa; }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 8pt;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-p0 { background: var(--color-p0-bg); color: var(--color-p0); }
+        .badge-p1 { background: var(--color-p1-bg); color: var(--color-p1); }
+        .badge-p2 { background: var(--color-p2-bg); color: var(--color-p2); }
+        .badge-safe { background: var(--color-safe-bg); color: var(--color-safe); }
+
+        /* Stat tiles */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .stat-tile {
+            background: #f8f9fa;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+        .stat-tile .value {
+            font-size: 24pt;
+            font-weight: 700;
+            color: var(--color-accent);
+        }
+        .stat-tile .label {
+            font-size: 8pt;
+            color: var(--color-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-tile.danger .value { color: var(--color-p0); }
+        .stat-tile.warning .value { color: var(--color-p1); }
+        .stat-tile.safe .value { color: var(--color-safe); }
+
+        /* Code */
+        code {
+            font-family: var(--font-mono);
+            background: #f1f3f5;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 9pt;
+        }
+
+        /* Section breaks for PDF */
+        .page-break { page-break-before: always; }
+    </style>
+    {% block extra_styles %}{% endblock %}
+</head>
+<body>
+<div class="page">
+    <div class="report-header">
+        <h1>{% block header_title %}Trinetra Report{% endblock %}</h1>
+        <div class="subtitle">
+            Target: {{ scan.target.identifier }}
+            {% if scan.target.reference %} ({{ scan.target.reference }}){% endif %}
+            &nbsp;|&nbsp;
+            Scan: {{ scan.scan_id }}
+            &nbsp;|&nbsp;
+            Generated: {{ generated_at }}
+        </div>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <div class="report-footer">
+        Trinetra Cryptographic Bill of Materials Platform &mdash;
+        Report generated {{ generated_at }}
+    </div>
+</div>
+</body>
+</html>

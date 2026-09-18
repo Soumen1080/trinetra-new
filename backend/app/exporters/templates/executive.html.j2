@@ -1,0 +1,177 @@
+{% extends "base.html.j2" %}
+
+{% block title %}Trinetra Executive Report{% endblock %}
+{% block header_title %}Post-Quantum Readiness — Executive Summary{% endblock %}
+
+{% block content %}
+
+{# ── Posture Overview ────────────────────────────────────── #}
+<h2>Posture Overview</h2>
+<div class="stat-grid">
+    <div class="stat-tile">
+        <div class="value">{{ summary.total_artefacts }}</div>
+        <div class="label">Total Artefacts</div>
+    </div>
+    <div class="stat-tile danger">
+        <div class="value">{{ summary.quantum_vulnerable }}</div>
+        <div class="label">Quantum-Vulnerable</div>
+    </div>
+    <div class="stat-tile safe">
+        <div class="value">{{ summary.quantum_safe_pct }}%</div>
+        <div class="label">Quantum-Safe</div>
+    </div>
+    <div class="stat-tile danger">
+        <div class="value">{{ summary.p0_count }}</div>
+        <div class="label">Critical (P0)</div>
+    </div>
+    <div class="stat-tile warning">
+        <div class="value">{{ summary.p1_count }}</div>
+        <div class="label">High (P1)</div>
+    </div>
+</div>
+
+<p>
+    Of {{ summary.total_artefacts }} cryptographic artefacts discovered,
+    <strong>{{ summary.quantum_vulnerable }}</strong> are vulnerable to
+    quantum attack.
+    {% if summary.mosca_urgent_count > 0 %}
+    <strong>{{ summary.mosca_urgent_count }}</strong>
+    {{ "artefact has" if summary.mosca_urgent_count == 1 else "artefacts have" }}
+    a Mosca deadline that has already passed — migration must begin now.
+    {% endif %}
+</p>
+
+
+{# ── Top Risks ───────────────────────────────────────────── #}
+<h2>Top Risks — Actions This Quarter</h2>
+{% if top_risks %}
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Artefact</th>
+            <th>Priority</th>
+            <th>Risk Score</th>
+            <th>Why It Matters</th>
+            <th>Recommended Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for risk in top_risks %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ risk.name }}</strong></td>
+            <td><span class="badge badge-{{ risk.priority }}">{{ risk.priority | upper }}</span></td>
+            <td>{{ risk.score }}</td>
+            <td>{{ risk.rationale }}</td>
+            <td>{{ risk.action }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No critical risks identified in this scan.</p>
+{% endif %}
+
+
+{# ── Mosca Timeline ──────────────────────────────────────── #}
+<h2>Mosca Timeline</h2>
+<p>
+    The Mosca inequality (X + Y &gt; Z) determines whether migration must begin
+    now. X is the data's confidentiality lifetime, Y is the migration time, and
+    Z is the threat horizon — when a cryptographically relevant quantum computer
+    is expected.
+</p>
+{% if mosca_artefacts %}
+<table>
+    <thead>
+        <tr>
+            <th>Artefact</th>
+            <th>X (years)</th>
+            <th>Y (years)</th>
+            <th>Z (years)</th>
+            <th>Shortfall</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for m in mosca_artefacts %}
+        <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ m.x if m.x is not none else "—" }}</td>
+            <td>{{ m.y if m.y is not none else "—" }}</td>
+            <td>{{ m.z if m.z is not none else "—" }}</td>
+            <td>{{ m.shortfall if m.shortfall is not none else "—" }}</td>
+            <td>
+                {% if m.urgent == true %}
+                    <span class="badge badge-p0">URGENT</span>
+                {% elif m.urgent == false %}
+                    <span class="badge badge-safe">OK</span>
+                {% else %}
+                    <span class="badge" style="background:#eee;color:#666;">INCOMPLETE</span>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No artefacts with Mosca data available.</p>
+{% endif %}
+
+
+{# ── Artefact Distribution ───────────────────────────────── #}
+<h2>Artefact Distribution by Type</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Asset Type</th>
+            <th>Count</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for type_name, count in artefacts_by_type.items() %}
+        <tr>
+            <td>{{ type_name | replace("_", " ") | title }}</td>
+            <td>{{ count }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{# ── Coverage ────────────────────────────────────────────── #}
+<h2>Scan Coverage</h2>
+<p>
+    {{ coverage.files_scanned }} of {{ coverage.files_discovered }} files scanned
+    ({{ coverage.coverage_pct }}%).
+    {% if coverage.gaps %}
+    {{ coverage.gaps | length }} coverage gap{{ "s" if coverage.gaps | length > 1 else "" }} recorded.
+    {% endif %}
+</p>
+
+
+{# ── Migration Roadmap (if available) ────────────────────── #}
+{% if migration_waves %}
+<h2>Migration Roadmap Summary</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Wave</th>
+            <th>Artefacts</th>
+            <th>Earliest Deadline</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for wave in migration_waves %}
+        <tr>
+            <td>Wave {{ wave.number }}</td>
+            <td>{{ wave.count }}</td>
+            <td>{{ wave.earliest_deadline if wave.earliest_deadline else "—" }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}
