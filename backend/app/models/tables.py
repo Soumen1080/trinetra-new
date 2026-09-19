@@ -73,12 +73,64 @@ class User(Base, TimestampMixin):
     __table_args__ = (Index("ix_users_username", "username"),)
 
 
+class Project(Base, TimestampMixin):
+    """A tenant-scoped workspace.
+
+    A project is the authorization boundary for scans, inventory and settings.
+    ``tenant_id`` is intentionally an opaque external identifier: deployments
+    may map it to an IdP organisation, while a self-hosted install can simply
+    use one value.  Data access is always checked through membership, never by
+    trusting a project id supplied by the browser.
+    """
+
+    __tablename__ = "projects"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    created_by: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("users.id", ondelete="SET NULL")
+    )
+
+    memberships: Mapped[list[ProjectMembership]] = relationship(
+        back_populates="project", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "name", name="uq_projects_tenant_name"),
+        Index("ix_projects_tenant_id", "tenant_id"),
+    )
+
+
+class ProjectMembership(Base, TimestampMixin):
+    """Explicit project access; global roles do not bypass tenant boundaries."""
+
+    __tablename__ = "project_memberships"
+
+    project_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+
+    project: Mapped[Project] = relationship(back_populates="memberships")
+
+    __table_args__ = (Index("ix_project_memberships_user_id", "user_id"),)
+
+
 class Application(Base, TimestampMixin):
     """A system that owns artefacts; supplies business context (task 1.9)."""
 
     __tablename__ = "applications"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    # Nullable only to preserve pre-Phase-8 historical rows.  The API never
+    # creates an unscoped application and the migration backfills old data.
+    project_id: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("projects.id", ondelete="CASCADE")
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
 
@@ -100,9 +152,13 @@ class Application(Base, TimestampMixin):
     migration_time_years: Mapped[float | None] = mapped_column(Float)
 
     tags: Mapped[list | None] = mapped_column(JSONColumn)
+    #: Per-field origin of supplied business context.  This prevents a CMDB
+    #: import looking indistinguishable from a human-confirmed value (P4).
+    provenance_json: Mapped[dict | None] = mapped_column(JSONColumn)
 
     __table_args__ = (
         Index("ix_applications_name", "name"),
+        Index("ix_applications_project_id", "project_id"),
         CheckConstraint(
             "data_retention_years IS NULL OR data_retention_years >= 0",
             name="data_retention_non_negative",
@@ -120,6 +176,9 @@ class Scan(Base, TimestampMixin):
     __tablename__ = "scans"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    project_id: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("projects.id", ondelete="CASCADE")
+    )
     target_kind: Mapped[str] = mapped_column(
         String(32), nullable=False, default=ScanTargetKind.GIT_REPOSITORY.value
     )
@@ -133,9 +192,7 @@ class Scan(Base, TimestampMixin):
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    schema_version: Mapped[str] = mapped_column(
-        String(16), nullable=False, default="1.0"
-    )
+    schema_version: Mapped[str] = mapped_column(String(16), nullable=False, default="1.0")
     scanners_run: Mapped[list | None] = mapped_column(JSONColumn)
     tool_versions: Mapped[list | None] = mapped_column(JSONColumn)
     coverage_json: Mapped[dict | None] = mapped_column(JSONColumn)
@@ -150,9 +207,15 @@ class Scan(Base, TimestampMixin):
     artefacts: Mapped[list[Artefact]] = relationship(
         back_populates="scan", cascade="all, delete-orphan"
     )
+    progress_events: Mapped[list[ScanProgressEvent]] = relationship(
+        back_populates="scan",
+        cascade="all, delete-orphan",
+        order_by="ScanProgressEvent.sequence",
+    )
 
     __table_args__ = (
         Index("ix_scans_requested_by", "requested_by"),
+        Index("ix_scans_project_id", "project_id"),
         Index("ix_scans_status", "status"),
         # Makes Idempotency-Key a database guarantee rather than an
         # application-level hope: a retried request cannot create a second scan.
@@ -362,9 +425,7 @@ class RiskAssessment(Base):
     weights_version: Mapped[str] = mapped_column(String(64), nullable=False)
     quantum_forecast_profile_version: Mapped[str | None] = mapped_column(String(64))
 
-    assessed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    assessed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     artefact: Mapped[Artefact] = relationship(back_populates="assessments")
     recommendation: Mapped[Recommendation | None] = relationship(
@@ -474,6 +535,9 @@ class OrgSettingVersion(Base, TimestampMixin):
     __tablename__ = "org_setting_versions"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    project_id: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("projects.id", ondelete="CASCADE")
+    )
     version: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
@@ -488,6 +552,7 @@ class OrgSettingVersion(Base, TimestampMixin):
 
     __table_args__ = (
         Index("ix_org_setting_versions_active", "is_active"),
+        Index("ix_org_setting_versions_project_id", "project_id"),
     )
 
 
@@ -520,15 +585,75 @@ class Report(Base, TimestampMixin):
     )
 
 
+class ScanProgressEvent(Base):
+    """Durable progress and log events for polling/SSE/WebSocket fallback.
+
+    Redis pub/sub remains the low-latency delivery path in production, but an
+    event row makes progress recoverable after a browser reconnect or a Redis
+    interruption.  Counts are a JSON object so scanners can report discovered
+    files, scanned files and findings without a fragile fixed schema.
+    """
+
+    __tablename__ = "scan_progress_events"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    scan_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("scans.id", ondelete="CASCADE"), nullable=False
+    )
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    percent: Mapped[float] = mapped_column(Float, nullable=False)
+    stage: Mapped[str] = mapped_column(String(64), nullable=False)
+    counts_json: Mapped[dict | None] = mapped_column(JSONColumn)
+    message: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    scan: Mapped[Scan] = relationship(back_populates="progress_events")
+
+    __table_args__ = (
+        UniqueConstraint("scan_id", "sequence", name="uq_scan_progress_sequence"),
+        Index("ix_scan_progress_events_scan_id", "scan_id"),
+        CheckConstraint("percent >= 0 AND percent <= 100", name="progress_in_range"),
+    )
+
+
+class AuditLog(Base):
+    """Append-only record of every API mutation (Phase 8.13)."""
+
+    __tablename__ = "audit_logs"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    project_id: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("projects.id", ondelete="SET NULL")
+    )
+    actor_id: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    action: Mapped[str] = mapped_column(String(128), nullable=False)
+    resource_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    resource_id: Mapped[str | None] = mapped_column(String(64))
+    request_id: Mapped[str | None] = mapped_column(String(64))
+    details_json: Mapped[dict | None] = mapped_column(JSONColumn)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        Index("ix_audit_logs_project_id", "project_id"),
+        Index("ix_audit_logs_occurred_at", "occurred_at"),
+    )
+
+
 __all__ = [
     "Application",
     "Artefact",
     "ArtefactContext",
+    "AuditLog",
     "DependencyEdge",
     "OrgSettingVersion",
+    "Project",
+    "ProjectMembership",
     "Recommendation",
     "Report",
     "RiskAssessment",
     "Scan",
+    "ScanProgressEvent",
     "User",
 ]

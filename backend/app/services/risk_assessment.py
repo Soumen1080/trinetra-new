@@ -46,6 +46,7 @@ def apply_risk_settings_and_rescore(
     *,
     setting_id: str,
     setting_version: str,
+    project_id: str | None = None,
     profiles: RiskProfiles,
     settings: RiskSettings,
     assessment_id_for: Callable[[str], str],
@@ -66,6 +67,7 @@ def apply_risk_settings_and_rescore(
     """
     setting = tables.OrgSettingVersion(
         id=setting_id,
+        project_id=project_id,
         version=setting_version,
         is_active=True,
         settings_json={
@@ -82,7 +84,7 @@ def apply_risk_settings_and_rescore(
 
     count = 0
     recommendations_created = 0
-    for artefact_row in artefacts_for_rescore(session):
+    for artefact_row in artefacts_for_rescore(session, project_id=project_id):
         artefact = artefact_from_row(artefact_row)
         context = (
             context_from_row(artefact_row.context)
