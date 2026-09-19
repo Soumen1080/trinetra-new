@@ -794,26 +794,26 @@ what the team still has to test.*
 # PHASE 8 — Backend API & Orchestration
 *Goal: turn the library into a service the GUI can drive.*
 
-- [ ] **8.1** FastAPI skeleton, OpenAPI generation, CORS
-- [ ] **8.2** AuthN / AuthZ: JWT, roles (admin / analyst / viewer), multi-tenant project scoping
-- [ ] **8.3** Scan lifecycle endpoints: `POST /scans`, `GET /scans/{id}`, cancel, list, rescan
-- [ ] **8.4** Async worker execution (Celery / RQ) with **progress reporting** — a ten-minute scan with no feedback is unusable
-- [ ] **8.5** WebSocket / SSE live scan progress and log stream — **must emit percentage, current stage and running counts**, not just "running", because §4.5a depends on it
-- [ ] **8.6** Artefact query API: filter by type / risk / app / algorithm, paginate, sort, full-text search
-  - [ ] **Facet counts returned with results** so the UI can show "Critical (42)" beside each filter *(§4.2, orientation before drill-down)*
-  - [ ] **Partial/streaming results available while a scan is still running** *(§4.5b)*
-  - [ ] Server-side default sort = risk descending *(§4.2e)*
-- [ ] **8.7** Risk and Mosca endpoints, including **what-if recalculation** when Z or X changes — must be fast, because it drives a UI slider
-- [ ] **8.8** Recommendation endpoints
-- [ ] **8.9** Export endpoints (all Phase 7 formats)
-- [ ] **8.10** Asset / application CRUD (criticality, data classification, owner)
-  - [ ] **8.10a** **Bulk import from CSV / CMDB export** — *this is Phase 4.7, which belongs here rather than in a scanner: business context is supplied by a human or an inventory system, never observed by a scanner (the Phase 1 schema forbids a scanner supplying anything but `data_category`)*
-  - [ ] **8.10b** Every imported field records `org_preset` provenance, so a CMDB-supplied criticality is distinguishable from a user-confirmed one (P4)
-  - [ ] **8.10c** Import is idempotent and re-runnable; a re-import updates rather than duplicating applications
-- [ ] **8.11** Settings API: Mosca defaults, risk weights, rule-pack toggles
-- [ ] **8.12** Persistence layer + historical scan retention for trend analysis
-- [ ] **8.13** Rate limiting, request validation, audit log of every action
-- [ ] **8.14** API integration tests
+- [x] **8.1** FastAPI skeleton, OpenAPI generation, CORS
+- [x] **8.2** AuthN / AuthZ: JWT, roles (admin / analyst / viewer), multi-tenant project scoping
+- [x] **8.3** Scan lifecycle endpoints: `POST /scans`, `GET /scans/{id}`, cancel, list, rescan
+- [x] **8.4** Async worker execution (Celery / RQ) with **progress reporting** — a ten-minute scan with no feedback is unusable
+- [x] **8.5** WebSocket / SSE live scan progress and log stream — **must emit percentage, current stage and running counts**, not just "running", because §4.5a depends on it
+- [x] **8.6** Artefact query API: filter by type / risk / app / algorithm, paginate, sort, full-text search
+  - [x] **Facet counts returned with results** so the UI can show "Critical (42)" beside each filter *(§4.2, orientation before drill-down)*
+  - [x] **Partial/streaming results available while a scan is still running** *(§4.5b)*
+  - [x] Server-side default sort = risk descending *(§4.2e)*
+- [x] **8.7** Risk and Mosca endpoints, including **what-if recalculation** when Z or X changes — must be fast, because it drives a UI slider
+- [x] **8.8** Recommendation endpoints
+- [x] **8.9** Export endpoints (all Phase 7 formats)
+- [x] **8.10** Asset / application CRUD (criticality, data classification, owner)
+  - [x] **8.10a** **Bulk import from CSV / CMDB export** — *this is Phase 4.7, which belongs here rather than in a scanner: business context is supplied by a human or an inventory system, never observed by a scanner (the Phase 1 schema forbids a scanner supplying anything but `data_category`)*
+  - [x] **8.10b** Every imported field records `org_preset` provenance, so a CMDB-supplied criticality is distinguishable from a user-confirmed one (P4)
+  - [x] **8.10c** Import is idempotent and re-runnable; a re-import updates rather than duplicating applications
+- [x] **8.11** Settings API: Mosca defaults, risk weights, rule-pack toggles
+- [x] **8.12** Persistence layer + historical scan retention for trend analysis
+- [x] **8.13** Rate limiting, request validation, audit log of every action
+- [x] **8.14** API integration tests
 
 **Exit criteria:** a UI-ready OpenAPI spec; a scan can be started, watched and queried over HTTP.
 
