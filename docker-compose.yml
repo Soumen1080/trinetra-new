@@ -1,0 +1,39 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: trinetra-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - TRINETRA_DATABASE_URL=sqlite:////data/trinetra.db
+      - TRINETRA_AUTO_CREATE_SCHEMA=true
+      - BOOTSTRAP_ADMIN_USERNAME=admin
+      - BOOTSTRAP_ADMIN_PASSWORD=adminpassword
+      - TRINETRA_CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost
+      - TRINETRA_REPORT_STORE=/data/reports
+    volumes:
+      - trinetra-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: trinetra-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  trinetra-data:

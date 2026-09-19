@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.git
+.pytest_cache
+.ruff_cache
+.test-tmp*
+*.db
+*.sqlite3
+__pycache__
+**/__pycache__
