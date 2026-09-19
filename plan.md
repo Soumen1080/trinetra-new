@@ -47,8 +47,8 @@ Every clause of the problem statement must be satisfied. This table is the **acc
 | R17 | Scan **container images** | Phase 3 (Syft; verified on alpine + debian) | [x] **done** |
 | R18 | Report in **standardised formats** (CycloneDX CBOM 1.6) | Phase 2.0 (contract) + Phase 7 (export) | [ ] |
 | R19 | Report shows **versions / modes** (AES-128-CBC, RSA-2048…) | Phase 1.2 schema + Phase 2 detection + Phase 7 export | [~] detection done |
-| R20 | **Interactive GUI** to visualise scan, risks, results | Phases 8–10 | [ ] |
-| R21 | **Usable GUI** — a non-expert can see everything without training *(quality bar on R20, see §4)* | Phase 8.5 + Phases 9–10 + Phase 10B validation | [ ] |
+| R20 | **Interactive GUI** to visualise scan, risks, results | Phases 8–10 | [x] **done** |
+| R21 | **Usable GUI** — a non-expert can see everything without training *(quality bar on R20, see §4)* | Phase 8.5 + Phases 9–10 + Phase 10B validation | [~] Phase 9 done; 10B pending |
 
 > **⚠ One unresolved tension between the problem statement and the architecture.**
 > R15 ("scan **binaries**") is named explicitly in the deliverable, but
@@ -824,52 +824,52 @@ what the team still has to test.*
 *Every task below is bound by the §4 UX Doctrine.*
 
 ### 9.0 Design before code *(do not skip — this is what prevents a rebuild)*
-- [ ] **9.0a** **Wireframe the four core screens first** (Dashboard, Scan progress, CBOM Explorer, Artefact detail) — on paper or in Figma, before any React is written
-- [ ] **9.0b** Map each screen to its persona from §4.1 and write the "10-second question" it answers at the top of the spec
-- [ ] **9.0c** Walk the three personas through the wireframes; fix confusion on paper, where it is free
-- [ ] **9.0d** Define the **design tokens** up front: risk colour scale, spacing, type scale, asset-type icon set — so §4.8 consistency is structural, not a later cleanup
+- [x] **9.0a** **Wireframe the four core screens first** (Dashboard, Scan progress, CBOM Explorer, Artefact detail) — on paper or in Figma, before any React is written
+- [x] **9.0b** Map each screen to its persona from §4.1 and write the "10-second question" it answers at the top of the spec
+- [x] **9.0c** Walk the three personas through the wireframes; fix confusion on paper, where it is free
+- [x] **9.0d** Define the **design tokens** up front: risk colour scale, spacing, type scale, asset-type icon set — so §4.8 consistency is structural, not a later cleanup
 
 ### 9.1–9.3 Foundation
-- [ ] **9.1** React + TS + Vite scaffold; TanStack Query; typed client generated from OpenAPI
-- [ ] **9.2** **Design system** implementing §4.8: layout shell, persistent left nav, breadcrumbs, light/dark theme, component library (table, badge, drawer, chart frame, tooltip, empty state, skeleton), and the **single shared risk colour scale**
-- [ ] **9.3** Auth flow, protected routes, **role-based default landing page** *(§4.1b)*
+- [x] **9.1** React + TS + Vite scaffold; TanStack Query; typed client generated from OpenAPI
+- [x] **9.2** **Design system** implementing §4.8: layout shell, persistent left nav, breadcrumbs, light/dark theme, component library (table, badge, drawer, chart frame, tooltip, empty state, skeleton), and the **single shared risk colour scale**
+- [x] **9.3** Auth flow, protected routes, **role-based default landing page** *(§4.1b)*
 
 ### 9.4 Dashboard / posture overview — *the executive screen*
-- [ ] **9.4a** **At most 5 headline tiles** *(§4.2b)*: total artefacts, quantum-vulnerable count, critical risks, % quantum-safe, nearest Mosca deadline
-- [ ] **9.4b** **"Top 5 things to fix this quarter" panel** *(§4.4c)* — plain language, each row one click from the evidence
-- [ ] **9.4c** Risk-distribution donut and artefact-type breakdown, each drilling through to a filtered Explorer view
-- [ ] **9.4d** Top-10 at-risk applications
-- [ ] **9.4e** Posture trend over time
-- [ ] **9.4f** Every tile states **what it means in one plain sentence** on hover *(§4.3a)*
-- [ ] **9.4g** Readable by a non-technical executive with **zero clicks and no training** — the acceptance test for this screen
+- [x] **9.4a** **At most 5 headline tiles** *(§4.2b)*: total artefacts, quantum-vulnerable count, critical risks, % quantum-safe, nearest Mosca deadline
+- [x] **9.4b** **"Top 5 things to fix this quarter" panel** *(§4.4c)* — plain language, each row one click from the evidence
+- [x] **9.4c** Risk-distribution donut and artefact-type breakdown, each drilling through to a filtered Explorer view
+- [x] **9.4d** Top-10 at-risk applications
+- [x] **9.4e** Posture trend over time
+- [x] **9.4f** Every tile states **what it means in one plain sentence** on hover *(§4.3a)*
+- [x] **9.4g** Readable by a non-technical executive with **zero clicks and no training** — the acceptance test for this screen
 
 ### 9.5 Scan management — *never leave the user staring at nothing (§4.5)*
-- [ ] **9.5a** New-scan wizard: target type (repo / binary / image / host / cloud), configure, launch — **launchable by filling one field** thanks to sane defaults *(§4.11d)*
-- [ ] **9.5b** **Live progress: real percentage + current stage + file counts**, streamed *(§4.5a)*
-- [ ] **9.5c** **Partial results stream into the table during the scan** *(§4.5b)*
-- [ ] **9.5d** Collapsible live log for users who want it; hidden by default *(§4.2c)*
-- [ ] **9.5e** Scan history and diff-against-previous
-- [ ] **9.5f** Actionable error states with the cause and the fix *(§4.5e)*
+- [x] **9.5a** New-scan wizard: target type (repo / binary / image / host / cloud), configure, launch — **launchable by filling one field** thanks to sane defaults *(§4.11d)*
+- [x] **9.5b** **Live progress: real percentage + current stage + file counts**, streamed *(§4.5a)*
+- [x] **9.5c** **Partial results stream into the table during the scan** *(§4.5b)*
+- [x] **9.5d** Collapsible live log for users who want it; hidden by default *(§4.2c)*
+- [x] **9.5e** Scan history and diff-against-previous
+- [x] **9.5f** Actionable error states with the cause and the fix *(§4.5e)*
 
 ### 9.6 CBOM Explorer — *the analyst's main working surface*
-- [ ] **9.6a** Virtualised artefact table, smooth at **100k rows** *(§4.10a)*
-- [ ] **9.6b** **Opens sorted by risk, descending, with a default column set** — the worst finding is the first row *(§4.2d, §4.2e)*
-- [ ] **9.6c** Faceted filters with live result counts: asset type, algorithm, risk band, application, quantum status, library
-- [ ] **9.6d** Column selection, sort, saved views; **filter state lives in the URL** *(§4.7c)*
-- [ ] **9.6e** **Artefact detail drawer** — the trust-builder *(§4.6)*:
-  - [ ] Plain-English summary sentence at the top, before any jargon *(§4.3b)*
-  - [ ] **Syntax-highlighted code evidence at file:line**
-  - [ ] Mosca breakdown **showing X, Y, Z and the arithmetic** *(§4.6c)*
-  - [ ] Recommendation with rationale, latency and cost
-  - [ ] Confidence level and detection method, shown openly *(§4.6b)*
-  - [ ] A clear primary action button *(§4.4a)*
-- [ ] **9.6f** Bulk actions: accept risk, assign owner, mark false positive (with reason, and it sticks across rescans — §4.6e)
-- [ ] **9.6g** **Coverage-gap banner** when the scan could not see everything *(§4.6d)*
+- [x] **9.6a** Virtualised artefact table, smooth at **100k rows** *(§4.10a)*
+- [x] **9.6b** **Opens sorted by risk, descending, with a default column set** — the worst finding is the first row *(§4.2d, §4.2e)*
+- [x] **9.6c** Faceted filters with live result counts: asset type, algorithm, risk band, application, quantum status, library
+- [x] **9.6d** Column selection, sort, saved views; **filter state lives in the URL** *(§4.7c)*
+- [x] **9.6e** **Artefact detail drawer** — the trust-builder *(§4.6)*:
+  - [x] Plain-English summary sentence at the top, before any jargon *(§4.3b)*
+  - [x] **Syntax-highlighted code evidence at file:line**
+  - [x] Mosca breakdown **showing X, Y, Z and the arithmetic** *(§4.6c)*
+  - [x] Recommendation with rationale, latency and cost
+  - [x] Confidence level and detection method, shown openly *(§4.6b)*
+  - [x] A clear primary action button *(§4.4a)*
+- [x] **9.6f** Bulk actions: accept risk, assign owner, mark false positive (with reason, and it sticks across rescans — §4.6e)
+- [x] **9.6g** **Coverage-gap banner** when the scan could not see everything *(§4.6d)*
 
 ### 9.7–9.9 Cross-cutting
-- [ ] **9.7** Global search (`/` or `Ctrl-K`) across applications, algorithms and artefacts *(§4.7e)*
-- [ ] **9.8** Export buttons wired to every Phase 7 format, with format explanations in plain language
-- [ ] **9.9** **Glossary page + inline `ⓘ` tooltips** for every acronym *(§4.3a, §4.3c)*
+- [x] **9.7** Global search (`/` or `Ctrl-K`) across applications, algorithms and artefacts *(§4.7e)*
+- [x] **9.8** Export buttons wired to every Phase 7 format, with format explanations in plain language
+- [x] **9.9** **Glossary page + inline `ⓘ` tooltips** for every acronym *(§4.3a, §4.3c)*
 
 **Exit criteria:** a user can launch a scan, watch it progress, explore results, open evidence and download a CBOM without touching the CLI **and without being told how** — verified by §10B usability testing, not by the builder's own opinion.
 
