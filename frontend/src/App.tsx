@@ -11,6 +11,8 @@ import { ScanDetailPage } from "./pages/ScanDetailPage";
 import { ExplorerPage } from "./pages/ExplorerPage";
 import { ArtefactPage } from "./pages/ArtefactPage";
 import { GlossaryPage } from "./pages/GlossaryPage";
+import { RiskVisualisationPage } from "./pages/RiskVisualisationPage";
+import { MigrationPage } from "./pages/MigrationPage";
 
 /**
  * Root application component.
@@ -76,6 +78,8 @@ function AppRoutes() {
           <Route path="scans" element={<ScansPage />} />
           <Route path="scans/:scanId" element={<ScanDetailPage />} />
           <Route path="explorer" element={<ExplorerPage />} />
+          <Route path="risk" element={<RiskVisualisationPage />} />
+          <Route path="migration" element={<MigrationPage />} />
           <Route path="artefacts/:artefactId" element={<ArtefactPage />} />
           <Route path="glossary" element={<GlossaryPage />} />
         </Route>

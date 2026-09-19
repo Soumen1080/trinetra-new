@@ -878,20 +878,20 @@ what the team still has to test.*
 # PHASE 10 — Interactive GUI: Risk & Migration Visualisation *(R9–R13 made visible)*
 *Goal: the screens that show this is a risk platform, not an inventory list.*
 
-- [ ] **10.1** **Mosca timeline visualiser** — a horizontal timeline per system: X bar, Y bar, Z marker, with the overshoot region in red. **Interactive Z slider (2030 / 2035 / 2040 / custom) that recalculates live.** *This is the single most important screen in the product — it makes an abstract inequality legible at a glance.*
-- [ ] **10.2** Risk heatmap: business criticality × quantum vulnerability, cells drilling through to artefacts
-- [ ] **10.3** **Crypto dependency graph** (Cytoscape): application → library → algorithm, coloured by risk; click a node to see its blast radius. Answers "if OpenSSL is the problem, what breaks?"
-- [ ] **10.4** **HNDL exposure view**: externally exposed + long-lived data + classical KEX — the "act this quarter" list
-- [ ] **10.5** Certificate lifecycle view: expiry calendar, signature-algorithm distribution, chains with quantum-vulnerable roots
-- [ ] **10.6** **Algorithm inventory view**: usage frequency per algorithm / mode / key size, with vulnerable ones surfaced
-- [ ] **10.7** **Migration planner**: roadmap Gantt by wave, effort and cost rollups, drag-to-reprioritise, planned date vs Mosca breach date
-- [ ] **10.8** **Recommendation workspace**: current vs proposed side by side, latency / size / cost deltas charted, accept → generates a remediation ticket
-- [ ] **10.9** **What-if simulator**: "if we migrate these 10 systems, posture goes from X to Y" — turns the tool into a planning instrument
-- [ ] **10.10** Compliance dashboard: CNSA 2.0 / NIST IR 8547 deadline tracking
-- [ ] **10.11** In-app report preview and download
-- [ ] **10.12** **Every visualisation above carries a `?` "how to read this chart" explainer** *(§4.11c)* — a heatmap or dependency graph is useless to someone who cannot decode it
-- [ ] **10.13** Every chart has an accessible text alternative and an underlying data table *(§4.9e)*
-- [ ] **10.14** Every drill-down path is URL-addressable and breadcrumbed *(§4.7b, §4.7c)*
+- [x] **10.1** **Mosca timeline visualiser** — a horizontal timeline per system: X bar, Y bar, Z marker, with the overshoot region in red. **Interactive Z slider (2030 / 2035 / 2040 / custom) that recalculates live.** *This is the single most important screen in the product — it makes an abstract inequality legible at a glance.*
+- [x] **10.2** Risk heatmap: business criticality × quantum vulnerability, cells drilling through to artefacts
+- [x] **10.3** **Crypto dependency graph** (Cytoscape): application → library → algorithm, coloured by risk; click a node to see its blast radius. Answers "if OpenSSL is the problem, what breaks?"
+- [x] **10.4** **HNDL exposure view**: externally exposed + long-lived data + classical KEX — the "act this quarter" list
+- [x] **10.5** Certificate lifecycle view: expiry calendar, signature-algorithm distribution, chains with quantum-vulnerable roots
+- [x] **10.6** **Algorithm inventory view**: usage frequency per algorithm / mode / key size, with vulnerable ones surfaced
+- [x] **10.7** **Migration planner**: roadmap Gantt by wave, effort and cost rollups, drag-to-reprioritise, planned date vs Mosca breach date
+- [x] **10.8** **Recommendation workspace**: current vs proposed side by side, latency / size / cost deltas charted, accept → generates a remediation ticket
+- [x] **10.9** **What-if simulator**: "if we migrate these 10 systems, posture goes from X to Y" — turns the tool into a planning instrument
+- [x] **10.10** Compliance dashboard: CNSA 2.0 / NIST IR 8547 deadline tracking
+- [x] **10.11** In-app report preview and download
+- [x] **10.12** **Every visualisation above carries a `?` "how to read this chart" explainer** *(§4.11c)* — a heatmap or dependency graph is useless to someone who cannot decode it
+- [x] **10.13** Every chart has an accessible text alternative and an underlying data table *(§4.9e)*
+- [x] **10.14** Every drill-down path is URL-addressable and breadcrumbed *(§4.7b, §4.7c)*
 
 **Exit criteria:** every requirement R9–R13 is visible and interactive on screen — and a first-time viewer can explain what each screen means.
 

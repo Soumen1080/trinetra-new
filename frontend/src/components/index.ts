@@ -11,3 +11,17 @@ export { ArtefactDrawer } from "./ArtefactDrawer";
 export { ExportMenu } from "./ExportMenu";
 export { GlobalSearch } from "./GlobalSearch";
 export { BulkReviewDialog } from "./BulkReviewDialog";
+
+// Phase 10 Visualisation and Planning components
+export { ChartShell } from "./ChartShell";
+export { MoscaTimeline } from "./MoscaTimeline";
+export { RiskHeatmap } from "./RiskHeatmap";
+export { DependencyGraph } from "./DependencyGraph";
+export { HndlView } from "./HndlView";
+export { CertLifecycle } from "./CertLifecycle";
+export { AlgorithmInventory } from "./AlgorithmInventory";
+export { MigrationPlanner } from "./MigrationPlanner";
+export { RecommendationWorkspace } from "./RecommendationWorkspace";
+export { WhatIfSimulator } from "./WhatIfSimulator";
+export { ComplianceDashboard } from "./ComplianceDashboard";
+export { ReportPreview } from "./ReportPreview";

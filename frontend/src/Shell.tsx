@@ -55,6 +55,14 @@ export function Shell() {
               <span className="nav-icon" aria-hidden="true">◉</span>
               Overview
             </NavLink>
+            <NavLink to="/risk" id="nav-risk">
+              <span className="nav-icon" aria-hidden="true">▲</span>
+              Risk Visuals
+            </NavLink>
+            <NavLink to="/migration" id="nav-migration">
+              <span className="nav-icon" aria-hidden="true">⮞</span>
+              Migration
+            </NavLink>
             <NavLink to="/scans" id="nav-scans">
               <span className="nav-icon" aria-hidden="true">⬡</span>
               Scans
