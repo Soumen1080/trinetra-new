@@ -131,6 +131,14 @@ def scanner_endpoint(target_kind: ScanTargetKind) -> tuple[str, ScannerKind]:
         return os.getenv(
             "TRINETRA_CONTAINER_SCANNER_URL", "http://scanner-container:8080"
         ), ScannerKind.CONTAINER
+    if target_kind is ScanTargetKind.BINARY_FILE:
+        return os.getenv(
+            "TRINETRA_BINARY_SCANNER_URL", "http://scanner-binary:8080"
+        ), ScannerKind.BINARY
+    if target_kind is ScanTargetKind.NETWORK_ENDPOINT:
+        return os.getenv(
+            "TRINETRA_NETWORK_SCANNER_URL", "http://scanner-network:8080"
+        ), ScannerKind.NETWORK
     if target_kind is ScanTargetKind.CLOUD_ACCOUNT:
         return os.getenv(
             "TRINETRA_CLOUDHSM_SCANNER_URL", "http://scanner-cloudhsm:8080"

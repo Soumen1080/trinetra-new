@@ -58,6 +58,9 @@ def artefact_item(row: tables.Artefact) -> ArtefactListItem:
         priority=assessment.priority if assessment else "none",
         assessment_status=assessment.status if assessment else None,
         recommendation=(recommendation.recommended_algorithm if recommendation else None),
+        review_status=row.review.status if row.review else None,
+        review_owner=row.review.owner if row.review else None,
+        review_reason=row.review.reason if row.review else None,
     )
 
 

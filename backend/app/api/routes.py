@@ -44,9 +44,13 @@ from app.api.schemas import (
     ApplicationResponse,
     ArtefactFacets,
     ArtefactListResponse,
+    BulkReviewRequest,
+    BulkReviewResponse,
     ContextPatchRequest,
     CsvImportRequest,
+    DashboardApplication,
     DashboardSummary,
+    DashboardTrendPoint,
     ImportResponse,
     PageMeta,
     ProjectCreateRequest,
@@ -59,6 +63,7 @@ from app.api.schemas import (
     ScanListResponse,
     ScanProgressResponse,
     ScanResponse,
+    SessionResponse,
     TokenRequest,
     TokenResponse,
     UserProvisionRequest,
@@ -204,6 +209,8 @@ def _filter_artefacts(
     priority: str | None,
     application_id: str | None,
     algorithm: str | None,
+    quantum_status: str | None,
+    scanner: str | None,
     search: str | None,
 ) -> list[tables.Artefact]:
     allowed_priorities = {
@@ -223,6 +230,10 @@ def _filter_artefacts(
         if application_id and row.application_id != application_id:
             continue
         if algorithm and (row.algorithm or "").casefold() != algorithm.casefold():
+            continue
+        if quantum_status and row.quantum_vulnerability != quantum_status:
+            continue
+        if scanner and row.discovered_by != scanner:
             continue
         if (
             needle
@@ -252,6 +263,8 @@ def _facets(rows: list[tables.Artefact]) -> ArtefactFacets:
         "priority": {},
         "application": {},
         "algorithm": {},
+        "quantum_status": {},
+        "scanner": {},
     }
     for row in rows:
         pairs = {
@@ -259,6 +272,8 @@ def _facets(rows: list[tables.Artefact]) -> ArtefactFacets:
             "priority": _latest(row).priority if _latest(row) else "none",
             "application": row.application_id or "unassigned",
             "algorithm": row.algorithm or "unknown",
+            "quantum_status": row.quantum_vulnerability,
+            "scanner": row.discovered_by,
         }
         for key, value in pairs.items():
             values[key][value] = values[key].get(value, 0) + 1
@@ -340,9 +355,25 @@ def me(principal: Reader) -> UserResponse:
     return _user_response(principal.user)
 
 
-@router.get("/auth/session", response_model=UserResponse)
-def session_restore(principal: Reader) -> UserResponse:
-    return _user_response(principal.user)
+@router.get("/auth/session", response_model=SessionResponse)
+def session_restore(
+    response: Response, principal: Reader
+) -> SessionResponse:
+    """Restore a cookie-authenticated browser session with a fresh CSRF token.
+
+    The access token remains HttpOnly; the short-lived anti-CSRF value is held
+    only in the running client after this response.
+    """
+    csrf = secrets.token_urlsafe(32)
+    response.set_cookie(
+        "trinetra_csrf_token",
+        csrf,
+        httponly=False,
+        secure=False,
+        samesite="strict",
+        max_age=28_800,
+    )
+    return SessionResponse(csrf_token=csrf, user=_user_response(principal.user))
 
 
 @router.get("/projects", response_model=list[ProjectResponse])
@@ -492,6 +523,8 @@ def scan_capabilities(principal: Reader) -> dict[str, list[dict[str, str]]]:
             {"kind": "git_repository", "scanner": "source"},
             {"kind": "local_path", "scanner": "source"},
             {"kind": "container_image", "scanner": "container"},
+            {"kind": "binary_file", "scanner": "binary"},
+            {"kind": "network_endpoint", "scanner": "network"},
             {"kind": "cloud_account", "scanner": "cloud_hsm"},
         ]
     }
@@ -798,6 +831,8 @@ def scan_artefacts(
     priority: str | None = None,
     application_id: str | None = None,
     algorithm: str | None = None,
+    quantum_status: str | None = None,
+    scanner: str | None = None,
     search: str | None = Query(None, alias="q"),
     offset: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=500),
@@ -812,6 +847,8 @@ def scan_artefacts(
         priority=priority,
         application_id=application_id,
         algorithm=algorithm,
+        quantum_status=quantum_status,
+        scanner=scanner,
         search=search,
     )
     return _artefact_query_response(
@@ -828,6 +865,8 @@ def query_artefacts(
     priority: str | None = None,
     application_id: str | None = None,
     algorithm: str | None = None,
+    quantum_status: str | None = None,
+    scanner: str | None = None,
     search: str | None = Query(None, alias="q"),
     offset: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=500),
@@ -840,7 +879,8 @@ def query_artefacts(
         .options(
             selectinload(tables.Artefact.assessments).selectinload(
                 tables.RiskAssessment.recommendation
-            )
+            ),
+            selectinload(tables.Artefact.review),
         )
     )
     rows = _filter_artefacts(
@@ -849,9 +889,79 @@ def query_artefacts(
         priority=priority,
         application_id=application_id,
         algorithm=algorithm,
+        quantum_status=quantum_status,
+        scanner=scanner,
         search=search,
     )
     return _artefact_query_response(rows, offset=offset, limit=limit)
+
+
+@router.post("/artefacts/bulk-review", response_model=BulkReviewResponse)
+def bulk_review_artefacts(
+    payload: BulkReviewRequest,
+    request: Request,
+    principal: Analyst,
+    session: Db,
+) -> BulkReviewResponse:
+    """Persist analyst dispositions; they are never mere client-side labels."""
+    project = _project(request, principal)
+    rows = list(
+        session.scalars(
+            select(tables.Artefact)
+            .join(tables.Scan)
+            .where(
+                tables.Scan.project_id == project.id,
+                tables.Artefact.id.in_(payload.artefact_ids),
+            )
+        )
+    )
+    if len(rows) != len(payload.artefact_ids):
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "NOT_FOUND",
+                "message": "One or more artefacts were not found in this project.",
+            },
+        )
+    for row in rows:
+        review = session.scalar(
+            select(tables.ArtefactReview).where(
+                tables.ArtefactReview.project_id == project.id,
+                tables.ArtefactReview.artefact_id == row.id,
+            )
+        )
+        if payload.action == "clear":
+            if review is not None:
+                session.delete(review)
+            continue
+        if review is None:
+            review = tables.ArtefactReview(
+                id=str(uuid.uuid4()),
+                project_id=project.id,
+                artefact_id=row.id,
+                status=payload.action,
+                owner=payload.owner,
+                reason=payload.reason,
+                updated_by=principal.user.id,
+            )
+            session.add(review)
+            continue
+        review.status = payload.action
+        review.owner = payload.owner if payload.owner is not None else review.owner
+        review.reason = payload.reason
+        review.updated_by = principal.user.id
+    _audit(
+        session,
+        request,
+        principal=principal,
+        project_id=project.id,
+        action="artefact.bulk_review",
+        resource_type="artefact_review",
+        resource_id="bulk",
+        details={"action": payload.action, "count": len(rows)},
+    )
+    session.commit()
+    return BulkReviewResponse(updated=len(rows))
 
 
 @router.get("/artefacts/{artefact_id}")
@@ -1512,17 +1622,66 @@ def dashboard_summary(
         rows.extend(artefacts_for_scan(session, scan_id=scan.id))
     priority_counts = {"p0": 0, "p1": 0, "p2": 0, "none": 0}
     needs_context = 0
+    quantum_vulnerable_count = 0
+    quantum_safe_count = 0
+    deadlines: list[int] = []
+    type_counts: dict[str, int] = {}
+    application_counts: dict[str | None, int] = {}
     for row in rows:
         assessment = _latest(row)
         priority_counts[assessment.priority if assessment else "none"] += 1
         if assessment and assessment.status == AssessmentStatus.NEEDS_CONTEXT.value:
             needs_context += 1
+        if row.quantum_vulnerability in {"shor_broken", "grover_weakened"}:
+            quantum_vulnerable_count += 1
+        if row.quantum_vulnerability == "quantum_safe":
+            quantum_safe_count += 1
+        if assessment and assessment.migration_deadline_year is not None:
+            deadlines.append(assessment.migration_deadline_year)
+        type_counts[row.type] = type_counts.get(row.type, 0) + 1
+        if assessment and assessment.priority in {"p0", "p1"}:
+            application_counts[row.application_id] = (
+                application_counts.get(row.application_id, 0) + 1
+            )
+    applications = {
+        application.id: application.name
+        for application in session.scalars(
+            select(tables.Application).where(tables.Application.project_id == project.id)
+        )
+    }
+    top_applications = [
+        DashboardApplication(
+            id=application_id,
+            name=applications.get(application_id, "Unassigned application"),
+            at_risk_count=count,
+        )
+        for application_id, count in sorted(
+            application_counts.items(), key=lambda item: (-item[1], item[0] or "")
+        )[:10]
+    ]
+    trend = []
+    for scan in scans[:12]:
+        scan_rows = artefacts_for_scan(session, scan_id=scan.id)
+        trend.append(
+            DashboardTrendPoint(
+                scan_id=scan.id,
+                created_at=scan.created_at,
+                artefact_count=len(scan_rows),
+                critical_count=sum(
+                    1
+                    for row in scan_rows
+                    if _latest(row) and _latest(row).priority == "p0"
+                ),
+            )
+        )
     sorted_rows = _filter_artefacts(
         rows,
         asset_type=None,
         priority=None,
         application_id=None,
         algorithm=None,
+        quantum_status=None,
+        scanner=None,
         search=None,
     )
     return DashboardSummary(
@@ -1530,6 +1689,13 @@ def dashboard_summary(
         priority_counts=priority_counts,
         needs_context_count=needs_context,
         worst_offenders=[artefact_item(row) for row in sorted_rows[:10]],
+        total_artefacts=len(rows),
+        quantum_vulnerable_count=quantum_vulnerable_count,
+        quantum_safe_percent=(quantum_safe_count / len(rows) * 100) if rows else None,
+        nearest_mosca_deadline_year=min(deadlines) if deadlines else None,
+        artefact_type_counts=type_counts,
+        top_applications=top_applications,
+        trend=trend,
     )
 
 

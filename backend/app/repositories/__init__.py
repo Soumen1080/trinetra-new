@@ -118,6 +118,7 @@ def artefact_for_project(
                 tables.RiskAssessment.recommendation
             ),
             selectinload(tables.Artefact.context),
+            selectinload(tables.Artefact.review),
         )
         .where(
             tables.Artefact.id == artefact_id,
@@ -136,6 +137,7 @@ def artefacts_for_scan(session: Session, *, scan_id: str) -> list[tables.Artefac
                 tables.RiskAssessment.recommendation
             ),
             selectinload(tables.Artefact.context),
+            selectinload(tables.Artefact.review),
         )
     )
     return list(session.scalars(statement))

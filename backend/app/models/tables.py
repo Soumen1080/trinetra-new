@@ -288,6 +288,9 @@ class Artefact(Base, TimestampMixin):
         cascade="all, delete-orphan",
         order_by="RiskAssessment.assessed_at.desc()",
     )
+    review: Mapped[ArtefactReview | None] = relationship(
+        back_populates="artefact", cascade="all, delete-orphan", uselist=False
+    )
 
     __table_args__ = (
         Index("ix_artefacts_scan_id", "scan_id"),
@@ -310,6 +313,36 @@ class Artefact(Base, TimestampMixin):
     def latest_assessment(self) -> RiskAssessment | None:
         """Newest assessment. The relationship is ordered by ``assessed_at`` desc."""
         return self.assessments[0] if self.assessments else None
+
+
+class ArtefactReview(Base, TimestampMixin):
+    """Human disposition that follows an artefact independently of a scan run."""
+
+    __tablename__ = "artefact_reviews"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    artefact_id: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("artefacts.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    owner: Mapped[str | None] = mapped_column(String(255))
+    reason: Mapped[str | None] = mapped_column(Text)
+    updated_by: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("users.id", ondelete="SET NULL")
+    )
+
+    artefact: Mapped[Artefact] = relationship(back_populates="review")
+
+    __table_args__ = (
+        Index("ix_artefact_reviews_project_id", "project_id"),
+        Index("ix_artefact_reviews_status", "status"),
+    )
 
 
 class ArtefactContext(Base, TimestampMixin):

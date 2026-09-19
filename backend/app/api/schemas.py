@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field, field_validator
 
@@ -30,6 +30,13 @@ class TokenResponse(TrinetraModel):
     access_token: str
     token_type: str = "bearer"
     expires_in: int
+    csrf_token: str
+    user: UserResponse
+
+
+class SessionResponse(TrinetraModel):
+    """Cookie-session restoration without exposing a long-lived access token."""
+
     csrf_token: str
     user: UserResponse
 
@@ -135,6 +142,9 @@ class ArtefactListItem(TrinetraModel):
     priority: str = "none"
     assessment_status: str | None = None
     recommendation: str | None = None
+    review_status: str | None = None
+    review_owner: str | None = None
+    review_reason: str | None = None
 
 
 class ArtefactFacets(TrinetraModel):
@@ -142,6 +152,8 @@ class ArtefactFacets(TrinetraModel):
     priority: dict[str, int] = Field(default_factory=dict)
     application: dict[str, int] = Field(default_factory=dict)
     algorithm: dict[str, int] = Field(default_factory=dict)
+    quantum_status: dict[str, int] = Field(default_factory=dict)
+    scanner: dict[str, int] = Field(default_factory=dict)
 
 
 class ArtefactListResponse(TrinetraModel):
@@ -150,6 +162,33 @@ class ArtefactListResponse(TrinetraModel):
     facets: ArtefactFacets
     scan_status: ScanStatus | None = None
     partial_results: bool = False
+
+
+class BulkReviewRequest(TrinetraModel):
+    artefact_ids: list[str] = Field(min_length=1, max_length=1_000)
+    action: Literal["accept_risk", "assign_owner", "false_positive", "clear"]
+    owner: str | None = Field(default=None, max_length=255)
+    reason: str | None = Field(default=None, max_length=10_000)
+
+    @field_validator("artefact_ids")
+    @classmethod
+    def _unique_ids(cls, value: list[str]) -> list[str]:
+        if len(set(value)) != len(value):
+            raise ValueError("artefact_ids must not contain duplicates")
+        return value
+
+    @field_validator("reason")
+    @classmethod
+    def _reason_for_disposition(cls, value: str | None, info: Any) -> str | None:
+        if info.data.get("action") in {"accept_risk", "false_positive"} and not value:
+            raise ValueError(
+                "A reason is required for accepting risk or a false positive"
+            )
+        return value
+
+
+class BulkReviewResponse(TrinetraModel):
+    updated: int = Field(ge=0)
 
 
 class ContextPatchRequest(TrinetraModel):
@@ -232,6 +271,28 @@ class DashboardSummary(TrinetraModel):
     priority_counts: dict[str, int]
     needs_context_count: int
     worst_offenders: list[ArtefactListItem]
+    # These are deliberately derived by the server rather than guessed from a
+    # paginated client result: executive tiles must describe the full project.
+    total_artefacts: int = 0
+    quantum_vulnerable_count: int = 0
+    quantum_safe_percent: float | None = None
+    nearest_mosca_deadline_year: int | None = None
+    artefact_type_counts: dict[str, int] = Field(default_factory=dict)
+    top_applications: list[DashboardApplication] = Field(default_factory=list)
+    trend: list[DashboardTrendPoint] = Field(default_factory=list)
+
+
+class DashboardApplication(TrinetraModel):
+    id: str | None = None
+    name: str
+    at_risk_count: int
+
+
+class DashboardTrendPoint(TrinetraModel):
+    scan_id: str
+    created_at: datetime
+    artefact_count: int
+    critical_count: int
 
 
 __all__ = [
@@ -240,9 +301,13 @@ __all__ = [
     "ArtefactFacets",
     "ArtefactListItem",
     "ArtefactListResponse",
+    "BulkReviewRequest",
+    "BulkReviewResponse",
     "ContextPatchRequest",
     "CsvImportRequest",
+    "DashboardApplication",
     "DashboardSummary",
+    "DashboardTrendPoint",
     "ImportResponse",
     "PageMeta",
     "ProjectCreateRequest",
@@ -255,6 +320,7 @@ __all__ = [
     "ScanListResponse",
     "ScanProgressResponse",
     "ScanResponse",
+    "SessionResponse",
     "TokenRequest",
     "TokenResponse",
     "UserProvisionRequest",

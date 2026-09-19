@@ -9,8 +9,15 @@ from sqlalchemy.pool import StaticPool
 
 from app.api.main import create_app
 from app.api.security import hash_password
-from app.models.base import Base
-from app.models.tables import Application, Project, ProjectMembership, User
+from app.models.base import Base, utcnow
+from app.models.tables import (
+    Application,
+    Artefact,
+    Project,
+    ProjectMembership,
+    Scan,
+    User,
+)
 
 
 class RecordingDispatcher:
@@ -190,3 +197,54 @@ def test_authz_and_validation_use_stable_error_contract(tmp_path: Path) -> None:
     assert forbidden.json()["code"] == "FORBIDDEN"
     assert invalid.status_code == 422
     assert invalid.json()["code"] == "VALIDATION_ERROR"
+
+
+def test_browser_session_refreshes_csrf_and_bulk_reviews_are_project_scoped(
+    tmp_path: Path,
+) -> None:
+    client, factory, _ = _client(tmp_path)
+    headers = _headers(client)
+    session = client.get("/api/auth/session")
+    assert session.status_code == 200
+    assert session.json()["user"]["username"] == "admin"
+    assert session.json()["csrf_token"]
+
+    with factory() as database:
+        scan = Scan(
+            id="scan-review",
+            project_id="project-1",
+            target_kind="git_repository",
+            target_identifier="https://git.example/payments",
+            status="succeeded",
+        )
+        database.add(scan)
+        database.add(
+            Artefact(
+                id="artefact-review",
+                scan_id=scan.id,
+                name="RSA transport",
+                type="algorithm",
+                quantum_vulnerability="shor_broken",
+                discovered_by="source",
+                first_seen=utcnow(),
+                last_seen=utcnow(),
+            )
+        )
+        database.commit()
+
+    review = client.post(
+        "/api/artefacts/bulk-review",
+        headers=headers,
+        json={
+            "artefact_ids": ["artefact-review"],
+            "action": "false_positive",
+            "reason": "Verified development fixture, not production traffic.",
+        },
+    )
+    assert review.status_code == 200
+    assert review.json() == {"updated": 1}
+    inventory = client.get("/api/artefacts", headers=headers)
+    assert inventory.status_code == 200
+    item = inventory.json()["items"][0]
+    assert item["review_status"] == "false_positive"
+    assert item["review_reason"].startswith("Verified development")
