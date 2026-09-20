@@ -10,6 +10,17 @@ interface EvidenceViewerProps {
   scanId?: string;
 }
 
+// Type guard helper to safely extract string values from unknown evidence data
+function getString(obj: Record<string, unknown>, key: string): string | undefined {
+  const value = obj[key];
+  return typeof value === "string" ? value : undefined;
+}
+
+function getNumber(obj: Record<string, unknown>, key: string): number | undefined {
+  const value = obj[key];
+  return typeof value === "number" ? value : undefined;
+}
+
 /**
  * Evidence viewer modal (§4.6 — show evidence and provenance chain).
  * Displays:
@@ -35,6 +46,13 @@ export function EvidenceViewer({ artefactId, scanId }: EvidenceViewerProps) {
   const { artefact, evidence } = detail.data;
   const primaryEvidence = evidence[0];
 
+  const scannerVersion = primaryEvidence ? getString(primaryEvidence, "scanner_version") : undefined;
+  const confidence = primaryEvidence ? getString(primaryEvidence, "confidence") : undefined;
+  const detectionMethod = primaryEvidence ? getString(primaryEvidence, "detection_method") : undefined;
+  const timestamp = primaryEvidence ? getString(primaryEvidence, "timestamp") : undefined;
+  const primaryFile = primaryEvidence ? getString(primaryEvidence, "file") : undefined;
+  const primaryLine = primaryEvidence ? getNumber(primaryEvidence, "line") : undefined;
+
   return (
     <section className="evidence-viewer" aria-label="Evidence and provenance">
       <header>
@@ -49,48 +67,57 @@ export function EvidenceViewer({ artefactId, scanId }: EvidenceViewerProps) {
         <dt>Detected by</dt>
         <dd>
           {titleCase(artefact.discovered_by)}
-          {primaryEvidence?.scanner_version && (
-            <small> v{primaryEvidence.scanner_version}</small>
+          {scannerVersion && (
+            <small> v{scannerVersion}</small>
           )}
         </dd>
 
         <dt>Confidence</dt>
         <dd>
-          <ConfidenceBadge level={primaryEvidence?.confidence ?? "unknown"} />
+          <ConfidenceBadge level={confidence ?? "unknown"} />
         </dd>
 
         <dt>Detection method</dt>
-        <dd>{primaryEvidence?.detection_method ?? "Static pattern match"}</dd>
+        <dd>{detectionMethod ?? "Static pattern match"}</dd>
 
-        {primaryEvidence?.timestamp && (
+        {timestamp && (
           <>
             <dt>Discovered</dt>
-            <dd>{new Date(primaryEvidence.timestamp).toISOString()}</dd>
+            <dd>{new Date(timestamp).toISOString()}</dd>
           </>
         )}
       </dl>
 
       {/* §4.6a — Source evidence at file:line */}
-      {evidence.map((item, index) => (
-        <div key={index} className="evidence-item">
-          <h4>
-            {item.file || item.path || item.location || "Source location"}
-            {item.line && <span className="line-number"> : {item.line}</span>}
-          </h4>
+      {evidence.map((item, index) => {
+        const file = getString(item, "file");
+        const path = getString(item, "path");
+        const location = getString(item, "location");
+        const line = getNumber(item, "line");
+        const snippet = getString(item, "snippet");
+        const context = getString(item, "context");
 
-          {item.snippet && (
-            <pre className="code-evidence">
-              <code>{item.snippet}</code>
-            </pre>
-          )}
+        return (
+          <div key={index} className="evidence-item">
+            <h4>
+              {file || path || location || "Source location"}
+              {line && <span className="line-number"> : {line}</span>}
+            </h4>
 
-          {item.context && (
-            <p className="evidence-context">
-              <strong>Context:</strong> {item.context}
-            </p>
-          )}
-        </div>
-      ))}
+            {snippet && (
+              <pre className="code-evidence">
+                <code>{snippet}</code>
+              </pre>
+            )}
+
+            {context && (
+              <p className="evidence-context">
+                <strong>Context:</strong> {context}
+              </p>
+            )}
+          </div>
+        );
+      })}
 
       {/* §4.6c — Provenance chain */}
       <div className="provenance-chain">
@@ -103,10 +130,10 @@ export function EvidenceViewer({ artefactId, scanId }: EvidenceViewerProps) {
           <li>
             <strong>Target:</strong> {artefact.location || "Unknown location"}
           </li>
-          {primaryEvidence?.file && (
+          {primaryFile && (
             <li>
-              <strong>Source file:</strong> {primaryEvidence.file}
-              {primaryEvidence.line && ` line ${primaryEvidence.line}`}
+              <strong>Source file:</strong> {primaryFile}
+              {primaryLine && ` line ${primaryLine}`}
             </li>
           )}
           <li>
