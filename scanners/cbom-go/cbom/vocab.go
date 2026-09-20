@@ -19,6 +19,10 @@ const TrinetraDataCategoryProperty = "trinetra:data-category"
 // parameterSetIdentifier is a string and overloaded; this stays unambiguous.
 const TrinetraKeySizeProperty = "trinetra:key-size-bits"
 
+// TrinetraIsObservedProperty marks findings from live observation (testssl.sh,
+// SSH probes) vs declared configuration.
+const TrinetraIsObservedProperty = "trinetra:is-observed"
+
 // Cloud-service attributes. CycloneDX has no structural place for these, so a
 // managed key's provider, region and ownership travel as namespaced properties.
 // KeyManagement in particular is load-bearing: who controls a key decides

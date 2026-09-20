@@ -318,6 +318,9 @@ func buildProperties(f Finding) []Property {
 	if f.DataCategory != "" {
 		props = append(props, Property{TrinetraDataCategoryProperty, f.DataCategory})
 	}
+	if f.IsObserved {
+		props = append(props, Property{TrinetraIsObservedProperty, "true"})
+	}
 	if AssetTypeNeedsHint(f.AssetType) {
 		props = append(props, Property{TrinetraAssetTypeProperty, string(f.AssetType)})
 	}

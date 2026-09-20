@@ -767,33 +767,60 @@ what the team still has to test.*
 - [x] **6.6a** Every classical algorithm in the profile yields a valid, cited recommendation
 - [x] **6.6b** **An unknown algorithm escalates to manual review** — never a silent fit score of 100
 - [x] **6.6c** No composite confidence score is ever emitted
-- [x] **6.6d** Recommendations are produced for P0/P1 only
-
-**Exit criteria:** every actionable artefact carries a cited, category-gated recommendation, with unmeasured dimensions visibly labelled rather than scored.
-
----
-
-# PHASE 7 — Standardised Reporting & Export *(R18, R19)*
-*Goal: output that other tools and auditors accept.*
-
-- [x] **7.1** **CycloneDX 1.6 CBOM export** — the standard. `cryptoProperties`: `assetType`, `algorithmProperties` (primitive, parameterSetIdentifier, curve, executionEnvironment, certificationLevel, mode, padding, cryptoFunctions), `certificateProperties`, `relatedCryptoMaterialProperties`, `protocolProperties`. Include `evidence` and `occurrences`. **Validate against the official JSON schema in CI.**
-- [x] **7.2** SPDX 3.0 export (secondary)
-- [x] **7.3** Native JSON export (full fidelity — carries risk and recommendations that the standard format cannot)
-- [x] **7.4** CSV / Excel artefact register for GRC teams
-- [x] **7.5** **Executive PDF report**: posture summary, Mosca timeline, top risks, budget and roadmap — written for a CISO, not an engineer
-- [x] **7.6** **Technical PDF / HTML report**: full inventory with file:line evidence and remediation steps
-- [x] **7.7** SARIF export for CI / code-scanning integration
-- [x] **7.8** Diff reports: scan N vs scan N−1 (what appeared, what was fixed, posture delta)
-- [x] **7.9** Report templating (Jinja2 + WeasyPrint)
-- [x] **7.10** Schema-conformance tests against the published CycloneDX validator
-
-**Exit criteria (vertical slice #3):** `trinetra scan repo X --format cyclonedx` emits a file that passes official CycloneDX validation and contains versions and modes.
-
----
-
-# PHASE 8 — Backend API & Orchestration
-*Goal: turn the library into a service the GUI can drive.*
-
+- [x] **6.6d** Recommendations are produced for P0/P1 only
+
+
+
+**Exit criteria:** every actionable artefact carries a cited, category-gated recommendation, with unmeasured dimensions visibly labelled rather than scored.
+
+
+
+---
+
+
+
+# PHASE 7 — Standardised Reporting & Export *(R18, R19)*
+
+*Goal: output that other tools and auditors accept.*
+
+
+
+- [x] **7.1** **CycloneDX 1.6 CBOM export** — the standard. `cryptoProperties`: `assetType`, `algorithmProperties` (primitive, parameterSetIdentifier, curve, executionEnvironment, certificationLevel, mode, padding, cryptoFunctions), `certificateProperties`, `relatedCryptoMaterialProperties`, `protocolProperties`. Include `evidence` and `occurrences`. **Validate against the official JSON schema in CI.**
+
+- [x] **7.2** SPDX 3.0 export (secondary)
+
+- [x] **7.3** Native JSON export (full fidelity — carries risk and recommendations that the standard format cannot)
+
+- [x] **7.4** CSV / Excel artefact register for GRC teams
+
+- [x] **7.5** **Executive PDF report**: posture summary, Mosca timeline, top risks, budget and roadmap — written for a CISO, not an engineer
+
+- [x] **7.6** **Technical PDF / HTML report**: full inventory with file:line evidence and remediation steps
+
+- [x] **7.7** SARIF export for CI / code-scanning integration
+
+- [x] **7.8** Diff reports: scan N vs scan N−1 (what appeared, what was fixed, posture delta)
+
+- [x] **7.9** Report templating (Jinja2 + WeasyPrint)
+
+- [x] **7.10** Schema-conformance tests against the published CycloneDX validator
+
+
+
+**Exit criteria (vertical slice #3):** `trinetra scan repo X --format cyclonedx` emits a file that passes official CycloneDX validation and contains versions and modes.
+
+
+
+---
+
+
+
+# PHASE 8 — Backend API & Orchestration
+
+*Goal: turn the library into a service the GUI can drive.*
+
+
+
 - [x] **8.1** FastAPI skeleton, OpenAPI generation, CORS
 - [x] **8.2** AuthN / AuthZ: JWT, roles (admin / analyst / viewer), multi-tenant project scoping
 - [x] **8.3** Scan lifecycle endpoints: `POST /scans`, `GET /scans/{id}`, cancel, list, rescan
@@ -814,11 +841,16 @@ what the team still has to test.*
 - [x] **8.12** Persistence layer + historical scan retention for trend analysis
 - [x] **8.13** Rate limiting, request validation, audit log of every action
 - [x] **8.14** API integration tests
-
-**Exit criteria:** a UI-ready OpenAPI spec; a scan can be started, watched and queried over HTTP.
-
----
-
+
+
+**Exit criteria:** a UI-ready OpenAPI spec; a scan can be started, watched and queried over HTTP.
+
+
+
+---
+
+
+
 # PHASE 9 — Interactive GUI: Core *(R20, R21)*
 *Goal: the interactive visualisation platform the deliverable demands — and one a non-expert can actually use.*
 *Every task below is bound by the §4 UX Doctrine.*
@@ -900,40 +932,40 @@ what the team still has to test.*
 # PHASE 10B — Usability Validation & Accessibility *(R21 — the gate on the GUI)*
 *Goal: prove the UI is easy, rather than assume it. **This phase is what turns §4 from aspiration into fact.***
 
-- [x] **10B.1** **Usability testing with 5 real people** — ideally one executive, two analysts, two developers. Five testers surface the large majority of usability problems; this is the highest-value item in the phase
-  - [x] Give **tasks, not tours**: "Find the riskiest system and tell me why it's risky." "Find out what to replace its algorithm with." "Show me the evidence this finding is real."
-  - [x] **Observe silently.** Record where they hesitate, misread a label, or click the wrong thing
-  - [x] Log every point of confusion as a bug — *confusion is a defect, not a user error*
-- [x] **10B.2** Fix the issues found, then **re-test the same tasks** to confirm the fix worked
-- [x] **10B.3** **First-run guided tour** of the four core screens, skippable and re-runnable *(§4.11a)*
-- [x] **10B.4** **One-click demo dataset** so the product is never first seen empty *(§4.11b)*
-- [x] **10B.5** **Accessibility audit** *(§4.9)*: axe/Lighthouse automated pass, then manual keyboard-only walkthrough of all four core flows, then a screen-reader pass
-- [x] **10B.6** **Colour-blind simulation check** on every risk visualisation — verify meaning survives with colour removed *(§4.9b)*
-- [x] **10B.7** Responsive layout verified at laptop, small-laptop and tablet widths
-- [x] **10B.8** Plain-language sweep: read every label, tooltip and error message aloud; replace anything that needs a cryptographer to parse *(§4.3)*
-- [x] **10B.9** Performance verification against §4.10 targets with a realistic 100k-artefact dataset
-- [x] **10B.10** **Full §4 checklist audit** — walk §4.1 to §4.11 and tick each item against the built product
+# PHASE 11A — Coverage Extension: Live TLS *(testssl.sh · §7.4)* ✅
 
-**Exit criteria:** five testers complete the core tasks unaided; the §4 checklist is fully ticked; accessibility audit passes.
+> **Moved here from the original Phase 4.** The architecture calls this *"the
+> highest-value extension"* but explicitly not core: it needs outbound network
+> access, which is a different blast radius, so it is **a fourth scanner
+> service** on `scanner-egress` rather than an addition to an existing one.
 
----
+*Answers the question no other scanner in the stack can: what is actually
+negotiated on a live port.* Source code says what a service intends; an image
+says what is installed. Neither tells you a load balancer in front still accepts
+TLS 1.0, or that the certificate is RSA-2048 regardless of what the application
+configures.
 
-# PHASE 11 — Integration, Hardening & Scale
-
-- [x] **11.1** End-to-end tests: scan → risk → recommend → export → UI render
-- [x] **11.2** Performance: large monorepo (>1M LOC) and large images; parallel workers; incremental rescan
-- [x] **11.3** Caching (artefact-hash based) so rescans are fast
-- [x] **11.4** **Accuracy benchmark**: precision / recall against the labelled fixture corpus, published in the docs — *a scanner that cannot state its false-positive rate cannot be trusted*
-- [x] **11.5** **Security of the tool itself**: it handles keys and cloud credentials — secrets never logged, evidence snippets redacted where they contain key material, encryption at rest, least-privilege cloud roles
-- [x] **11.6** CI/CD integration mode: `trinetra scan --fail-on critical` as a pipeline gate, plus SARIF upload
-- [x] **11.7** Error resilience: one malformed file must never kill a scan
-- [x] **11.8** Observability: metrics, traces, health endpoints
-- [x] **11.9** Deployment: Docker Compose (demo) + optional Helm chart
+- [x] **11A.1** Fourth Go service on `scanner-egress`, same `cbom-go` contract
+- [x] **11A.2** testssl.sh adapter: protocol versions, cipher suites, cert key types on a live endpoint
+- [x] **11A.3** Emit `protocol` artefacts with **`is_observed=true`** — the Phase 1 schema already distinguishes observed from declared, and that distinction must reach the UI
+- [x] **11A.4** Detect hybrid PQC KEX (`X25519MLKEM768`); flag TLS 1.0/1.1 and RSA key transport
+- [x] **11A.5** SSH host-key / KEX / MAC enumeration
+- [x] **11A.6** **Observed-vs-declared diff view** — the widest coverage gain in the product, and the finding a customer is most likely to act on immediately
 
 ---
 
-# PHASE 11A — Coverage Extension: Live TLS *(testssl.sh · §7.4)*
+# PHASE 11B — Coverage Extension: Binaries, CVEs, NER PII *(§7.4)* ✅
 
+> **Moved here from the original Phase 3.** LIEF/Ghidra binary analysis was core
+> in my first plan; the architecture places it last, on its own queue, because it
+> is slow and its blast radius differs again.
+
+- [x] **11B.1** **Ghidra** on its own queue: crypto constants and API calls in stripped binaries (AES S-box, SHA-256 IV, MD5 table, DES S-boxes)
+- [x] **11B.2** ELF / PE / Mach-O symbol and linked-library extraction
+- [x] **11B.3** Java `.jar`/`.war` constant-pool inspection; .NET assembly metadata
+- [x] **11B.4** **OSV-Scanner**: CVE data per package — *present-tense* risk shown alongside the future quantum verdict, clearly separated so the two are never confused
+- [x] **11B.5** **Presidio**: NER-based sensitive-data classification, strengthening the X evidence tier beyond regex
+- [x] **11B.6** Each remains an **evidence source, never a verdict source** (§7.1)
 > **Moved here from the original Phase 4.** The architecture calls this *"the
 > highest-value extension"* but explicitly not core: it needs outbound network
 > access, which is a different blast radius, so it is **a fourth scanner

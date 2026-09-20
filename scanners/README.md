@@ -24,12 +24,21 @@ scanners/
     internal/engine/      aws kms (sigv4) and pkcs#11 engines
     cmd/                  the service binary
     cmd/gencbom/          regenerates the golden cloud/HSM CBOM
+  egress/                 the live TLS/SSH observation service (Phase 11A)
+    internal/engine/      testssl.sh and SSH probe engines
+    cmd/                  the service binary
+  binary/                 the binary analysis service (Phase 11B)
+    internal/engine/      Ghidra, OSV-Scanner, Presidio engines
+    cmd/                  the service binary
+    scripts/              Ghidra CryptoDetector script
 ```
 
-Three services, not one, because their blast radii differ: the container scanner
+Five services, not one, because their blast radii differ: the container scanner
 needs registry egress to pull images, the cloud scanner holds cloud credentials,
-and the source scanner needs neither. A compromised image pull cannot reach the
-source tree, and neither can reach the cloud credentials.
+the egress scanner needs outbound network access for live probing, the binary
+scanner is slow and resource-intensive, and the source scanner needs none of these.
+A compromised image pull cannot reach the source tree, cloud credentials, or the
+live network.
 
 ## Detection engines
 
@@ -62,6 +71,21 @@ source of evidence, never a source of verdicts.**
 | `AzureEngine` | Key Vault keys, Managed HSM | Working (`TRINETRA_AZURE_VAULT_URL` + `_TOKEN`) |
 | `GCPEngine` | Cloud KMS keys, protection level | Working (`TRINETRA_GCP_PROJECT` + `_TOKEN`) |
 | `PKCS11Engine` | HSM tokens, key objects, firmware, FIPS, PQC capability | Working (reads an inventory export) |
+
+**Egress scanner (Phase 11A):**
+
+| Engine | Covers | Status |
+|---|---|---|
+| `TestSSLEngine` | Live TLS protocol versions, cipher suites, certificate keys, hybrid PQC KEX | Working (set `TRINETRA_TESTSSL_BINARY`) |
+| `SSHEngine` | SSH host keys, KEX algorithms, MAC algorithms | Working (built-in) |
+
+**Binary scanner (Phase 11B):**
+
+| Engine | Covers | Status |
+|---|---|---|
+| `GhidraEngine` | Crypto constants (AES S-box, SHA IVs, MD5/DES tables) and API calls in stripped binaries | Set `TRINETRA_GHIDRA_BINARY` + script path |
+| `OSVEngine` | CVE detection in dependencies | Set `TRINETRA_OSV_BINARY` |
+| `PresidioEngine` | NER-based PII detection (SSN, credit cards, names, etc.) | Set `TRINETRA_PRESIDIO_URL` |
 
 Azure and GCP take an **operator-supplied bearer token** rather than managing
 credentials themselves. Both providers' token flows are interactive or

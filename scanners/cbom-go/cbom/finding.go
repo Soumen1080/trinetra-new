@@ -138,6 +138,12 @@ type Finding struct {
 	// key material. Trinetra stores no secrets.
 	Redacted bool `json:"redacted,omitempty"`
 
+	// IsObserved marks findings from live observation (Phase 11A testssl.sh,
+	// SSH probes) vs declared configuration. Declared and observed crypto
+	// routinely differ -- a load balancer can accept TLS 1.0 even when the
+	// backend forbids it -- so the distinction must reach the UI.
+	IsObserved bool `json:"is_observed,omitempty"`
+
 	// Extra carries engine-specific attributes that CycloneDX has no
 	// structural place for -- a KMS key's region and ownership, for instance.
 	// Keys MUST already be namespaced (trinetra:...); the document builder

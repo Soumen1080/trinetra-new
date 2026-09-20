@@ -65,6 +65,7 @@ TRINETRA_DETECTION_METHOD_PROPERTY = "trinetra:detection-method"
 TRINETRA_CONFIDENCE_PROPERTY = "trinetra:confidence"
 TRINETRA_RULE_ID_PROPERTY = "trinetra:rule-id"
 TRINETRA_ALGORITHM_PROPERTY = "trinetra:algorithm"
+TRINETRA_IS_OBSERVED_PROPERTY = "trinetra:is-observed"
 
 #: Cloud-service attributes. The scanner emits these so a KMS key's provider,
 #: region and ownership survive into the model: who controls a key decides
@@ -422,7 +423,8 @@ def _build_protocol_detail(
 ) -> ProtocolDetail | None:
     """Build a protocol detail.
 
-    ``is_observed`` stays False: everything a container or source scan sees is
+    ``is_observed`` reads from the trinetra:is-observed property. When absent,
+    it defaults to False: everything a container or source scan sees is
     *declared* configuration. Only a live handshake (Phase 11A) observes, and
     the two routinely differ.
     """
@@ -435,10 +437,12 @@ def _build_protocol_detail(
         if candidate and candidate[0].isdigit():
             version = candidate
 
+    is_observed = properties.get(TRINETRA_IS_OBSERVED_PROPERTY, "false").lower() == "true"
+
     return ProtocolDetail(
         protocol=protocol_name,
         version=version,
-        is_observed=False,
+        is_observed=is_observed,
     )
 
 

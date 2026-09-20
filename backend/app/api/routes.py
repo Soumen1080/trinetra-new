@@ -30,7 +30,7 @@ from fastapi import (
 )
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.api.dependencies import get_db
 from app.api.presenters import (
@@ -87,7 +87,7 @@ from app.engines.profiles.loader import load_risk_profiles
 from app.exporters import ExportFormat, export
 from app.models import tables
 from app.models.base import utcnow
-from app.models.enums import AssessmentStatus, ProvenanceTier, ScanStatus, UserRole
+from app.models.enums import AssetType, AssessmentStatus, ProvenanceTier, ScanStatus, UserRole
 from app.repositories import (
     append_assessment,
     application_for_project,
@@ -2196,6 +2196,58 @@ def demo_seed_delete(request: Request, principal: Analyst, session: Db) -> None:
         resource_id=None,
     )
     session.commit()
+
+
+@router.get(
+    "/api/v1/applications/{application_id}/observed-vs-declared",
+    tags=["analysis"],
+    response_model=dict[str, Any],
+)
+def compare_observed_vs_declared_protocols(
+    application_id: str,
+    principal: Reader,
+    session: Db,
+) -> dict[str, Any]:
+    """Compare observed protocol findings vs declared configuration (Phase 11A).
+
+    Returns a comparison showing whether live TLS/SSH observations match what
+    the configuration declares. A mismatch indicates a load balancer or proxy
+    accepting protocols the backend forbids.
+    """
+    from app.services.observed_comparison import (
+        compare_observed_vs_declared,
+        generate_comparison_report,
+    )
+
+    # Fetch all protocol artefacts for this application
+    artefacts = session.scalars(
+        select(tables.Artefact)
+        .where(
+            tables.Artefact.application_id == application_id,
+            tables.Artefact.asset_type == AssetType.PROTOCOL,
+        )
+        .options(joinedload(tables.Artefact.detail))
+    ).all()
+
+    if not artefacts:
+        return {
+            "application_id": application_id,
+            "summary": {
+                "total_protocols": 0,
+                "matched": 0,
+                "mismatched": 0,
+                "observed_only": 0,
+                "declared_only": 0,
+            },
+            "critical_issues": [],
+            "comparisons": [],
+        }
+
+    # Perform comparison
+    summary = compare_observed_vs_declared([art for art in artefacts])
+    summary.application_id = application_id
+
+    return generate_comparison_report(summary)
 
 
 __all__ = ["router", "scan_websocket"]
