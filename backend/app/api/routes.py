@@ -1747,16 +1747,13 @@ async def scan_websocket(websocket: WebSocket, scan_id: str) -> None:
 _DEMO_TAG = "trinetra:demo-seed"  # stored in scan.scanners_run as a sentinel
 
 
+from pydantic import BaseModel
+
+
 class _DemoSeedResponse(BaseModel):
     scan_ids: list[str]
     artefact_count: int
     already_existed: bool
-
-
-# Pydantic is not imported at the top; re-use FastAPI's already-imported one.
-from pydantic import BaseModel as _PydanticBase  # noqa: E402
-
-_DemoSeedResponse.__bases__ = (_PydanticBase,)
 
 
 @router.post("/demo/seed", response_model=_DemoSeedResponse)

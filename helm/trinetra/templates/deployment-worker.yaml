@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "trinetra.fullname" . }}-worker
+  labels:
+    {{- include "trinetra.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "trinetra.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "trinetra.labels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          command:
+            - celery
+            - -A
+            - app.worker.celery_app
+            - worker
+            - --loglevel=info
+            - -c
+            - {{ .Values.worker.concurrency | quote }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "trinetra.fullname" . }}-config
+            - secretRef:
+                name: {{ include "trinetra.fullname" . }}-secret
+          volumeMounts:
+            - name: reports-volume
+              mountPath: {{ .Values.config.reportStorePath }}
+            - name: artifacts-volume
+              mountPath: {{ .Values.config.artifactStorePath }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+      volumes:
+        - name: reports-volume
+          persistentVolumeClaim:
+            claimName: {{ include "trinetra.fullname" . }}-reports-pvc
+        - name: artifacts-volume
+          persistentVolumeClaim:
+            claimName: {{ include "trinetra.fullname" . }}-artifacts-pvc

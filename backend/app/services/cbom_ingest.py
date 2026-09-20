@@ -189,7 +189,7 @@ def ingest_document(
                 observed_at=observed_at,
                 discriminator=str(index),
             )
-        except (ValueError, KeyError) as exc:
+        except Exception as exc:
             # One malformed component must not discard the rest of the
             # inventory, but the loss must be visible rather than silent.
             gaps.append(
@@ -201,6 +201,7 @@ def ingest_document(
                     ),
                 )
             )
+            skipped += 1
             continue
 
         if artefact is None:

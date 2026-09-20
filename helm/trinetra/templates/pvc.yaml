@@ -1,0 +1,35 @@
+{{- if .Values.persistence.reports.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "trinetra.fullname" . }}-reports-pvc
+  labels:
+    {{- include "trinetra.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    {{- toYaml .Values.persistence.reports.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.reports.size }}
+  {{- if .Values.persistence.reports.storageClass }}
+  storageClassName: {{ .Values.persistence.reports.storageClass | quote }}
+  {{- end }}
+{{- end }}
+---
+{{- if .Values.persistence.artifacts.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "trinetra.fullname" . }}-artifacts-pvc
+  labels:
+    {{- include "trinetra.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    {{- toYaml .Values.persistence.artifacts.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.artifacts.size }}
+  {{- if .Values.persistence.artifacts.storageClass }}
+  storageClassName: {{ .Values.persistence.artifacts.storageClass | quote }}
+  {{- end }}
+{{- end }}

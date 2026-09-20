@@ -22,6 +22,9 @@ celery_app.conf.update(
     task_acks_late=True,
     worker_prefetch_multiplier=1,
     task_track_started=True,
+    worker_concurrency=int(os.getenv("TRINETRA_WORKER_CONCURRENCY", "4")),
+    task_time_limit=int(os.getenv("TRINETRA_TASK_TIME_LIMIT", "3600")),
+    task_soft_time_limit=int(os.getenv("TRINETRA_TASK_SOFT_TIME_LIMIT", "3300")),
 )
 
 

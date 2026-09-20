@@ -1,0 +1,111 @@
+# Default values for trinetra Helm chart.
+
+global:
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+# Backend API deployment
+api:
+  replicaCount: 2
+  image:
+    repository: trinetra/backend
+    pullPolicy: IfNotPresent
+    tag: "0.1.0"
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+# Celery background scan worker deployment
+worker:
+  replicaCount: 2
+  image:
+    repository: trinetra/backend
+    pullPolicy: IfNotPresent
+    tag: "0.1.0"
+  concurrency: 4
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+
+# Frontend UI deployment
+frontend:
+  replicaCount: 2
+  image:
+    repository: trinetra/frontend
+    pullPolicy: IfNotPresent
+    tag: "0.1.0"
+  service:
+    type: ClusterIP
+    port: 80
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "64m"
+  hosts:
+    - host: trinetra.example.org
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: api
+        - path: /health
+          pathType: Prefix
+          service: api
+        - path: /metrics
+          pathType: Prefix
+          service: api
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls: []
+
+# Persistent Volume Claims
+persistence:
+  reports:
+    enabled: true
+    storageClass: ""
+    size: 20Gi
+    accessModes:
+      - ReadWriteMany
+  artifacts:
+    enabled: true
+    storageClass: ""
+    size: 50Gi
+    accessModes:
+      - ReadWriteMany
+
+# Application Configuration
+config:
+  databaseUrl: "postgresql+psycopg://trinetra:password@trinetra-postgresql:5432/trinetra"
+  celeryBrokerUrl: "redis://trinetra-redis-master:6379/0"
+  celeryResultBackend: "redis://trinetra-redis-master:6379/0"
+  rateLimitPerMinute: 120
+  corsOrigins: "https://trinetra.example.org"
+  reportStorePath: "/data/reports"
+  artifactStorePath: "/artifact-store"
+
+# Secrets
+secrets:
+  jwtSecret: "change-this-to-a-strong-secret-in-production"
+  bootstrapAdminUser: "admin"
+  bootstrapAdminPassword: "change-this-initial-admin-password"
+  scannerToken: ""

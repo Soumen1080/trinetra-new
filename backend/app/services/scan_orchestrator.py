@@ -24,7 +24,10 @@ from app.models.base import utcnow
 from app.models.enums import ScannerKind, ScanStatus, ScanTargetKind
 from app.repositories import record_progress
 from app.schemas.mapping import artefact_to_row
+from app.services.cache import ArtefactCache, compute_content_hash
 from app.services.cbom_ingest import CBOMValidationError, ingest_document
+from app.services.observability import metrics
+from app.services.security import sanitize_evidence_snippet
 
 
 class QueueUnavailableError(RuntimeError):
@@ -162,6 +165,8 @@ def execute_scan(
     scan_id: str,
     *,
     gateway: ScannerGateway | None = None,
+    content_hash: str | None = None,
+    previous_scan_id: str | None = None,
 ) -> None:
     """Run a queued scan exactly once, moving it to an honest terminal state.
 
@@ -175,6 +180,41 @@ def execute_scan(
         scan = session.get(tables.Scan, scan_id)
         if scan is None or ScanStatus(scan.status).is_terminal:
             return
+
+        if content_hash and not scan.content_hash:
+            scan.content_hash = content_hash
+
+        # Incremental rescan check: if content hash matches a prior successful scan, reuse it
+        if scan.content_hash:
+            cached = ArtefactCache.find_cached_scan(
+                session,
+                target_identifier=scan.target_identifier,
+                content_hash=scan.content_hash,
+            )
+            if cached is not None and cached.id != scan.id:
+                scan.status = cached.status
+                scan.scanners_run = cached.scanners_run
+                scan.tool_versions = cached.tool_versions
+                scan.coverage_json = cached.coverage_json
+                scan.finished_at = utcnow()
+                cloned = ArtefactCache.clone_artefacts(
+                    session,
+                    source_scan_id=cached.id,
+                    target_scan_id=scan.id,
+                )
+                publish_progress(
+                    session,
+                    scan_id=scan.id,
+                    percent=100,
+                    stage="completed",
+                    counts={"artefacts": cloned},
+                    message="Scan completed from cache.",
+                )
+                session.commit()
+                metrics.inc_counter("trinetra_scans_total", status=scan.status)
+                metrics.set_gauge("trinetra_artefacts_total", cloned)
+                return
+
         scan.status = ScanStatus.RUNNING.value
         scan.started_at = utcnow()
         publish_progress(
@@ -208,7 +248,8 @@ def execute_scan(
             )
 
         path = _artifact_path(response.artifact_reference)
-        document = json.loads(path.read_text(encoding="utf-8"))
+        document_text = path.read_text(encoding="utf-8")
+        document = json.loads(document_text)
         ingested = ingest_document(
             document, scan_target=scan.target_identifier, discovered_by=scanner_kind
         )
@@ -222,6 +263,10 @@ def execute_scan(
                 # flight wins. The immutable CBOM may still exist, but it is
                 # not ingested into a cancelled lifecycle.
                 return
+
+            if not scan.content_hash:
+                scan.content_hash = content_hash or compute_content_hash(document_text)
+
             existing = int(
                 session.scalar(
                     select(tables.Artefact)
@@ -255,12 +300,16 @@ def execute_scan(
                 message="Scan completed.",
             )
             session.commit()
+            metrics.inc_counter("trinetra_scans_total", status=scan.status)
+            metrics.set_gauge("trinetra_artefacts_total", len(ingested.artefacts))
     except (
         CBOMValidationError,
         OSError,
         json.JSONDecodeError,
         RuntimeError,
         ValueError,
+        MemoryError,
+        Exception,
     ) as error:
         code = str(error) if str(error).isupper() else "SCANNER_FAILED"
         with session_factory() as session:
@@ -288,6 +337,7 @@ def execute_scan(
                 message=scan.errors_json[0]["message"],
             )
             session.commit()
+            metrics.inc_counter("trinetra_scans_total", status="failed")
 
 
 __all__ = [

@@ -14,6 +14,7 @@ Run: python scripts/benchmark_accuracy.py
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import subprocess
@@ -127,17 +128,68 @@ class Report:
 
     @property
     def passed(self) -> bool:
-        """The bar: no false positives, nothing missing.
-
-        Deliberately absolute rather than a threshold. A single false positive
-        on code that performs no cryptography is a trust problem, and a
-        threshold invites it to be normalised.
-        """
         return (
             not self.false_positives_negative_corpus
             and not self.false_negatives
             and not self.missing_key_sizes
             and not self.missing_modes
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "expected_sites": len(EXPECTED),
+            "true_positives": len(self.true_positives),
+            "false_negatives": len(self.false_negatives),
+            "false_positives_negative_corpus": len(self.false_positives_negative_corpus),
+            "precision": self.precision,
+            "recall": self.recall,
+            "key_size_resolution": self.key_size_resolution,
+            "mode_resolution": self.mode_resolution,
+            "passed": self.passed,
+            "details": {
+                "missing_findings": self.false_negatives,
+                "false_positives": self.false_positives_negative_corpus,
+                "missing_key_sizes": self.missing_key_sizes,
+                "missing_modes": self.missing_modes,
+            },
+        }
+
+    def to_junit_xml(self) -> str:
+        cases = []
+        if self.false_positives_negative_corpus:
+            cases.append(
+                f'<testcase name="precision" classname="accuracy"><failure message="False positives detected">{", ".join(self.false_positives_negative_corpus)}</failure></testcase>'
+            )
+        else:
+            cases.append('<testcase name="precision" classname="accuracy"/>')
+
+        if self.false_negatives:
+            cases.append(
+                f'<testcase name="recall" classname="accuracy"><failure message="False negatives detected">{", ".join(self.false_negatives)}</failure></testcase>'
+            )
+        else:
+            cases.append('<testcase name="recall" classname="accuracy"/>')
+
+        if self.missing_key_sizes:
+            cases.append(
+                f'<testcase name="key_size_resolution" classname="accuracy"><failure message="Missing key sizes">{", ".join(self.missing_key_sizes)}</failure></testcase>'
+            )
+        else:
+            cases.append('<testcase name="key_size_resolution" classname="accuracy"/>')
+
+        if self.missing_modes:
+            cases.append(
+                f'<testcase name="mode_resolution" classname="accuracy"><failure message="Missing modes">{", ".join(self.missing_modes)}</failure></testcase>'
+            )
+        else:
+            cases.append('<testcase name="mode_resolution" classname="accuracy"/>')
+
+        failures = sum(1 for c in cases if "<failure" in c)
+        return (
+            '<?xml version="1.0" encoding="utf-8"?>\n'
+            f'<testsuite name="accuracy_benchmark" tests="{len(cases)}" failures="{failures}">\n'
+            + "\n".join(f"  {c}" for c in cases)
+            + "\n</testsuite>\n"
         )
 
 
@@ -243,7 +295,12 @@ def benchmark() -> Report:
     return report
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Trinetra source-detection accuracy benchmark")
+    parser.add_argument("--json", action="store_true", help="Output results as JSON to stdout")
+    parser.add_argument("--junit-xml", metavar="PATH", help="Write JUnit XML report to file")
+    args = parser.parse_args(argv)
+
     try:
         report = benchmark()
     except FileNotFoundError:
@@ -252,6 +309,15 @@ def main() -> int:
     except RuntimeError as exc:
         print(f"benchmark failed: {exc}", file=sys.stderr)
         return 2
+
+    if args.junit_xml:
+        junit_path = Path(args.junit_xml)
+        junit_path.parent.mkdir(parents=True, exist_ok=True)
+        junit_path.write_text(report.to_junit_xml(), encoding="utf-8")
+
+    if args.json:
+        print(json.dumps(report.to_dict(), indent=2))
+        return 0 if report.passed else 1
 
     print("Trinetra source-detection accuracy")
     print("=" * 52)

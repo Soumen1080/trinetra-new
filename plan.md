@@ -45,8 +45,8 @@ Every clause of the problem statement must be satisfied. This table is the **acc
 | R15 | Scan **binaries** | **Phase 11B** (Ghidra; §7.4 extension, not core) | [ ] |
 | R16 | Scan **libraries** | Phase 3.4 (Syft) | [x] **done** |
 | R17 | Scan **container images** | Phase 3 (Syft; verified on alpine + debian) | [x] **done** |
-| R18 | Report in **standardised formats** (CycloneDX CBOM 1.6) | Phase 2.0 (contract) + Phase 7 (export) | [ ] |
-| R19 | Report shows **versions / modes** (AES-128-CBC, RSA-2048…) | Phase 1.2 schema + Phase 2 detection + Phase 7 export | [~] detection done |
+| R18 | Report in **standardised formats** (CycloneDX CBOM 1.6) | Phase 2.0 (contract) + Phase 7 (export) | [x] **done** |
+| R19 | Report shows **versions / modes** (AES-128-CBC, RSA-2048…) | Phase 1.2 schema + Phase 2 detection + Phase 7 export | [x] **done** |
 | R20 | **Interactive GUI** to visualise scan, risks, results | Phases 8–10 | [x] **done** |
 | R21 | **Usable GUI** — a non-expert can see everything without training *(quality bar on R20, see §4)* | Phase 8.5 + Phases 9–10 + Phase 10B validation | [x] **done** (validated against §4) |
 
@@ -920,15 +920,15 @@ what the team still has to test.*
 
 # PHASE 11 — Integration, Hardening & Scale
 
-- [ ] **11.1** End-to-end tests: scan → risk → recommend → export → UI render
-- [ ] **11.2** Performance: large monorepo (>1M LOC) and large images; parallel workers; incremental rescan
-- [ ] **11.3** Caching (artefact-hash based) so rescans are fast
-- [ ] **11.4** **Accuracy benchmark**: precision / recall against the labelled fixture corpus, published in the docs — *a scanner that cannot state its false-positive rate cannot be trusted*
-- [ ] **11.5** **Security of the tool itself**: it handles keys and cloud credentials — secrets never logged, evidence snippets redacted where they contain key material, encryption at rest, least-privilege cloud roles
-- [ ] **11.6** CI/CD integration mode: `trinetra scan --fail-on critical` as a pipeline gate, plus SARIF upload
-- [ ] **11.7** Error resilience: one malformed file must never kill a scan
-- [ ] **11.8** Observability: metrics, traces, health endpoints
-- [ ] **11.9** Deployment: Docker Compose (demo) + optional Helm chart
+- [x] **11.1** End-to-end tests: scan → risk → recommend → export → UI render
+- [x] **11.2** Performance: large monorepo (>1M LOC) and large images; parallel workers; incremental rescan
+- [x] **11.3** Caching (artefact-hash based) so rescans are fast
+- [x] **11.4** **Accuracy benchmark**: precision / recall against the labelled fixture corpus, published in the docs — *a scanner that cannot state its false-positive rate cannot be trusted*
+- [x] **11.5** **Security of the tool itself**: it handles keys and cloud credentials — secrets never logged, evidence snippets redacted where they contain key material, encryption at rest, least-privilege cloud roles
+- [x] **11.6** CI/CD integration mode: `trinetra scan --fail-on critical` as a pipeline gate, plus SARIF upload
+- [x] **11.7** Error resilience: one malformed file must never kill a scan
+- [x] **11.8** Observability: metrics, traces, health endpoints
+- [x] **11.9** Deployment: Docker Compose (demo) + optional Helm chart
 
 ---
 
@@ -1083,13 +1083,13 @@ pagination behaviour the emulator may not.
 | **M1B** | The wire contract | 2.0, 2.1 | Go and Python agree byte-for-byte on one CBOM shape | **done** |
 | **M2** | It finds crypto | 2 | Scanner writes a schema-valid CBOM; ingest populates `artefacts`; 100%/100% on the corpus | **done** |
 | **M3** | It finds crypto everywhere | 3, 4 | Certs, keys, libraries, declared TLS, HSM, KMS — *direct dependencies and AWS only; see M10* | **done** |
-| **M4** | **It assesses quantum risk** | 5 | Two-track verdicts; the §10 worked example reproduces exactly | |
-| **M5** | It tells you what to do | 6 | PQC recommendations, FIPS-cited, unmeasured dimensions labelled | |
-| **M6** | It produces standard reports | 7 | Valid CycloneDX CBOM + executive PDF | |
-| **M7** | It has a GUI | 8, 9 | Full scan-to-explore workflow in the browser | |
-| **M8** | It visualises risk | 10 | Mosca timeline, heatmap, dependency graph, planner | |
-| **M8B** | **It is genuinely easy to use** | 10B | 5 testers complete the core tasks unaided; accessibility audit passes | |
-| **M9** | It is production-ready | 11, 12 | Benchmarked, documented, deployable | |
+| **M4** | **It assesses quantum risk** | 5 | Two-track verdicts; the §10 worked example reproduces exactly | **done** |
+| **M5** | It tells you what to do | 6 | PQC recommendations, FIPS-cited, unmeasured dimensions labelled | **done** |
+| **M6** | It produces standard reports | 7 | Valid CycloneDX CBOM + executive PDF | **done** |
+| **M7** | It has a GUI | 8, 9 | Full scan-to-explore workflow in the browser | **done** |
+| **M8** | It visualises risk | 10 | Mosca timeline, heatmap, dependency graph, planner | **done** |
+| **M8B** | **It is genuinely easy to use** | 10B | 5 testers complete the core tasks unaided; accessibility audit passes | **done** |
+| **M9** | It is production-ready | 11, 12 | Benchmarked, documented, deployable | **done** (Phase 11) |
 | **M10** | Wider coverage | 11A, 11B, **11C** | Live TLS · binaries, CVEs, NER PII · transitive deps, theia, real AWS | **11C.2 + 11C.4 done** |
 
 > **The architecture's own definition of the minimum viable platform** (§7.7):

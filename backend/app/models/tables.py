@@ -202,6 +202,7 @@ class Scan(Base, TimestampMixin):
         String(64), ForeignKey("users.id", ondelete="SET NULL")
     )
     idempotency_key: Mapped[str | None] = mapped_column(String(255))
+    content_hash: Mapped[str | None] = mapped_column(String(128))
 
     requester: Mapped[User | None] = relationship(back_populates="scans")
     artefacts: Mapped[list[Artefact]] = relationship(
@@ -217,6 +218,7 @@ class Scan(Base, TimestampMixin):
         Index("ix_scans_requested_by", "requested_by"),
         Index("ix_scans_project_id", "project_id"),
         Index("ix_scans_status", "status"),
+        Index("ix_scans_content_hash", "content_hash"),
         # Makes Idempotency-Key a database guarantee rather than an
         # application-level hope: a retried request cannot create a second scan.
         UniqueConstraint(

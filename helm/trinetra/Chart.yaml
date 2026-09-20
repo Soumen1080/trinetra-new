@@ -1,0 +1,16 @@
+apiVersion: v2
+name: trinetra
+description: Helm chart for Trinetra PQC Cryptographic Bill of Materials (CBOM) Analytics Platform
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - pqc
+  - cbom
+  - cryptography
+  - quantum-safe
+  - security
+home: https://github.com/trinetra/trinetra
+maintainers:
+  - name: Trinetra Team
+    email: security@trinetra.example.org

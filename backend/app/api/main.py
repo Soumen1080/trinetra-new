@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -25,7 +25,9 @@ from app.api.database import initialise_database, make_engine, make_session_fact
 from app.api.routes import router, scan_websocket
 from app.api.security import hash_password
 from app.models import tables
+from app.services.observability import MetricsMiddleware, metrics
 from app.services.scan_orchestrator import CeleryScanDispatcher, ScanDispatcher
+from app.services.security import RedactingFormatter, SecurityHeadersMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +139,12 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
+        # Configure redacting formatter on root logger handlers
+        for handler in logging.root.handlers:
+            if handler.formatter:
+                handler.setFormatter(RedactingFormatter(handler.formatter._fmt))
+            else:
+                handler.setFormatter(RedactingFormatter())
         _bootstrap(session_factory)
         yield
 
@@ -154,6 +162,8 @@ def create_app(
         report_store or os.getenv("TRINETRA_REPORT_STORE", "./reports")
     )
 
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(MetricsMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=_origins(),
@@ -218,8 +228,39 @@ def create_app(
         return response
 
     @app.get("/health", tags=["ops"])
-    def health() -> dict[str, str]:
-        return {"status": "ok"}
+    def health() -> dict[str, Any]:
+        db_status = "ok"
+        try:
+            with session_factory() as session:
+                session.execute(select(1)).scalar()
+        except Exception:
+            db_status = "degraded"
+        return {
+            "status": "ok" if db_status == "ok" else "degraded",
+            "components": {
+                "database": db_status,
+                "api": "ok",
+            },
+        }
+
+    @app.get("/health/ready", tags=["ops"])
+    def health_ready(response: Response) -> dict[str, str]:
+        try:
+            with session_factory() as session:
+                session.execute(select(1)).scalar()
+            return {"status": "ready"}
+        except Exception as error:
+            response.status_code = 503
+            return {"status": "not_ready", "reason": str(error)}
+
+    @app.get("/health/live", tags=["ops"])
+    def health_live() -> dict[str, str]:
+        return {"status": "live"}
+
+    @app.get("/metrics", tags=["ops"])
+    def prometheus_metrics() -> Response:
+        body = metrics.generate_prometheus_text()
+        return Response(content=body, media_type="text/plain; version=0.0.4; charset=utf-8")
 
     app.include_router(router)
     app.websocket("/ws/scans/{scan_id}")(scan_websocket)
