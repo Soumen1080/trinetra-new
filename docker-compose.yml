@@ -23,7 +23,7 @@ services:
       - "8000:8000"
     environment:
       - TRINETRA_DATABASE_URL=sqlite:////data/trinetra.db
-      - TRINETRA_AUTO_CREATE_SCHEMA=true
+      - TRINETRA_AUTO_CREATE_SCHEMA=false
       - TRINETRA_JWT_SECRET=supersecret-change-this-in-production-jwt-token
       - BOOTSTRAP_ADMIN_USERNAME=admin
       - BOOTSTRAP_ADMIN_PASSWORD=adminpassword
@@ -52,6 +52,7 @@ services:
       dockerfile: Dockerfile
     container_name: trinetra-worker
     restart: unless-stopped
+    entrypoint: []
     command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=info"]
     environment:
       - TRINETRA_DATABASE_URL=sqlite:////data/trinetra.db

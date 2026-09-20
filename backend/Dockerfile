@@ -23,15 +23,18 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY app ./app
 COPY alembic.ini .
 COPY alembic ./alembic
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 # Create data directory for SQLite & reports
-RUN mkdir -p /data/reports
+RUN mkdir -p /data/reports && \
+    chmod +x /docker-entrypoint.sh
 
 ENV PYTHONUNBUFFERED=1
 ENV TRINETRA_DATABASE_URL="sqlite:////data/trinetra.db"
 ENV TRINETRA_REPORT_STORE="/data/reports"
-ENV TRINETRA_AUTO_CREATE_SCHEMA="true"
+ENV TRINETRA_AUTO_CREATE_SCHEMA="false"
 
 EXPOSE 8000
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
