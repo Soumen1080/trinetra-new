@@ -285,6 +285,10 @@ func isBinary(path string, info os.FileInfo) bool {
 	switch ext {
 	case ".exe", ".dll", ".so", ".dylib", ".bin", ".elf":
 		return true
+	case ".jar", ".war", ".ear": // Java archives (11B.3)
+		return true
+	case ".class": // Java bytecode
+		return true
 	case "": // No extension - check if executable
 		return info.Mode()&0111 != 0
 	}
@@ -317,6 +321,20 @@ func isBinary(path string, info os.FileInfo) bool {
 		(magic[0] == 0xCE && magic[1] == 0xFA && magic[2] == 0xED && magic[3] == 0xFE) ||
 		(magic[0] == 0xCF && magic[1] == 0xFA && magic[2] == 0xED && magic[3] == 0xFE) {
 		return true
+	}
+
+	// Java class file: 0xCAFEBABE
+	if magic[0] == 0xCA && magic[1] == 0xFE && magic[2] == 0xBA && magic[3] == 0xBE {
+		return true
+	}
+
+	// ZIP/JAR files: 'P' 'K' 0x03 0x04 (JAR/WAR/EAR are ZIP archives)
+	if magic[0] == 0x50 && magic[1] == 0x4B && magic[2] == 0x03 && magic[3] == 0x04 {
+		// Additional check for .jar/.war/.ear extension
+		ext := strings.ToLower(filepath.Ext(path))
+		if ext == ".jar" || ext == ".war" || ext == ".ear" {
+			return true
+		}
 	}
 
 	return false
