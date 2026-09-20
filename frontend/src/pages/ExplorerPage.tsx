@@ -13,6 +13,7 @@ import {
   ArtefactDrawer,
   BulkReviewDialog,
   DemoDataLoader,
+  ExportButton,
 } from "../components";
 import { RiskBadge } from "../components/RiskBadge";
 import { titleCase } from "../risk";
@@ -179,6 +180,7 @@ export function ExplorerPage() {
               </p>
             </div>
             <div className="table-actions">
+              <ExportButton filters={filters} label="Export CSV" />
               <button
                 onClick={() => navigator.clipboard?.writeText(location.href)}
                 title="Copy a shareable link to this exact filter view"

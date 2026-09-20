@@ -32,3 +32,9 @@ export { DemoDataLoader } from "./DemoDataLoader";
 export { AccessibilityMenu } from "./AccessibilityMenu";
 export { ColorBlindFilters } from "./ColorBlindFilters";
 export { PersonaSwitcher } from "./PersonaSwitcher";
+
+// Phase 11 UX Enhancement components
+export { EvidenceViewer } from "./EvidenceViewer";
+export { SearchBar } from "./SearchBar";
+export { FilterPanel, FilterGroup } from "./FilterPanel";
+export { ExportButton } from "./ExportButton";

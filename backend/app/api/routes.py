@@ -28,7 +28,7 @@ from fastapi import (
     WebSocketDisconnect,
     status,
 )
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, PlainTextResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
@@ -2196,6 +2196,88 @@ def demo_seed_delete(request: Request, principal: Analyst, session: Db) -> None:
         resource_id=None,
     )
     session.commit()
+
+
+@router.get("/artefacts/export/csv", response_class=PlainTextResponse, tags=["export"])
+def export_artefacts_csv(
+    request: Request,
+    principal: Reader,
+    session: Db,
+    asset_type: str | None = Query(None, alias="type"),
+    priority: str | None = None,
+    application_id: str | None = None,
+    algorithm: str | None = None,
+    quantum_status: str | None = None,
+    scanner: str | None = None,
+    search: str | None = Query(None, alias="q"),
+) -> str:
+    """Export filtered artefacts as CSV (§4.6, §4.8)."""
+    import csv as csv_module
+    import io
+    from app.api.presenters import artefact_from_row
+
+    project = _project(request, principal)
+    statement = (
+        select(tables.Artefact)
+        .join(tables.Scan)
+        .where(tables.Scan.project_id == project.id)
+        .options(
+            selectinload(tables.Artefact.assessments).selectinload(
+                tables.RiskAssessment.recommendation
+            ),
+            selectinload(tables.Artefact.review),
+        )
+    )
+    rows = _filter_artefacts(
+        list(session.scalars(statement)),
+        asset_type=asset_type,
+        priority=priority,
+        application_id=application_id,
+        algorithm=algorithm,
+        quantum_status=quantum_status,
+        scanner=scanner,
+        search=search,
+    )
+
+    # Flatten to CSV rows
+    buf = io.StringIO()
+    columns = [
+        "id",
+        "name",
+        "type",
+        "algorithm",
+        "quantum_vulnerability",
+        "location",
+        "discovered_by",
+        "priority",
+        "risk_score",
+        "recommendation",
+    ]
+    writer = csv_module.DictWriter(buf, fieldnames=columns)
+    writer.writeheader()
+
+    for row in rows:
+        assessment = _latest(row)
+        writer.writerow(
+            {
+                "id": row.id,
+                "name": row.name,
+                "type": row.type,
+                "algorithm": row.algorithm or "",
+                "quantum_vulnerability": row.quantum_vulnerability or "",
+                "location": row.location or "",
+                "discovered_by": row.discovered_by,
+                "priority": assessment.priority if assessment else "none",
+                "risk_score": assessment.final_score if assessment else "",
+                "recommendation": (
+                    assessment.recommendation.recommended_algorithm
+                    if assessment and assessment.recommendation
+                    else ""
+                ),
+            }
+        )
+
+    return buf.getvalue()
 
 
 @router.get(

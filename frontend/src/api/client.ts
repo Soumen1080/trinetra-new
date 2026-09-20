@@ -129,6 +129,22 @@ export function createApi(context: ApiContext = {}) {
       request<{ updated: number }>("/artefacts/bulk-review", { method: "POST", body: payload, mutation: true }),
     certificates: (params: Record<string, string | number | undefined | null> = {}) =>
       request<ArtefactList>(`/artefacts${query({ type: "certificate", ...params })}`),
+    exportArtefactsCsv: async (params: Record<string, string | number | undefined | null> = {}) => {
+      const headers = new Headers({ Accept: "text/csv" });
+      if (context.accessToken) headers.set("Authorization", `Bearer ${context.accessToken}`);
+      if (context.projectId) headers.set("X-Project-ID", context.projectId);
+      const response = await fetch(`${apiRoot}/artefacts/export/csv${query(params)}`, {
+        headers,
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const data: unknown = await response.json().catch(() => undefined);
+        throw new ApiError(response.status, codeFrom(data), messageFrom(data, `Export failed (${response.status}).`));
+      }
+      const csv = await response.text();
+      const blob = new Blob([csv], { type: "text/csv" });
+      return { blob, name: `trinetra-artefacts-${new Date().toISOString().split("T")[0]}.csv` };
+    },
 
     // ── Reports ───────────────────────────────────────────────────────────────
     createReport: (scanId: string, format: string) =>
