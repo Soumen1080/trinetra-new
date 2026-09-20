@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../hooks/useAuth";
-import { Page, Panel, Empty, Skeleton, ErrorState } from "../components";
+import { Page, Panel, Empty, Skeleton, ErrorState, DemoDataLoader } from "../components";
 import { titleCase, formatDate } from "../risk";
 import type { Scan } from "../api/client";
 import { problem } from "../components/ErrorState";
@@ -90,13 +90,15 @@ export function ScansPage() {
           title="Nothing has been scanned"
           icon="🔍"
           action={
-            <button className="primary" onClick={() => setFormOpen(true)}>
-              Launch a first scan
-            </button>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
+              <button className="primary" onClick={() => setFormOpen(true)}>
+                Launch a first scan
+              </button>
+              <DemoDataLoader variant="secondary" />
+            </div>
           }
         >
-          Start with a Git repository, container image, cloud account, or approved local target.
-          A scan turns evidence into a prioritised migration view.
+          Start with a Git repository, container image, cloud account, or load the demo dataset to explore immediately.
         </Empty>
       )}
     </Page>

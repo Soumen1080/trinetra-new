@@ -12,6 +12,7 @@ import {
   Pagination,
   ArtefactDrawer,
   BulkReviewDialog,
+  DemoDataLoader,
 } from "../components";
 import { RiskBadge } from "../components/RiskBadge";
 import { titleCase } from "../risk";
@@ -226,8 +227,19 @@ export function ExplorerPage() {
               />
             </>
           ) : (
-            <Empty title="No matching artefacts" icon="🔍">
-              Broaden the search or remove one of the active filters.
+            <Empty
+              title="No matching artefacts"
+              icon="🔍"
+              action={
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
+                  <button className="button quiet" onClick={() => setParams({})}>
+                    Clear filters
+                  </button>
+                  <DemoDataLoader variant="secondary" />
+                </div>
+              }
+            >
+              Broaden the search or load the demo dataset to explore 48 realistic cryptographic findings.
             </Empty>
           )}
         </section>

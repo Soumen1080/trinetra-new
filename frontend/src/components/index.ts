@@ -25,3 +25,10 @@ export { RecommendationWorkspace } from "./RecommendationWorkspace";
 export { WhatIfSimulator } from "./WhatIfSimulator";
 export { ComplianceDashboard } from "./ComplianceDashboard";
 export { ReportPreview } from "./ReportPreview";
+
+// Phase 10B Usability & Accessibility components
+export { GuidedTour } from "./GuidedTour";
+export { DemoDataLoader } from "./DemoDataLoader";
+export { AccessibilityMenu } from "./AccessibilityMenu";
+export { ColorBlindFilters } from "./ColorBlindFilters";
+export { PersonaSwitcher } from "./PersonaSwitcher";

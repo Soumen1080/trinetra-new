@@ -2,10 +2,18 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 import { GlobalSearch } from "./components/GlobalSearch";
+import {
+  GuidedTour,
+  AccessibilityMenu,
+  ColorBlindFilters,
+  PersonaSwitcher,
+  DemoDataLoader,
+} from "./components";
 
 /**
  * App shell — persistent sidebar, topbar, theme toggle, project picker (§4.7a).
  * Global search opens on Ctrl-K or / (§4.7e).
+ * Mounts Phase 10B Guided Tour (§4.11a), A11y Suite (§4.9), and Persona Switcher (§4.1b).
  */
 export function Shell() {
   const { user, project, projects, setProject, signOut } = useAuth();
@@ -13,6 +21,7 @@ export function Shell() {
     matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
   );
   const [searchOpen, setSearchOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
 
   // Apply theme to <html>
   useEffect(() => {
@@ -121,21 +130,44 @@ export function Shell() {
                 Trinetra / {project?.name ?? <em className="muted">No project selected</em>}
               </p>
             </div>
-            <button
-              className="search-trigger"
-              onClick={() => setSearchOpen(true)}
-              aria-keyshortcuts="Control+K Meta+K /"
-              aria-label="Open search"
-            >
-              Search artefacts{" "}
-              <kbd aria-label="keyboard shortcut">Ctrl K</kbd>
-            </button>
+
+            <div className="topbar-actions" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <PersonaSwitcher />
+
+              <button
+                className="button quiet"
+                style={{ fontSize: "0.82rem", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
+                onClick={() => setTourOpen(true)}
+                aria-label="Start guided product tour (§4.11a)"
+                title="Interactive 4-screen tour of Trinetra (§4.11a)"
+              >
+                <span>🎯</span>
+                <span>Tour</span>
+              </button>
+
+              <DemoDataLoader variant="quiet" />
+
+              <AccessibilityMenu />
+
+              <button
+                className="search-trigger"
+                onClick={() => setSearchOpen(true)}
+                aria-keyshortcuts="Control+K Meta+K /"
+                aria-label="Open search"
+              >
+                Search artefacts{" "}
+                <kbd aria-label="keyboard shortcut">Ctrl K</kbd>
+              </button>
+            </div>
           </header>
 
           <Outlet />
         </main>
       </div>
 
+      {/* Cross-cutting utilities */}
+      <ColorBlindFilters />
+      <GuidedTour isOpen={tourOpen} onClose={() => setTourOpen(false)} />
       {searchOpen && <GlobalSearch close={() => setSearchOpen(false)} />}
     </>
   );

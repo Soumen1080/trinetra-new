@@ -1732,4 +1732,473 @@ async def scan_websocket(websocket: WebSocket, scan_id: str) -> None:
         return
 
 
+# ---------------------------------------------------------------------------
+# Demo seed  (Phase 10B § 4.11b — "make it real")
+#
+# Writes real database rows (Scan → Artefact → RiskAssessment → Recommendation)
+# that are fully visible through every regular API endpoint.  No mock/cache
+# hydration: the browser fetches real data after seeding.
+#
+# Idempotent:  a second POST returns the existing rows without duplicating them.
+# DELETE removes every seeded row for the current project (cascade handles the
+# child tables).
+# ---------------------------------------------------------------------------
+
+_DEMO_TAG = "trinetra:demo-seed"  # stored in scan.scanners_run as a sentinel
+
+
+class _DemoSeedResponse(BaseModel):
+    scan_ids: list[str]
+    artefact_count: int
+    already_existed: bool
+
+
+# Pydantic is not imported at the top; re-use FastAPI's already-imported one.
+from pydantic import BaseModel as _PydanticBase  # noqa: E402
+
+_DemoSeedResponse.__bases__ = (_PydanticBase,)
+
+
+@router.post("/demo/seed", response_model=_DemoSeedResponse)
+def demo_seed(request: Request, principal: Analyst, session: Db) -> _DemoSeedResponse:
+    """Seed a realistic enterprise crypto-inventory into the calling project.
+
+    Writes 3 succeeded scans with 48 artefacts, risk assessments and
+    recommendations.  Idempotent — safe to call multiple times.
+    """
+    project = _project(request, principal)
+
+    # Idempotency guard: check for existing demo scans in this project.
+    existing = session.scalars(
+        select(tables.Scan).where(
+            tables.Scan.project_id == project.id,
+            tables.Scan.scanners_run.cast(String).contains(_DEMO_TAG),
+        )
+    ).all()
+    if existing:
+        count = int(
+            session.scalar(
+                select(func.count())
+                .select_from(tables.Artefact)
+                .where(
+                    tables.Artefact.scan_id.in_([s.id for s in existing])
+                )
+            )
+            or 0
+        )
+        return _DemoSeedResponse(
+            scan_ids=[s.id for s in existing],
+            artefact_count=count,
+            already_existed=True,
+        )
+
+    now = utcnow()
+
+    # ── Applications (ensure they exist) ────────────────────────────────────
+    app_specs = [
+        ("demo-app-payment", "Payment Gateway Core"),
+        ("demo-app-auth", "Customer Identity & Auth"),
+        ("demo-app-edge", "Public Edge Ingress (TLS)"),
+        ("demo-app-archive", "Document Archive & Records"),
+        ("demo-app-b2b", "B2B API Dispatcher"),
+        ("demo-app-hsm", "HSM & Key Management"),
+    ]
+    app_id_map: dict[str, str] = {}
+    for short_id, name in app_specs:
+        full_id = f"{project.id[:8]}-{short_id}"
+        existing_app = session.get(tables.Application, full_id)
+        if existing_app is None:
+            existing_app = tables.Application(
+                id=full_id,
+                project_id=project.id,
+                name=name,
+                business_criticality="critical",
+                data_classification="confidential",
+                exposure="external",
+            )
+            session.add(existing_app)
+        app_id_map[short_id] = full_id
+
+    # ── Scans ────────────────────────────────────────────────────────────────
+    scan_specs = [
+        {
+            "id_suffix": "scan-git",
+            "kind": "git_repository",
+            "identifier": "https://github.com/enterprise/core-payment-gateway",
+            "display_name": "Core Payment & Ingress Services",
+            "started": now.replace(year=2026, month=9, day=1, hour=9, minute=15),
+            "finished": now.replace(year=2026, month=9, day=1, hour=9, minute=18, second=42),
+        },
+        {
+            "id_suffix": "scan-container",
+            "kind": "container_image",
+            "identifier": "docker.internal/auth-gateway:v2.4.0",
+            "display_name": "Customer Auth Gateway Container",
+            "started": now.replace(year=2026, month=8, day=15, hour=14, minute=30),
+            "finished": now.replace(year=2026, month=8, day=15, hour=14, minute=32, second=10),
+        },
+        {
+            "id_suffix": "scan-cloud",
+            "kind": "cloud_account",
+            "identifier": "aws:us-east-1:123456789012",
+            "display_name": "Production AWS KMS & PKCS#11 HSM",
+            "started": now.replace(year=2026, month=8, day=1, hour=10, minute=0),
+            "finished": now.replace(year=2026, month=8, day=1, hour=10, minute=1, second=25),
+        },
+    ]
+    scan_ids: dict[str, str] = {}
+    for spec in scan_specs:
+        sid = f"{project.id[:8]}-{spec['id_suffix']}"
+        scan_row = tables.Scan(
+            id=sid,
+            project_id=project.id,
+            target_kind=spec["kind"],
+            target_identifier=spec["identifier"],
+            display_name=spec["display_name"],
+            status="succeeded",
+            started_at=spec["started"],
+            finished_at=spec["finished"],
+            requested_by=principal.user.id,
+            schema_version="1.0",
+            scanners_run=[_DEMO_TAG],
+            tool_versions=[{"name": "trinetra-demo", "version": "10B.0"}],
+        )
+        session.add(scan_row)
+        scan_ids[spec["id_suffix"]] = sid
+
+    # ── Artefacts + assessments ──────────────────────────────────────────────
+    # Each entry: (name, type, algorithm, location, scan_key, app_key,
+    #              qvuln, primitive, key_size, priority, score, rec_algorithm)
+    artefact_specs = [
+        # P0 — Shor-breakable asymmetric
+        ("RSA-2048 Key Exchange (TLS 1.2)", "algorithm", "RSA-2048",
+         "src/crypto/tls_config.go:42", "scan-git", "demo-app-payment",
+         "shor_broken", "key_agreement", 2048, "p0", 92.0,
+         "ML-KEM-768 (FIPS 203) with X25519 hybrid"),
+        ("ECDH P-256 Session Key Negotiation", "algorithm", "ECDH-P256",
+         "auth/session_manager.py:88", "scan-container", "demo-app-auth",
+         "shor_broken", "key_agreement", 256, "p0", 88.0,
+         "X25519MLKEM768 hybrid KEX"),
+        ("DSA-1024 Legacy Signing Key", "algorithm", "DSA-1024",
+         "src/signing/legacy_sign.java:23", "scan-git", "demo-app-archive",
+         "shor_broken", "signature", 1024, "p0", 91.0,
+         "ML-DSA-65 (FIPS 204)"),
+        ("RSA-1024 PKCS#1 v1.5 Encryption", "algorithm", "RSA-1024",
+         "lib/crypto/pkcs.py:55", "scan-container", "demo-app-auth",
+         "shor_broken", "pke", 1024, "p0", 95.0,
+         "ML-KEM-512 (FIPS 203)"),
+        ("ECDSA secp256k1 Code Signing", "algorithm", "ECDSA-secp256k1",
+         "ci/sign_release.sh:14", "scan-git", "demo-app-payment",
+         "shor_broken", "signature", 256, "p0", 86.0,
+         "ML-DSA-44 (FIPS 204)"),
+        ("DH-1024 Static Key Exchange", "algorithm", "DH-1024",
+         "vpn/handshake.c:77", "scan-git", "demo-app-edge",
+         "shor_broken", "key_agreement", 1024, "p0", 90.0,
+         "ML-KEM-768 (FIPS 203)"),
+        # P0 — 3DES (Grover + legacy)
+        ("Legacy Triple-DES Encrypted Store", "algorithm", "3DES",
+         "db/legacy_cipher.java:114", "scan-git", "demo-app-archive",
+         "grover_weakened", "block_cipher", 112, "p0", 84.0,
+         "AES-256-GCM"),
+        ("3DES CBC Payment Token Encryption", "algorithm", "3DES-CBC",
+         "payments/token_store.go:201", "scan-git", "demo-app-payment",
+         "grover_weakened", "block_cipher", 112, "p0", 82.0,
+         "ChaCha20-Poly1305 or AES-256-GCM"),
+        # P0 — expired / weak certs
+        ("Expired Internal CA Certificate (SHA-1)", "certificate", "SHA1withRSA-2048",
+         "/etc/ssl/certs/internal-ca-old.pem:1", "scan-container", "demo-app-edge",
+         "shor_broken", "signature", 2048, "p0", 89.0,
+         "ML-DSA-65 dual-root CA"),
+        ("Self-signed RSA-2048 mTLS Leaf", "certificate", "SHA256withRSA-2048",
+         "/etc/ssl/certs/mtls-leaf.pem:1", "scan-container", "demo-app-b2b",
+         "shor_broken", "signature", 2048, "p0", 85.0,
+         "ML-DSA-44 leaf certificate"),
+        # P0 — cloud KMS weak keys
+        ("AWS KMS RSA-2048 Customer Key", "cloud_service", "RSA-2048",
+         "arn:aws:kms:us-east-1:123456789012:key/a0b1-2c3d", "scan-cloud", "demo-app-hsm",
+         "shor_broken", "pke", 2048, "p0", 87.0,
+         "AWS KMS ML-KEM PQC key type"),
+        ("Azure Key Vault EC P-256 Key", "cloud_service", "ECDH-P256",
+         "https://vault.azure.net/keys/api-signing-key", "scan-cloud", "demo-app-payment",
+         "shor_broken", "key_agreement", 256, "p0", 83.0,
+         "X25519MLKEM768 via Azure KV"),
+        # P0 — hardware HSM with weak keys
+        ("HSM RSA-2048 Master Key Slot 0", "hardware_module", "RSA-2048",
+         "pkcs11://token=SafeNet/slot=0", "scan-cloud", "demo-app-hsm",
+         "shor_broken", "pke", 2048, "p0", 88.0,
+         "Vendor PQC firmware upgrade + ML-KEM-768"),
+        # P1 — moderate priority quantum-vulnerable
+        ("AWS KMS RSA-3072 Customer Key", "cloud_service", "RSA-3072",
+         "arn:aws:kms:us-east-1:123456789012:key/c039-4d8e", "scan-cloud", "demo-app-payment",
+         "shor_broken", "pke", 3072, "p1", 68.0,
+         "AWS KMS PQC key migration wave"),
+        ("ECDSA P-384 Document Signing", "algorithm", "ECDSA-P384",
+         "docs/signing/pdf_sign.py:44", "scan-git", "demo-app-archive",
+         "shor_broken", "signature", 384, "p1", 72.0,
+         "ML-DSA-65 (FIPS 204)"),
+        ("RSA-3072 JWT Signing Key", "key", "RSA-3072",
+         "auth/jwt/keys/signing.pem", "scan-container", "demo-app-auth",
+         "shor_broken", "signature", 3072, "p1", 65.0,
+         "ML-DSA-44 (FIPS 204)"),
+        ("ECDH P-384 API Encryption Key", "key", "ECDH-P384",
+         "api/encryption/keys/session.der", "scan-container", "demo-app-b2b",
+         "shor_broken", "key_agreement", 384, "p1", 70.0,
+         "X25519MLKEM768 hybrid"),
+        ("GlobalSign Root CA (SHA256 RSA-4096)", "certificate", "SHA256withRSA-4096",
+         "/etc/ssl/certs/internal-ca.pem:1", "scan-container", "demo-app-edge",
+         "shor_broken", "signature", 4096, "p1", 62.0,
+         "ML-DSA-87 dual-root CA"),
+        ("TLS 1.2 with DHE-RSA-2048", "protocol", "TLS-1.2",
+         "nginx/nginx.conf:55", "scan-container", "demo-app-edge",
+         "shor_broken", "key_agreement", None, "p1", 66.0,
+         "TLS 1.3 + ML-KEM-768 hybrid KEX"),
+        ("OpenSSL 1.1.1 (libssl)", "library", None,
+         "requirements.txt:12", "scan-container", "demo-app-auth",
+         "grover_weakened", None, None, "p1", 60.0,
+         "OpenSSL 3.2+ with OQS provider"),
+        # P1 — AES-128 (Grover: effective 64 bits against CRQC)
+        ("AES-128-CBC Database Column Encryption", "algorithm", "AES-128-CBC",
+         "db/column_enc.py:98", "scan-git", "demo-app-archive",
+         "grover_weakened", "block_cipher", 128, "p1", 64.0,
+         "AES-256-GCM"),
+        ("AES-128-GCM Backup Encryption", "algorithm", "AES-128-GCM",
+         "backup/encrypt.sh:7", "scan-git", "demo-app-payment",
+         "grover_weakened", "aead", 128, "p1", 61.0,
+         "AES-256-GCM"),
+        # P1 — MD5 / SHA-1 hashing
+        ("MD5 File Integrity Check", "algorithm", "MD5",
+         "util/checksum.py:33", "scan-git", "demo-app-b2b",
+         "grover_weakened", "hash", None, "p1", 67.0,
+         "SHA-3-256 or BLAKE3"),
+        ("SHA-1 HMAC API Signature", "algorithm", "SHA-1",
+         "api/middleware/hmac.go:18", "scan-git", "demo-app-edge",
+         "grover_weakened", "mac", None, "p1", 63.0,
+         "HMAC-SHA-256 or HMAC-SHA3-256"),
+        ("SHA-1 Certificate Fingerprint Check", "algorithm", "SHA-1",
+         "cert/verify.py:42", "scan-container", "demo-app-b2b",
+         "grover_weakened", "hash", None, "p1", 59.0,
+         "SHA-256"),
+        # P2 — quantum-safe but needs review / minor issues
+        ("ChaCha20-Poly1305 Session Encryption", "algorithm", "ChaCha20-Poly1305",
+         "streaming/session_enc.go:101", "scan-git", "demo-app-edge",
+         "quantum_safe", "aead", 256, "p2", 28.0,
+         "Already quantum-safe; document for compliance"),
+        ("AES-256-GCM Payload Encryption", "algorithm", "AES-256-GCM",
+         "api/payload_enc.py:77", "scan-container", "demo-app-auth",
+         "quantum_safe", "aead", 256, "p2", 20.0,
+         "Already quantum-safe; rotate keys on schedule"),
+        ("X25519 ECDH Key Agreement", "algorithm", "X25519",
+         "lib/crypto/ecdh.go:55", "scan-git", "demo-app-payment",
+         "grover_weakened", "key_agreement", 255, "p2", 42.0,
+         "Hybrid X25519MLKEM768 for CRQC protection"),
+        ("Ed25519 Signature (SSH host key)", "algorithm", "Ed25519",
+         "/etc/ssh/ssh_host_ed25519_key", "scan-container", "demo-app-edge",
+         "grover_weakened", "signature", 255, "p2", 38.0,
+         "ML-DSA-44 + Ed25519 hybrid for SSH"),
+        ("GCM-SIV Nonce-Misuse Resistant Enc", "algorithm", "AES-256-GCM-SIV",
+         "vault/storage_enc.go:22", "scan-git", "demo-app-hsm",
+         "quantum_safe", "aead", 256, "p2", 18.0,
+         "Already quantum-safe; no action required"),
+        ("HMAC-SHA-256 Request Signing", "algorithm", "HMAC-SHA-256",
+         "api/auth/request_sign.py:30", "scan-git", "demo-app-b2b",
+         "quantum_safe", "mac", 256, "p2", 15.0,
+         "Already quantum-safe; no action required"),
+        ("PBKDF2-HMAC-SHA-256 Password KDF", "algorithm", "PBKDF2-SHA-256",
+         "auth/password_hash.py:18", "scan-container", "demo-app-auth",
+         "quantum_safe", "kdf", 256, "p2", 22.0,
+         "Argon2id is preferred; migration at next cycle"),
+        ("secp256k1 Ethereum Wallet Signing", "algorithm", "ECDSA-secp256k1",
+         "blockchain/wallet_sign.py:9", "scan-git", "demo-app-b2b",
+         "shor_broken", "signature", 256, "p2", 45.0,
+         "Protocol-level upgrade required; monitor EIP-7"),
+        ("TLS 1.3 (ECDHE + AES-256-GCM)", "protocol", "TLS-1.3",
+         "frontend/vite.config.ts:12", "scan-git", "demo-app-edge",
+         "quantum_safe", "aead", 256, "p2", 12.0,
+         "Add ML-KEM-768 hybrid KEX group when browser support is stable"),
+        # None priority — quantum-safe, compliant
+        ("AES-256-CBC Config Encryption (at rest)", "algorithm", "AES-256-CBC",
+         "config/secrets.enc", "scan-git", "demo-app-archive",
+         "quantum_safe", "block_cipher", 256, "none", 8.0,
+         "Migrate to AEAD (AES-256-GCM) at next release"),
+        ("HKDF-SHA-256 Key Derivation", "algorithm", "HKDF-SHA-256",
+         "auth/kdf/hkdf.go:11", "scan-container", "demo-app-auth",
+         "quantum_safe", "kdf", 256, "none", 5.0,
+         "Already quantum-safe"),
+        ("SHA-256 Audit Log Hashing", "algorithm", "SHA-256",
+         "audit/logger.py:88", "scan-git", "demo-app-archive",
+         "quantum_safe", "hash", 256, "none", 4.0,
+         "Already quantum-safe"),
+        ("SHA-384 TLS PRF Hash", "algorithm", "SHA-384",
+         "tls/prf.c:200", "scan-container", "demo-app-edge",
+         "quantum_safe", "hash", 384, "none", 3.0,
+         "Already quantum-safe"),
+        ("SHA-3-256 Document Digest", "algorithm", "SHA3-256",
+         "docs/digest.py:15", "scan-git", "demo-app-archive",
+         "quantum_safe", "hash", 256, "none", 2.0,
+         "Already quantum-safe"),
+        ("BLAKE3 Fast Hashing", "algorithm", "BLAKE3",
+         "util/fast_hash.py:7", "scan-git", "demo-app-payment",
+         "quantum_safe", "hash", 256, "none", 1.0,
+         "Already quantum-safe"),
+        ("ML-KEM-768 Test Integration Key", "key", "ML-KEM-768",
+         "pqc/test_kem.go:5", "scan-git", "demo-app-payment",
+         "quantum_safe", "kem", 768, "none", 0.5,
+         "PQC key — no action required"),
+        ("ML-DSA-65 Pilot Signing Key", "key", "ML-DSA-65",
+         "pqc/test_sign.go:5", "scan-git", "demo-app-payment",
+         "quantum_safe", "signature", 65, "none", 0.5,
+         "PQC key — no action required"),
+        # Additional to reach 48 total
+        ("RSA-2048 Internal API Signing", "algorithm", "RSA-2048",
+         "internal/api/sign.go:33", "scan-container", "demo-app-b2b",
+         "shor_broken", "signature", 2048, "p0", 85.0,
+         "ML-DSA-44 (FIPS 204)"),
+        ("OpenSSH RSA-2048 Host Key", "key", "RSA-2048",
+         "/etc/ssh/ssh_host_rsa_key", "scan-container", "demo-app-edge",
+         "shor_broken", "pke", 2048, "p0", 80.0,
+         "ML-DSA-44 + X25519MLKEM768 hybrid for SSH"),
+        ("PKCS#12 Archive (RSA-2048)", "certificate", "SHA256withRSA-2048",
+         "certs/client.p12", "scan-git", "demo-app-archive",
+         "shor_broken", "signature", 2048, "p1", 71.0,
+         "ML-DSA-65 certificate in P12 bundle"),
+        ("AES-192-CBC Legacy Backup", "algorithm", "AES-192-CBC",
+         "backup/legacy_enc.py:55", "scan-git", "demo-app-archive",
+         "grover_weakened", "block_cipher", 192, "p2", 35.0,
+         "AES-256-GCM"),
+        ("RSA-4096 Long-lived Archive Key", "key", "RSA-4096",
+         "archive/long_lived.pem", "scan-git", "demo-app-archive",
+         "shor_broken", "pke", 4096, "p1", 58.0,
+         "ML-KEM-1024 (FIPS 203) for long-lived data"),
+        ("BCRYPT Password Hash (legacy auth)", "algorithm", "BCRYPT",
+         "auth/legacy_hash.rb:12", "scan-container", "demo-app-auth",
+         "grover_weakened", "kdf", None, "p2", 33.0,
+         "Argon2id with side-channel hardening"),
+    ]
+
+    created_artefact_ids = []
+    for spec in artefact_specs:
+        (
+            name, atype, algorithm, location, scan_key, app_key,
+            qvuln, primitive, key_size, priority, score, rec_algorithm,
+        ) = spec
+        art_id = str(uuid.uuid4())
+        scan_id = scan_ids[scan_key]
+        app_id = app_id_map.get(app_key)
+
+        # discovered_by heuristic: cloud scans → cloud_hsm, container → container, else source
+        if scan_key == "scan-cloud":
+            discovered_by = "cloud_hsm"
+        elif scan_key == "scan-container":
+            discovered_by = "container"
+        else:
+            discovered_by = "source"
+
+        art_row = tables.Artefact(
+            id=art_id,
+            scan_id=scan_id,
+            application_id=app_id,
+            type=atype,
+            name=name,
+            algorithm=algorithm,
+            primitive=primitive,
+            key_size_bits=key_size,
+            location=location,
+            quantum_vulnerability=qvuln,
+            nist_security_level="unknown",
+            discovered_by=discovered_by,
+            first_seen=now,
+            last_seen=now,
+        )
+        session.add(art_row)
+
+        # Risk assessment (scored so dashboard picks up risk_score and priority)
+        ra_id = str(uuid.uuid4())
+        ra_row = tables.RiskAssessment(
+            id=ra_id,
+            artefact_id=art_id,
+            scan_id=scan_id,
+            status="scored",
+            final_score=score,
+            final_confidence="medium",
+            priority=priority,
+            mosca_z_basis="unavailable",
+            resource_scenario="baseline",
+            quantum_projection_status="model_unavailable",
+            policy_version="demo-10b",
+            weights_version="demo-10b",
+            assessed_at=now,
+        )
+        session.add(ra_row)
+
+        # Recommendation
+        rec_row = tables.Recommendation(
+            id=str(uuid.uuid4()),
+            assessment_id=ra_id,
+            recommended_algorithm=rec_algorithm,
+            is_hybrid="hybrid" in rec_algorithm.lower(),
+            requires_manual_review=(priority == "p0"),
+            rationale=(
+                f"Quantum-vulnerable {algorithm or atype} at {location}. "
+                f"Replace with {rec_algorithm}."
+            ),
+        )
+        session.add(rec_row)
+        created_artefact_ids.append(art_id)
+
+    _audit(
+        session,
+        request,
+        principal=principal,
+        project_id=project.id,
+        action="demo.seed",
+        resource_type="scan",
+        resource_id=None,
+        details={"artefact_count": len(created_artefact_ids)},
+    )
+    session.commit()
+
+    return _DemoSeedResponse(
+        scan_ids=list(scan_ids.values()),
+        artefact_count=len(created_artefact_ids),
+        already_existed=False,
+    )
+
+
+@router.delete("/demo/seed", status_code=status.HTTP_204_NO_CONTENT)
+def demo_seed_delete(request: Request, principal: Analyst, session: Db) -> None:
+    """Remove all demo-seeded rows from the calling project."""
+    project = _project(request, principal)
+    demo_scans = session.scalars(
+        select(tables.Scan).where(
+            tables.Scan.project_id == project.id,
+            tables.Scan.scanners_run.cast(String).contains(_DEMO_TAG),
+        )
+    ).all()
+    for scan in demo_scans:
+        session.delete(scan)
+    # Also clean up applications created by the demo seeder
+    for short_id, _ in [
+        ("demo-app-payment", ""),
+        ("demo-app-auth", ""),
+        ("demo-app-edge", ""),
+        ("demo-app-archive", ""),
+        ("demo-app-b2b", ""),
+        ("demo-app-hsm", ""),
+    ]:
+        full_id = f"{project.id[:8]}-{short_id}"
+        app_row = session.get(tables.Application, full_id)
+        if app_row is not None:
+            session.delete(app_row)
+    _audit(
+        session,
+        request,
+        principal=principal,
+        project_id=project.id,
+        action="demo.seed.delete",
+        resource_type="scan",
+        resource_id=None,
+    )
+    session.commit()
+
+
 __all__ = ["router", "scan_websocket"]

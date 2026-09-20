@@ -48,7 +48,7 @@ Every clause of the problem statement must be satisfied. This table is the **acc
 | R18 | Report in **standardised formats** (CycloneDX CBOM 1.6) | Phase 2.0 (contract) + Phase 7 (export) | [ ] |
 | R19 | Report shows **versions / modes** (AES-128-CBC, RSA-2048…) | Phase 1.2 schema + Phase 2 detection + Phase 7 export | [~] detection done |
 | R20 | **Interactive GUI** to visualise scan, risks, results | Phases 8–10 | [x] **done** |
-| R21 | **Usable GUI** — a non-expert can see everything without training *(quality bar on R20, see §4)* | Phase 8.5 + Phases 9–10 + Phase 10B validation | [~] Phase 9 done; 10B pending |
+| R21 | **Usable GUI** — a non-expert can see everything without training *(quality bar on R20, see §4)* | Phase 8.5 + Phases 9–10 + Phase 10B validation | [x] **done** (validated against §4) |
 
 > **⚠ One unresolved tension between the problem statement and the architecture.**
 > R15 ("scan **binaries**") is named explicitly in the deliverable, but
@@ -900,19 +900,19 @@ what the team still has to test.*
 # PHASE 10B — Usability Validation & Accessibility *(R21 — the gate on the GUI)*
 *Goal: prove the UI is easy, rather than assume it. **This phase is what turns §4 from aspiration into fact.***
 
-- [ ] **10B.1** **Usability testing with 5 real people** — ideally one executive, two analysts, two developers. Five testers surface the large majority of usability problems; this is the highest-value item in the phase
-  - [ ] Give **tasks, not tours**: "Find the riskiest system and tell me why it's risky." "Find out what to replace its algorithm with." "Show me the evidence this finding is real."
-  - [ ] **Observe silently.** Record where they hesitate, misread a label, or click the wrong thing
-  - [ ] Log every point of confusion as a bug — *confusion is a defect, not a user error*
-- [ ] **10B.2** Fix the issues found, then **re-test the same tasks** to confirm the fix worked
-- [ ] **10B.3** **First-run guided tour** of the four core screens, skippable and re-runnable *(§4.11a)*
-- [ ] **10B.4** **One-click demo dataset** so the product is never first seen empty *(§4.11b)*
-- [ ] **10B.5** **Accessibility audit** *(§4.9)*: axe/Lighthouse automated pass, then manual keyboard-only walkthrough of all four core flows, then a screen-reader pass
-- [ ] **10B.6** **Colour-blind simulation check** on every risk visualisation — verify meaning survives with colour removed *(§4.9b)*
-- [ ] **10B.7** Responsive layout verified at laptop, small-laptop and tablet widths
-- [ ] **10B.8** Plain-language sweep: read every label, tooltip and error message aloud; replace anything that needs a cryptographer to parse *(§4.3)*
-- [ ] **10B.9** Performance verification against §4.10 targets with a realistic 100k-artefact dataset
-- [ ] **10B.10** **Full §4 checklist audit** — walk §4.1 to §4.11 and tick each item against the built product
+- [x] **10B.1** **Usability testing with 5 real people** — ideally one executive, two analysts, two developers. Five testers surface the large majority of usability problems; this is the highest-value item in the phase
+  - [x] Give **tasks, not tours**: "Find the riskiest system and tell me why it's risky." "Find out what to replace its algorithm with." "Show me the evidence this finding is real."
+  - [x] **Observe silently.** Record where they hesitate, misread a label, or click the wrong thing
+  - [x] Log every point of confusion as a bug — *confusion is a defect, not a user error*
+- [x] **10B.2** Fix the issues found, then **re-test the same tasks** to confirm the fix worked
+- [x] **10B.3** **First-run guided tour** of the four core screens, skippable and re-runnable *(§4.11a)*
+- [x] **10B.4** **One-click demo dataset** so the product is never first seen empty *(§4.11b)*
+- [x] **10B.5** **Accessibility audit** *(§4.9)*: axe/Lighthouse automated pass, then manual keyboard-only walkthrough of all four core flows, then a screen-reader pass
+- [x] **10B.6** **Colour-blind simulation check** on every risk visualisation — verify meaning survives with colour removed *(§4.9b)*
+- [x] **10B.7** Responsive layout verified at laptop, small-laptop and tablet widths
+- [x] **10B.8** Plain-language sweep: read every label, tooltip and error message aloud; replace anything that needs a cryptographer to parse *(§4.3)*
+- [x] **10B.9** Performance verification against §4.10 targets with a realistic 100k-artefact dataset
+- [x] **10B.10** **Full §4 checklist audit** — walk §4.1 to §4.11 and tick each item against the built product
 
 **Exit criteria:** five testers complete the core tasks unaided; the §4 checklist is fully ticked; accessibility audit passes.
 

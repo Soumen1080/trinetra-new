@@ -2324,3 +2324,413 @@ button:disabled { opacity: .45; cursor: not-allowed; transform: none !important;
   border: 1px solid var(--p2-border);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHASE 10B — Usability Validation & Accessibility (§4.1–§4.11)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 10B.3 / §4.11a Guided Product Tour ──────────────────────────────────── */
+.tour-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--space-4);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.tour-card {
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  width: 100%;
+  max-width: 540px;
+  overflow: hidden;
+  animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tour-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.tour-step-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--brand-glow);
+  color: var(--brand-2);
+  border: 1px solid var(--brand);
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.tour-persona-tag {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.tour-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+.tour-close-btn:hover {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.tour-body {
+  padding: var(--space-6) var(--space-5);
+}
+
+.tour-title {
+  margin: 0 0 var(--space-2) 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.tour-headline {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--brand-2);
+  margin-bottom: var(--space-3);
+}
+
+.tour-desc {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-2);
+  margin-bottom: var(--space-4);
+}
+
+.tour-callout {
+  display: flex;
+  gap: var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--brand);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.tour-callout .callout-bulb {
+  font-size: 1.1rem;
+}
+.tour-callout p {
+  margin: 0;
+}
+
+.tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.tour-dots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.tour-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--line-2);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s;
+}
+.tour-dot.active {
+  background: var(--brand);
+  width: 22px;
+}
+
+.tour-action-group {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.tour-skip-btn {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ── 10B.6 / §4.9b Colour-Blind Simulator & A11y Menu ─────────────────────── */
+/* SVG Filter applications */
+html[data-colorblind="protanopia"] body,
+html[data-colorblind="protanopia"] .shell {
+  filter: url(#protanopia-filter);
+}
+html[data-colorblind="deuteranopia"] body,
+html[data-colorblind="deuteranopia"] .shell {
+  filter: url(#deuteranopia-filter);
+}
+html[data-colorblind="tritanopia"] body,
+html[data-colorblind="tritanopia"] .shell {
+  filter: url(#tritanopia-filter);
+}
+html[data-colorblind="achromatopsia"] body,
+html[data-colorblind="achromatopsia"] .shell {
+  filter: grayscale(100%);
+}
+
+.a11y-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.a11y-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  position: relative;
+}
+
+.a11y-active-indicator {
+  color: var(--brand);
+  font-size: 1.2rem;
+  line-height: 0;
+}
+
+.a11y-modal {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  width: 320px;
+  z-index: 1000;
+  padding: var(--space-4);
+  animation: fadeIn 0.15s ease-out;
+}
+
+.a11y-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+.a11y-modal-header h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.a11y-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.3rem;
+}
+
+.a11y-section {
+  margin-bottom: var(--space-4);
+}
+
+.a11y-label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: 0.82rem;
+}
+
+.a11y-select {
+  width: 100%;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  font-size: 0.82rem;
+}
+
+.a11y-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.a11y-checkbox-row input {
+  margin-top: 0.15rem;
+}
+
+.a11y-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+/* ── 10B.5 / §4.9 High Contrast Mode & Reduced Motion ─────────────────────── */
+html[data-high-contrast="true"] {
+  --line: #6b7280;
+  --line-2: #9ca3af;
+  --text: #ffffff;
+  --surface: #000000;
+  --bg: #050505;
+}
+html[data-high-contrast="true"] button:focus,
+html[data-high-contrast="true"] input:focus,
+html[data-high-contrast="true"] select:focus,
+html[data-high-contrast="true"] a:focus {
+  outline: 3px solid #ffeb3b !important;
+  outline-offset: 2px !important;
+}
+
+/* §4.9f prefers-reduced-motion & explicit toggle */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html[data-reduced-motion="true"] *,
+html[data-reduced-motion="true"] *::before,
+html[data-reduced-motion="true"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* ── §4.1b Persona Switcher ──────────────────────────────────────────────── */
+.persona-switcher {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.82rem;
+}
+.persona-label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.persona-select {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ── §4.11b Demo Data Loader ─────────────────────────────────────────────── */
+.demo-data-loader {
+  display: inline-flex;
+  align-items: center;
+}
+.demo-loaded-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: rgba(78, 205, 196, 0.12);
+  border: 1px solid rgba(78, 205, 196, 0.35);
+  color: #4ecdc4;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.demo-reset-btn {
+  padding: 0 0.25rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.demo-reset-btn:hover {
+  color: var(--text);
+}
+
+/* ── 10B.7 Responsive Breakpoints (§4.7, §4.10) ──────────────────────────── */
+@media (max-width: 1024px) {
+  .shell {
+    grid-template-columns: 200px 1fr;
+  }
+  .sidebar {
+    padding: var(--space-3);
+  }
+  .two-column {
+    grid-template-columns: 1fr;
+  }
+  .metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: var(--space-2) var(--space-4);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sidebar nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .sidebar .side-bottom {
+    display: flex;
+    gap: var(--space-2);
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+  .topbar {
+    padding: var(--space-2) var(--space-4);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .content {
+    padding: var(--space-4);
+  }
+  .tour-card {
+    max-width: 95vw;
+  }
+}
+

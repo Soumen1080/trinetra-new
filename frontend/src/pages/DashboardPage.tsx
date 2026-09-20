@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../hooks/useAuth";
-import { Page, Panel, Empty, Skeleton, ErrorState, RiskBadge, Tooltip, ArtefactTable } from "../components";
+import { Page, Panel, Empty, Skeleton, ErrorState, RiskBadge, Tooltip, ArtefactTable, DemoDataLoader } from "../components";
 import { titleCase, formatDate, riskBand } from "../risk";
 
 /**
@@ -219,12 +219,15 @@ export function DashboardPage() {
               title="No scans yet"
               icon="🔍"
               action={
-                <Link className="button" to="/scans">
-                  Launch a first scan
-                </Link>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
+                  <Link className="button" to="/scans">
+                    Launch a first scan
+                  </Link>
+                  <DemoDataLoader variant="secondary" />
+                </div>
               }
             >
-              A scan turns evidence into a prioritised migration view.
+              A scan turns evidence into a prioritised migration view, or load the demo dataset to explore immediately.
             </Empty>
           )}
         </Panel>
