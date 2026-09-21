@@ -53,24 +53,25 @@ export function ArtefactTable({
   showSource = true,
 }: ArtefactTableProps) {
   const parent = useRef<HTMLDivElement>(null);
+  const rowHeight = 72;
   const virtualizer = useVirtualizer({
     count: virtualized ? rows.length : 0,
     getScrollElement: () => parent.current,
-    estimateSize: () => 62,
-    overscan: 8,
+    estimateSize: () => rowHeight,
+    overscan: 10,
   });
 
   const visible = virtualized
     ? virtualizer.getVirtualItems()
-    : rows.map((_, index) => ({ index, start: index * 62, size: 62, key: index }));
+    : rows.map((_, index) => ({ index, start: index * rowHeight, size: rowHeight, key: index }));
 
   const columns = [
-    selectable ? "32px" : "",
-    "1.6fr",
-    showEvidence ? "1.3fr" : "",
-    !compact && showSource ? ".8fr" : "",
-    ".95fr",
-    "1fr",
+    selectable ? "40px" : "",
+    "minmax(220px, 2fr)",
+    showEvidence ? "minmax(240px, 2.2fr)" : "",
+    !compact && showSource ? "minmax(110px, 0.9fr)" : "",
+    "minmax(140px, 1.1fr)",
+    "minmax(160px, 1.4fr)",
   ]
     .filter(Boolean)
     .join(" ");
@@ -78,36 +79,41 @@ export function ArtefactTable({
   return (
     <div className={`artefact-table${virtualized ? " virtual" : ""}`} ref={parent}>
       <div className="table-head" style={{ gridTemplateColumns: columns }}>
-        {selectable && <span>Select</span>}
-        <span>Artefact</span>
-        {showEvidence && <span>Evidence</span>}
-        {!compact && showSource && <span>Source</span>}
-        <span>Risk</span>
-        <span>Next step</span>
+        {selectable && <span className="col-select">Select</span>}
+        <span className="col-artefact">Artefact</span>
+        {showEvidence && <span className="col-evidence">Evidence</span>}
+        {!compact && showSource && <span className="col-source">Source</span>}
+        <span className="col-risk">Risk</span>
+        <span className="col-action">Next step</span>
       </div>
       <div
+        className="table-body"
         style={
           virtualized
-            ? { height: `${virtualizer.getTotalSize()}px`, position: "relative" }
-            : undefined
+            ? { height: `${virtualizer.getTotalSize()}px`, position: "relative", width: "100%", minWidth: "750px" }
+            : { width: "100%", minWidth: "750px" }
         }
       >
         {visible.map((item) => {
           const row = rows[item.index];
+          if (!row) return null;
           const band = riskBand(row.priority);
           return (
             <Link
               className={`table-row table-row-${band}`}
-              style={
-                virtualized
+              style={{
+                gridTemplateColumns: columns,
+                ...(virtualized
                   ? {
                       position: "absolute",
+                      top: 0,
+                      left: 0,
                       transform: `translateY(${item.start}px)`,
-                      height: item.size,
+                      height: `${item.size}px`,
                       width: "100%",
                     }
-                  : {}
-              }
+                  : {}),
+              }}
               to={linkFor?.(row) ?? `/artefacts/${row.id}`}
               key={row.id}
             >
@@ -128,33 +134,42 @@ export function ArtefactTable({
                 <span className="row-type-icon" aria-hidden="true">
                   {typeIcon(row.type)}
                 </span>
-                <span>
-                  <b>{row.name}</b>
-                  <small>
-                    {titleCase(row.type)} · {row.algorithm || "Algorithm unknown"}
+                <span className="row-name-details">
+                  <b className="row-title" title={row.name}>{row.name}</b>
+                  <small className="row-meta">
+                    <span className="row-meta-type">{titleCase(row.type)}</span>
+                    <span className="row-meta-sep">·</span>
+                    <span className="row-meta-algo">{row.algorithm || "Algorithm unknown"}</span>
                   </small>
                 </span>
               </span>
               {showEvidence && (
-                <span>
-                  <small className="evidence-location">{row.location || "Location unavailable"}</small>
+                <span className="row-evidence">
+                  <small className="evidence-location" title={row.location || "Location unavailable"}>
+                    {row.location || "Location unavailable"}
+                  </small>
                 </span>
               )}
               {!compact && showSource && (
-                <span>
-                  <small>{titleCase(row.discovered_by)}</small>
+                <span className="row-source">
+                  <span className="source-pill">
+                    <span className="source-dot" aria-hidden="true" />
+                    {titleCase(row.discovered_by || "Scanner")}
+                  </span>
                 </span>
               )}
-              <span>
-                <RiskBadge priority={row.priority} />
-                <small>
-                  {row.risk_score == null
-                    ? "No score — context needed"
-                    : `${row.risk_score.toFixed(1)} / 100`}
-                </small>
+              <span className="row-risk">
+                <div className="risk-cell-box">
+                  <RiskBadge priority={row.priority} />
+                  <small className="risk-score-val">
+                    {row.risk_score == null
+                      ? "Score pending"
+                      : `${row.risk_score.toFixed(1)} / 100`}
+                  </small>
+                </div>
               </span>
-              <span>
-                <small>
+              <span className="row-action">
+                <small className="row-action-text" title={row.review_status ? `${titleCase(row.review_status)}${row.review_owner ? ` · ${row.review_owner}` : ""}` : row.recommendation || riskCopy[band].action}>
                   {row.review_status
                     ? `${titleCase(row.review_status)}${row.review_owner ? ` · ${row.review_owner}` : ""}`
                     : row.recommendation || riskCopy[band].action}

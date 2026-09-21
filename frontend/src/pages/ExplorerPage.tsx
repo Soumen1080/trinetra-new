@@ -100,6 +100,16 @@ export function ExplorerPage() {
 
   const hasPartialResults = response.data?.partial_results;
 
+  const activeFilters = [
+    filters.q ? { key: "q", label: `Search: "${filters.q}"` } : null,
+    filters.priority ? { key: "priority", label: `Priority: ${titleCase(filters.priority)}` } : null,
+    filters.type ? { key: "type", label: `Type: ${titleCase(filters.type)}` } : null,
+    filters.algorithm ? { key: "algorithm", label: `Algo: ${filters.algorithm}` } : null,
+    filters.quantum_status ? { key: "quantum_status", label: `Quantum: ${titleCase(filters.quantum_status)}` } : null,
+    filters.scanner ? { key: "scanner", label: `Scanner: ${titleCase(filters.scanner)}` } : null,
+    filters.application_id ? { key: "application_id", label: `App: ${filters.application_id}` } : null,
+  ].filter(Boolean) as { key: string; label: string }[];
+
   return (
     <Page
       title="Artefact explorer"
@@ -108,15 +118,31 @@ export function ExplorerPage() {
       <section className="explorer-layout">
         {/* Filter panel */}
         <aside className="filter-panel">
-          <label>
-            Search
-            <input
-              id="explorer-search"
-              value={filters.q}
-              onChange={(event) => apply("q", event.target.value)}
-              placeholder="Name, path, algorithm…"
-            />
-          </label>
+          <div className="search-filter-box">
+            <label htmlFor="explorer-search" className="search-filter-label">
+              Search
+            </label>
+            <div className="search-input-wrapper">
+              <span className="search-input-icon" aria-hidden="true">🔍</span>
+              <input
+                id="explorer-search"
+                value={filters.q}
+                onChange={(event) => apply("q", event.target.value)}
+                placeholder="Name, path, algorithm…"
+              />
+              {filters.q && (
+                <button
+                  type="button"
+                  className="search-clear-btn"
+                  onClick={() => apply("q", "")}
+                  title="Clear search"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
           <Facet
             label="Priority"
             selected={filters.priority}
@@ -157,7 +183,7 @@ export function ExplorerPage() {
           <ColumnSelector columns={columns} toggle={toggleColumn} />
           <SavedViews query={params.toString()} apply={(query) => setParams(query)} />
           <button
-            className="quiet"
+            className="quiet filter-clear-all"
             onClick={() => setParams({})}
             disabled={!params.toString()}
           >
@@ -167,12 +193,19 @@ export function ExplorerPage() {
 
         {/* Results panel */}
         <section className="panel table-panel">
-          <header>
-            <div>
-              <h2>Findings</h2>
-              <p>
+          <header className="table-panel-header">
+            <div className="table-panel-title">
+              <div className="title-with-pill">
+                <h2>Findings</h2>
+                {response.data && (
+                  <span className="findings-count-pill">
+                    {response.data.page.total.toLocaleString()} artefacts
+                  </span>
+                )}
+              </div>
+              <p className="findings-subtext">
                 {response.data
-                  ? `${response.data.page.total.toLocaleString()} matching artefacts`
+                  ? `Showing ranked findings based on active cryptographic posture`
                   : "Loading results…"}
                 {hasPartialResults && (
                   <span className="partial-badge"> · Partial results (scan in progress)</span>
@@ -182,6 +215,7 @@ export function ExplorerPage() {
             <div className="table-actions">
               <ExportButton filters={filters} label="Export CSV" />
               <button
+                className="copy-view-btn"
                 onClick={() => navigator.clipboard?.writeText(location.href)}
                 title="Copy a shareable link to this exact filter view"
               >
@@ -194,6 +228,34 @@ export function ExplorerPage() {
               )}
             </div>
           </header>
+
+          {/* Active filter chips */}
+          {activeFilters.length > 0 && (
+            <div className="active-filters-bar">
+              <span className="active-filters-title">Active filters:</span>
+              <div className="active-filter-chips">
+                {activeFilters.map((f) => (
+                  <button
+                    type="button"
+                    key={f.key}
+                    className="active-filter-chip"
+                    onClick={() => apply(f.key, "")}
+                    title={`Remove ${f.label}`}
+                  >
+                    <span>{f.label}</span>
+                    <span className="chip-remove-icon" aria-hidden="true">✕</span>
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="filter-chip-reset"
+                  onClick={() => setParams({})}
+                >
+                  Reset all
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* §9.6g — coverage-gap banner */}
           {hasPartialResults && (
@@ -289,20 +351,26 @@ interface FacetProps {
 function Facet({ label, selected, values, apply, renderValue }: FacetProps) {
   const entries = Object.entries(values ?? {}).slice(0, 12);
   return (
-    <fieldset>
+    <fieldset className="facet-group">
       <legend>{label}</legend>
       {entries.length ? (
-        entries.map(([value, count]) => (
-          <label className="check" key={value}>
-            <input
-              type="radio"
-              checked={selected === value}
-              onChange={() => apply(selected === value ? "" : value)}
-            />
-            {renderValue ? renderValue(value) : titleCase(value)}{" "}
-            <small>{count.toLocaleString()}</small>
-          </label>
-        ))
+        entries.map(([value, count]) => {
+          const isSelected = selected === value;
+          return (
+            <label className={`check facet-item ${isSelected ? "selected-facet" : ""}`} key={value}>
+              <input
+                type="radio"
+                name={`facet-${label}`}
+                checked={isSelected}
+                onChange={() => apply(isSelected ? "" : value)}
+              />
+              <span className="facet-value-label">
+                {renderValue ? renderValue(value) : titleCase(value)}
+              </span>
+              <small className="facet-count">{count.toLocaleString()}</small>
+            </label>
+          );
+        })
       ) : (
         <p className="muted">Filters appear once results load.</p>
       )}
