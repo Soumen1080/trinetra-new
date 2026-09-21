@@ -740,11 +740,13 @@ button:disabled { opacity: .45; cursor: not-allowed; transform: none !important;
 .table-row-p0:hover { border-left-color: var(--p0); }
 .table-row-p1:hover { border-left-color: var(--p1); }
 .table-row-p2:hover { border-left-color: var(--p2); }
+.table-row > span { min-width: 0; overflow: hidden; }
 .table-row b { overflow: hidden; text-overflow: ellipsis; display: block; white-space: nowrap; font-size: .875rem; }
-.table-row small { display: block; margin-top: .18rem; }
+.table-row small { display: block; margin-top: .18rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .table-row .risk + small { margin-top: .25rem; }
 
 .row-name { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+.row-name > span:last-child { min-width: 0; flex: 1; }
 .row-type-icon { font-size: 1rem; flex-shrink: 0; }
 .row-select { display: flex; align-items: center; }
 .evidence-location { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
