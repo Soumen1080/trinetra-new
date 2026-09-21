@@ -1,0 +1,5188 @@
+{
+  "trinetra_export_version": "1.0",
+  "scan": {
+    "scan_id": "scan-20260921063202",
+    "target": {
+      "kind": "local_path",
+      "identifier": "demo-project",
+      "reference": null,
+      "display_name": null
+    },
+    "status": "succeeded",
+    "started_at": "2026-09-21T06:32:02.444220+00:00",
+    "finished_at": "2026-09-21T06:32:02.444220+00:00",
+    "scanners_run": [],
+    "tool_versions": [
+      {
+        "name": "source-scanner",
+        "version": "0.2.0",
+        "ruleset_version": null
+      },
+      {
+        "name": "semgrep-oss",
+        "version": "1.176.1",
+        "ruleset_version": null
+      }
+    ],
+    "schema_version": "1.0",
+    "coverage": {
+      "files_discovered": 0,
+      "files_scanned": 0,
+      "files_skipped": 0,
+      "bytes_scanned": 0,
+      "languages_detected": [],
+      "gaps": []
+    },
+    "errors": []
+  },
+  "artefacts": [
+    {
+      "artefact_id": "65c5af0e5d96c4ec1985d9346489460bc21d8a3fee56fb11bcad989165bfe531",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "RSA-2048",
+      "algorithm": "rsa",
+      "oid": null,
+      "primitive": "pke",
+      "purposes": [
+        "key_encapsulation"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": null,
+        "padding": null,
+        "key_size_bits": 2048,
+        "curve": null,
+        "parameter_set": "2048",
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "c/crypto_usage.c",
+            "line": 10,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "medium",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-c-openssl-rsa",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:50c740c465af765fcad1479a0bf6c1be",
+        "name": "RSA-2048",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "pke",
+            "parameterSetIdentifier": "2048",
+            "cryptoFunctions": [
+              "encapsulate"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "c/crypto_usage.c",
+              "line": 10,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "rsa"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "medium"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:key-size-bits",
+            "value": "2048"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-c-openssl-rsa"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-65c5af0e5d96c4ec1985d9346489460bc21d8a3fee56fb11bcad989165bfe531",
+        "artefact_id": "65c5af0e5d96c4ec1985d9346489460bc21d8a3fee56fb11bcad989165bfe531",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": 10.0,
+          "scenario": "baseline",
+          "status": "calculated",
+          "projected_break_year": 2036,
+          "migration_deadline_year": 2036,
+          "logical_qubits_required": 6190,
+          "gate_count_required": 2624225018.0,
+          "assumptions": {
+            "scenario_multiplier": "1.0",
+            "construction": "Gidney-Ekera 2019 logical factoring circuit",
+            "source_id": "gidney-ekera-2019",
+            "error_correction": "logical circuit model; physical overhead excluded",
+            "logical_qubit_definition": "circuit-width logical qubits",
+            "physical_error_rate": "not modelled in Q"
+          },
+          "caveats": [
+            "Gidney 2025 materially reduces a physical-qubit scenario; it does not make this logical threshold a physical-qubit estimate."
+          ],
+          "confidence": "low",
+          "forecast_capability": {
+            "year": 2036,
+            "logical_qubits": 7000.0,
+            "logical_gates": 3000000000.0,
+            "confidence": "low",
+            "basis": "extrapolated tail"
+          }
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 25.0,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed public-key algorithm is Shor-breakable."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 8.0,
+            "max_points": 15,
+            "has_evidence": true,
+            "reason": "Both projected resource dimensions first meet Q in 10 years."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "1bca28aa3a7d85ccf06f0a3dee89e604082074c0747f3fc01c4c12b0a64bc113",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "c/crypto_usage.c",
+            "line": 13,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "medium",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-c-openssl-aes",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:b8757ecc238e5d3dbad9c0a5371e43d0",
+        "name": "AES",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "c/crypto_usage.c",
+              "line": 13,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "medium"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-c-openssl-aes"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-1bca28aa3a7d85ccf06f0a3dee89e604082074c0747f3fc01c4c12b0a64bc113",
+        "artefact_id": "1bca28aa3a7d85ccf06f0a3dee89e604082074c0747f3fc01c4c12b0a64bc113",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "34f270d50fff44730ff420228f1c4358f7622ab2752d6cfb8837defff2cff7e7",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "MD5",
+      "algorithm": "md5",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "c/crypto_usage.c",
+            "line": 7,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "medium",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-c-openssl-md5",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:0e1c90ebde2c13ab3d9fac1478935d88",
+        "name": "MD5",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "c/crypto_usage.c",
+              "line": 7,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "md5"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "medium"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-c-openssl-md5"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-34f270d50fff44730ff420228f1c4358f7622ab2752d6cfb8837defff2cff7e7",
+        "artefact_id": "34f270d50fff44730ff420228f1c4358f7622ab2752d6cfb8837defff2cff7e7",
+        "scan_id": null,
+        "status": "policy_decided",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": null,
+          "z_basis": "unavailable",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [],
+        "missing_fields": [],
+        "rationale": "Current-security policy classifies this algorithm as already classically broken; it receives no quantum-risk score.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "e8a5ad5e0d26b9f496b1e33e7733e04ae2e656d714d342d95df1066e30515677",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "RSA-2048",
+      "algorithm": "rsa",
+      "oid": null,
+      "primitive": "pke",
+      "purposes": [
+        "key_encapsulation"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": null,
+        "padding": null,
+        "key_size_bits": 2048,
+        "curve": null,
+        "parameter_set": "2048",
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "go/crypto_usage.go",
+            "line": 15,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-go-rsa-generate",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:06d0e209d8efa845b05e4d758b329edf",
+        "name": "RSA-2048",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "pke",
+            "parameterSetIdentifier": "2048",
+            "cryptoFunctions": [
+              "encapsulate"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "go/crypto_usage.go",
+              "line": 15,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "rsa"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:key-size-bits",
+            "value": "2048"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-go-rsa-generate"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-e8a5ad5e0d26b9f496b1e33e7733e04ae2e656d714d342d95df1066e30515677",
+        "artefact_id": "e8a5ad5e0d26b9f496b1e33e7733e04ae2e656d714d342d95df1066e30515677",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": 10.0,
+          "scenario": "baseline",
+          "status": "calculated",
+          "projected_break_year": 2036,
+          "migration_deadline_year": 2036,
+          "logical_qubits_required": 6190,
+          "gate_count_required": 2624225018.0,
+          "assumptions": {
+            "scenario_multiplier": "1.0",
+            "construction": "Gidney-Ekera 2019 logical factoring circuit",
+            "source_id": "gidney-ekera-2019",
+            "error_correction": "logical circuit model; physical overhead excluded",
+            "logical_qubit_definition": "circuit-width logical qubits",
+            "physical_error_rate": "not modelled in Q"
+          },
+          "caveats": [
+            "Gidney 2025 materially reduces a physical-qubit scenario; it does not make this logical threshold a physical-qubit estimate."
+          ],
+          "confidence": "low",
+          "forecast_capability": {
+            "year": 2036,
+            "logical_qubits": 7000.0,
+            "logical_gates": 3000000000.0,
+            "confidence": "low",
+            "basis": "extrapolated tail"
+          }
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 25.0,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed public-key algorithm is Shor-breakable."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 8.0,
+            "max_points": 15,
+            "has_evidence": true,
+            "reason": "Both projected resource dimensions first meet Q in 10 years."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "0a67e92aae3931fdb1bbfdcaa1da6b561cb17f7ebfe9b0d5724bdb447b5f03e4",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "MD5",
+      "algorithm": "md5",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "go/crypto_usage.go",
+            "line": 20,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-go-md5",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:e552e97a65fe0f66daaea9980885d3c8",
+        "name": "MD5",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "go/crypto_usage.go",
+              "line": 20,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "md5"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-go-md5"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-0a67e92aae3931fdb1bbfdcaa1da6b561cb17f7ebfe9b0d5724bdb447b5f03e4",
+        "artefact_id": "0a67e92aae3931fdb1bbfdcaa1da6b561cb17f7ebfe9b0d5724bdb447b5f03e4",
+        "scan_id": null,
+        "status": "policy_decided",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": null,
+          "z_basis": "unavailable",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [],
+        "missing_fields": [],
+        "rationale": "Current-security policy classifies this algorithm as already classically broken; it receives no quantum-risk score.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "1e7a42d56c3e1b8cb7dee799ae73cb0ec79bc89fac405fe6b7d7f5862fabff9f",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "SHA1",
+      "algorithm": "sha1",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "go/crypto_usage.go",
+            "line": 20,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-go-sha1",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:ffce29ce89a3c808bc2288ad5caf42e4",
+        "name": "SHA1",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "go/crypto_usage.go",
+              "line": 20,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "sha1"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-go-sha1"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-1e7a42d56c3e1b8cb7dee799ae73cb0ec79bc89fac405fe6b7d7f5862fabff9f",
+        "artefact_id": "1e7a42d56c3e1b8cb7dee799ae73cb0ec79bc89fac405fe6b7d7f5862fabff9f",
+        "scan_id": null,
+        "status": "policy_decided",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": null,
+          "z_basis": "unavailable",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [],
+        "missing_fields": [],
+        "rationale": "Current-security policy classifies this algorithm as already classically broken; it receives no quantum-risk score.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "d88ae070bc932d0907bdb8116ac9482e937d0665a073b77cbcfb0a6627ddc661",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "go/crypto_usage.go",
+            "line": 25,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-go-aes",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:755d099ad0aa66aba7ddeeef9cfabc92",
+        "name": "AES",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "go/crypto_usage.go",
+              "line": 25,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-go-aes"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-d88ae070bc932d0907bdb8116ac9482e937d0665a073b77cbcfb0a6627ddc661",
+        "artefact_id": "d88ae070bc932d0907bdb8116ac9482e937d0665a073b77cbcfb0a6627ddc661",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "97e899f3bfb528e5b9d44f0abd511fd82345a41484786baaaa510a5482d61a94",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "ECDSA",
+      "algorithm": "ecdsa",
+      "oid": null,
+      "primitive": "signature",
+      "purposes": [
+        "digital_signature"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "go/crypto_usage.go",
+            "line": 30,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-go-ecdsa",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:f0e6b57123753f0ebf278b7a6886f241",
+        "name": "ECDSA",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "signature",
+            "cryptoFunctions": [
+              "sign"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "go/crypto_usage.go",
+              "line": 30,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "ecdsa"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-go-ecdsa"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-97e899f3bfb528e5b9d44f0abd511fd82345a41484786baaaa510a5482d61a94",
+        "artefact_id": "97e899f3bfb528e5b9d44f0abd511fd82345a41484786baaaa510a5482d61a94",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 25.0,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed public-key algorithm is Shor-breakable."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "a94ac4651385c92a218727782dbcac72ddc3aa1fdac2b1a787239290380f6096",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES-CBC",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": "cbc",
+        "padding": "pkcs7",
+        "key_size_bits": null,
+        "curve": null,
+        "parameter_set": null,
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "java/CryptoUsage.java",
+            "line": 12,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-java-cipher-getinstance",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:95b2dec53ca93a370eb84b18e9e9b894",
+        "name": "AES-CBC",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "mode": "cbc",
+            "padding": "pkcs7",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "java/CryptoUsage.java",
+              "line": 12,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-java-cipher-getinstance"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-a94ac4651385c92a218727782dbcac72ddc3aa1fdac2b1a787239290380f6096",
+        "artefact_id": "a94ac4651385c92a218727782dbcac72ddc3aa1fdac2b1a787239290380f6096",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "7060555498521e1633bf53882a5ac7de92973ac601e92bf725cc360a2414c5c6",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES-GCM",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": "gcm",
+        "padding": "none",
+        "key_size_bits": null,
+        "curve": null,
+        "parameter_set": null,
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "java/CryptoUsage.java",
+            "line": 17,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-java-cipher-getinstance",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:21ba1b00eff322e4cc17cbd0e3b3cd5b",
+        "name": "AES-GCM",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "mode": "gcm",
+            "padding": "none",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "java/CryptoUsage.java",
+              "line": 17,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-java-cipher-getinstance"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-7060555498521e1633bf53882a5ac7de92973ac601e92bf725cc360a2414c5c6",
+        "artefact_id": "7060555498521e1633bf53882a5ac7de92973ac601e92bf725cc360a2414c5c6",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "1bcfcdb9f76a865bca43e7baaaf15272398b2d81cf6e7d1185908bac6ac5f829",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES-ECB",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": "ecb",
+        "padding": "pkcs7",
+        "key_size_bits": null,
+        "curve": null,
+        "parameter_set": null,
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "java/CryptoUsage.java",
+            "line": 22,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-java-cipher-getinstance",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:6417f070ab4886f49784417f24b9ff64",
+        "name": "AES-ECB",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "mode": "ecb",
+            "padding": "pkcs7",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "java/CryptoUsage.java",
+              "line": 22,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-java-cipher-getinstance"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-1bcfcdb9f76a865bca43e7baaaf15272398b2d81cf6e7d1185908bac6ac5f829",
+        "artefact_id": "1bcfcdb9f76a865bca43e7baaaf15272398b2d81cf6e7d1185908bac6ac5f829",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "e44566a29b483ee455749af524fd31b4100fe902a37cceea6955f794f76f1a97",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "MD5",
+      "algorithm": "md5",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "java/CryptoUsage.java",
+            "line": 27,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-java-messagedigest",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:10e4ce693bb188576124683fa82c3889",
+        "name": "MD5",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "java/CryptoUsage.java",
+              "line": 27,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "md5"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-java-messagedigest"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-e44566a29b483ee455749af524fd31b4100fe902a37cceea6955f794f76f1a97",
+        "artefact_id": "e44566a29b483ee455749af524fd31b4100fe902a37cceea6955f794f76f1a97",
+        "scan_id": null,
+        "status": "policy_decided",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": null,
+          "z_basis": "unavailable",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [],
+        "missing_fields": [],
+        "rationale": "Current-security policy classifies this algorithm as already classically broken; it receives no quantum-risk score.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "ea4a57f3b3edde86571456ce94ed36447e3c3e7ebc2cafc3ce82359f29be6a48",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "RSA",
+      "algorithm": "rsa",
+      "oid": null,
+      "primitive": "pke",
+      "purposes": [
+        "key_encapsulation"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "java/CryptoUsage.java",
+            "line": 32,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-java-keypairgenerator",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:5bd5a5787c660444b0c311be3428d7f1",
+        "name": "RSA",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "pke",
+            "cryptoFunctions": [
+              "encapsulate"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "java/CryptoUsage.java",
+              "line": 32,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "rsa"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-java-keypairgenerator"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-ea4a57f3b3edde86571456ce94ed36447e3c3e7ebc2cafc3ce82359f29be6a48",
+        "artefact_id": "ea4a57f3b3edde86571456ce94ed36447e3c3e7ebc2cafc3ce82359f29be6a48",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 25.0,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed public-key algorithm is Shor-breakable."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "17effa25250ac46eb9e2ed5f59e270e1007a325da7894025f4c8ce1414bb4563",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "SHA256",
+      "algorithm": "sha256",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "javascript/crypto_usage.js",
+            "line": 11,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-js-createhash",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:6cab0e8bbfaf45f55d0816bf20c88c08",
+        "name": "SHA256",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "javascript/crypto_usage.js",
+              "line": 11,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "sha256"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-js-createhash"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-17effa25250ac46eb9e2ed5f59e270e1007a325da7894025f4c8ce1414bb4563",
+        "artefact_id": "17effa25250ac46eb9e2ed5f59e270e1007a325da7894025f4c8ce1414bb4563",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "1af880cdae472e6bce7418b27b90c20e46e779fa70cf2239671c6329ad9825d1",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES-256-CBC",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": "cbc",
+        "padding": null,
+        "key_size_bits": 256,
+        "curve": null,
+        "parameter_set": "256",
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "javascript/crypto_usage.js",
+            "line": 16,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-js-createcipheriv",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:965d6773ce91b9dd5aa26a3047cab525",
+        "name": "AES-256-CBC",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "parameterSetIdentifier": "256",
+            "mode": "cbc",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "javascript/crypto_usage.js",
+              "line": 16,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:key-size-bits",
+            "value": "256"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-js-createcipheriv"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-1af880cdae472e6bce7418b27b90c20e46e779fa70cf2239671c6329ad9825d1",
+        "artefact_id": "1af880cdae472e6bce7418b27b90c20e46e779fa70cf2239671c6329ad9825d1",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "e5c48fed10803831e6e92655e3f2ea263e2989655b7ceddb649debd8d1ba2743",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "RSA",
+      "algorithm": "rsa",
+      "oid": null,
+      "primitive": "pke",
+      "purposes": [
+        "key_encapsulation"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "javascript/crypto_usage.js",
+            "line": 22,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-js-generatekeypair",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:aee1f0021a9ce3aff31502552f7630df",
+        "name": "RSA",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "pke",
+            "cryptoFunctions": [
+              "encapsulate"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "javascript/crypto_usage.js",
+              "line": 22,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "rsa"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-js-generatekeypair"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-e5c48fed10803831e6e92655e3f2ea263e2989655b7ceddb649debd8d1ba2743",
+        "artefact_id": "e5c48fed10803831e6e92655e3f2ea263e2989655b7ceddb649debd8d1ba2743",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 25.0,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed public-key algorithm is Shor-breakable."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "3eba888807196527d67aee0f660c01fc3901d5fe28699b44dd78c41f8fb2a6e7",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "MD5",
+      "algorithm": "md5",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "javascript/crypto_usage.js",
+            "line": 6,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-js-createhash",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:2cf2da3284c6127d4032b4ec243b805d",
+        "name": "MD5",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "javascript/crypto_usage.js",
+              "line": 6,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "md5"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-js-createhash"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-3eba888807196527d67aee0f660c01fc3901d5fe28699b44dd78c41f8fb2a6e7",
+        "artefact_id": "3eba888807196527d67aee0f660c01fc3901d5fe28699b44dd78c41f8fb2a6e7",
+        "scan_id": null,
+        "status": "policy_decided",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": null,
+          "z_basis": "unavailable",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [],
+        "missing_fields": [],
+        "rationale": "Current-security policy classifies this algorithm as already classically broken; it receives no quantum-risk score.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "43efa82f5c8ea4aeb3e6b54d0e7cb7b07cd8237e39c6c7705e3568c5349c4ef6",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "RSA-1024",
+      "algorithm": "rsa",
+      "oid": null,
+      "primitive": "pke",
+      "purposes": [
+        "key_encapsulation"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": null,
+        "padding": null,
+        "key_size_bits": 1024,
+        "curve": null,
+        "parameter_set": "1024",
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "python/crypto_usage.py",
+            "line": 11,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-rsa-generate",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:bab1ba1d23834888d3a93f4997988a49",
+        "name": "RSA-1024",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "pke",
+            "parameterSetIdentifier": "1024",
+            "cryptoFunctions": [
+              "encapsulate"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/crypto_usage.py",
+              "line": 11,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "rsa"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:key-size-bits",
+            "value": "1024"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-rsa-generate"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-43efa82f5c8ea4aeb3e6b54d0e7cb7b07cd8237e39c6c7705e3568c5349c4ef6",
+        "artefact_id": "43efa82f5c8ea4aeb3e6b54d0e7cb7b07cd8237e39c6c7705e3568c5349c4ef6",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": 9.0,
+          "scenario": "baseline",
+          "status": "calculated",
+          "projected_break_year": 2035,
+          "migration_deadline_year": 2035,
+          "logical_qubits_required": 3093,
+          "gate_count_required": 327491256.0,
+          "assumptions": {
+            "scenario_multiplier": "1.0",
+            "construction": "Gidney-Ekera 2019 logical factoring circuit",
+            "source_id": "gidney-ekera-2019",
+            "error_correction": "logical circuit model; physical overhead excluded",
+            "logical_qubit_definition": "circuit-width logical qubits",
+            "physical_error_rate": "not modelled in Q"
+          },
+          "caveats": [
+            "Use the 2025 physical-resource scenario separately; physical and logical qubits are not interchangeable."
+          ],
+          "confidence": "low",
+          "forecast_capability": {
+            "year": 2035,
+            "logical_qubits": 6000.0,
+            "logical_gates": 2400000000.0,
+            "confidence": "low",
+            "basis": "extrapolated tail"
+          }
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 25.0,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed public-key algorithm is Shor-breakable."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 8.0,
+            "max_points": 15,
+            "has_evidence": true,
+            "reason": "Both projected resource dimensions first meet Q in 9 years."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "cde6113d99dd49a5606b4f018ac1cf33414deedb3a54d74d6e89c206deab7193",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "RSA-2048",
+      "algorithm": "rsa",
+      "oid": null,
+      "primitive": "pke",
+      "purposes": [
+        "key_encapsulation"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": null,
+        "padding": null,
+        "key_size_bits": 2048,
+        "curve": null,
+        "parameter_set": "2048",
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "python/crypto_usage.py",
+            "line": 16,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-rsa-generate",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:5c593b0c3a2001e007c4468619d49a33",
+        "name": "RSA-2048",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "pke",
+            "parameterSetIdentifier": "2048",
+            "cryptoFunctions": [
+              "encapsulate"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/crypto_usage.py",
+              "line": 16,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "rsa"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:key-size-bits",
+            "value": "2048"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-rsa-generate"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-cde6113d99dd49a5606b4f018ac1cf33414deedb3a54d74d6e89c206deab7193",
+        "artefact_id": "cde6113d99dd49a5606b4f018ac1cf33414deedb3a54d74d6e89c206deab7193",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": 10.0,
+          "scenario": "baseline",
+          "status": "calculated",
+          "projected_break_year": 2036,
+          "migration_deadline_year": 2036,
+          "logical_qubits_required": 6190,
+          "gate_count_required": 2624225018.0,
+          "assumptions": {
+            "scenario_multiplier": "1.0",
+            "construction": "Gidney-Ekera 2019 logical factoring circuit",
+            "source_id": "gidney-ekera-2019",
+            "error_correction": "logical circuit model; physical overhead excluded",
+            "logical_qubit_definition": "circuit-width logical qubits",
+            "physical_error_rate": "not modelled in Q"
+          },
+          "caveats": [
+            "Gidney 2025 materially reduces a physical-qubit scenario; it does not make this logical threshold a physical-qubit estimate."
+          ],
+          "confidence": "low",
+          "forecast_capability": {
+            "year": 2036,
+            "logical_qubits": 7000.0,
+            "logical_gates": 3000000000.0,
+            "confidence": "low",
+            "basis": "extrapolated tail"
+          }
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 25.0,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed public-key algorithm is Shor-breakable."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 8.0,
+            "max_points": 15,
+            "has_evidence": true,
+            "reason": "Both projected resource dimensions first meet Q in 10 years."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "ca3ecfb5d95bbcd86c77022208e45f00dcbe54cb2a665345fcf9cda08e48e3a5",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES-CBC",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": "cbc",
+        "padding": null,
+        "key_size_bits": null,
+        "curve": null,
+        "parameter_set": null,
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "python/crypto_usage.py",
+            "line": 22,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-aes-mode",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:a9dde53e705ce9f4cd8ad4a5ecf1fdde",
+        "name": "AES-CBC",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "mode": "cbc",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/crypto_usage.py",
+              "line": 22,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-aes-mode"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-ca3ecfb5d95bbcd86c77022208e45f00dcbe54cb2a665345fcf9cda08e48e3a5",
+        "artefact_id": "ca3ecfb5d95bbcd86c77022208e45f00dcbe54cb2a665345fcf9cda08e48e3a5",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "03d3cd85695f808ef2fb058e4061b1dd6d987c5e23ca0109e85ad3357b472721",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES-GCM",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": "gcm",
+        "padding": null,
+        "key_size_bits": null,
+        "curve": null,
+        "parameter_set": null,
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "python/crypto_usage.py",
+            "line": 27,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-aes-mode",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:2223040584ab3b976d45ebbdced0fe04",
+        "name": "AES-GCM",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "mode": "gcm",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/crypto_usage.py",
+              "line": 27,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-aes-mode"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-03d3cd85695f808ef2fb058e4061b1dd6d987c5e23ca0109e85ad3357b472721",
+        "artefact_id": "03d3cd85695f808ef2fb058e4061b1dd6d987c5e23ca0109e85ad3357b472721",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "5aa18205911fa15bd5ef8457ef2be8cb23c675316e3908330f2b9a33ac139b48",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "MD5",
+      "algorithm": "md5",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "python/crypto_usage.py",
+            "line": 32,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-md5",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:c260e7f8608be849d337212b5417dc56",
+        "name": "MD5",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/crypto_usage.py",
+              "line": 32,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "md5"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-md5"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-5aa18205911fa15bd5ef8457ef2be8cb23c675316e3908330f2b9a33ac139b48",
+        "artefact_id": "5aa18205911fa15bd5ef8457ef2be8cb23c675316e3908330f2b9a33ac139b48",
+        "scan_id": null,
+        "status": "policy_decided",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": null,
+          "z_basis": "unavailable",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [],
+        "missing_fields": [],
+        "rationale": "Current-security policy classifies this algorithm as already classically broken; it receives no quantum-risk score.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "e955340cd2929dce158b122d76208643f7edb9f577532bda81965fe87d88d6a6",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "SHA1",
+      "algorithm": "sha1",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "python/crypto_usage.py",
+            "line": 32,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-sha1",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:559a888d0bfee814e9c74071b4f1ff45",
+        "name": "SHA1",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/crypto_usage.py",
+              "line": 32,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "sha1"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-sha1"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-e955340cd2929dce158b122d76208643f7edb9f577532bda81965fe87d88d6a6",
+        "artefact_id": "e955340cd2929dce158b122d76208643f7edb9f577532bda81965fe87d88d6a6",
+        "scan_id": null,
+        "status": "policy_decided",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": null,
+          "z_basis": "unavailable",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [],
+        "missing_fields": [],
+        "rationale": "Current-security policy classifies this algorithm as already classically broken; it receives no quantum-risk score.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "439209001f6e8db21c32427b4b876871c7bad54ca69de6aeea18581b292e59c9",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "SHA2",
+      "algorithm": "sha2",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "python/crypto_usage.py",
+            "line": 37,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-sha2",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:b6637f32f997ecafea3d12da59277296",
+        "name": "SHA2",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/crypto_usage.py",
+              "line": 37,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "sha2"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-sha2"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-439209001f6e8db21c32427b4b876871c7bad54ca69de6aeea18581b292e59c9",
+        "artefact_id": "439209001f6e8db21c32427b4b876871c7bad54ca69de6aeea18581b292e59c9",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "211d69d28cf498ce055484b7c0fcec22a85c52aa714ed4478dd86317c494afac",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "ECDSA-SECP256R1",
+      "algorithm": "ecdsa",
+      "oid": null,
+      "primitive": "signature",
+      "purposes": [
+        "digital_signature"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": null,
+        "padding": null,
+        "key_size_bits": null,
+        "curve": "SECP256R1",
+        "parameter_set": null,
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "python/crypto_usage.py",
+            "line": 42,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-ec-generate",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:0224a670edd015a54f5460872f24664e",
+        "name": "ECDSA-SECP256R1",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "signature",
+            "curve": "SECP256R1",
+            "cryptoFunctions": [
+              "sign"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/crypto_usage.py",
+              "line": 42,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "ecdsa"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-ec-generate"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-211d69d28cf498ce055484b7c0fcec22a85c52aa714ed4478dd86317c494afac",
+        "artefact_id": "211d69d28cf498ce055484b7c0fcec22a85c52aa714ed4478dd86317c494afac",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": 15.0,
+          "scenario": "baseline",
+          "status": "calculated",
+          "projected_break_year": 2041,
+          "migration_deadline_year": 2041,
+          "logical_qubits_required": 2330,
+          "gate_count_required": 128748355584.0,
+          "assumptions": {
+            "scenario_multiplier": "1.0",
+            "construction": "Roetteler et al. 2017 ECDLP upper-bound formula",
+            "source_id": "roetteler-2017",
+            "error_correction": "logical circuit model",
+            "logical_qubit_definition": "circuit-width logical qubits",
+            "physical_error_rate": "not modelled in Q"
+          },
+          "caveats": [
+            "The ECDLP construction is shared with ECC; signatures are an authenticity risk at CRQC time."
+          ],
+          "confidence": "low",
+          "forecast_capability": {
+            "year": 2041,
+            "logical_qubits": 75000.0,
+            "logical_gates": 300000000000.0,
+            "confidence": "low",
+            "basis": "extrapolated tail"
+          }
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 25.0,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed public-key algorithm is Shor-breakable."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 4.0,
+            "max_points": 15,
+            "has_evidence": true,
+            "reason": "Both projected resource dimensions first meet Q in 15 years."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "8a915460825ff0d4e180c3b455eb7e87d12666e13bd23ce18a0751785edf12ec",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "3DES",
+      "algorithm": "3des",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "python/crypto_usage.py",
+            "line": 47,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-3des",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:f5dc498fa7fbbdde11ef1240445991ae",
+        "name": "3DES",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/crypto_usage.py",
+              "line": 47,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "3des"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-3des"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-8a915460825ff0d4e180c3b455eb7e87d12666e13bd23ce18a0751785edf12ec",
+        "artefact_id": "8a915460825ff0d4e180c3b455eb7e87d12666e13bd23ce18a0751785edf12ec",
+        "scan_id": null,
+        "status": "policy_decided",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": null,
+          "z_basis": "unavailable",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [],
+        "missing_fields": [],
+        "rationale": "Current-security policy classifies this algorithm as already classically broken; it receives no quantum-risk score.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "2512bd093c93c11afd733efa3c41a9acb6c13e29923cf80247b5c6201de07e23",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES-CBC",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": "cbc",
+        "padding": null,
+        "key_size_bits": null,
+        "curve": null,
+        "parameter_set": null,
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "python/patient_records.py",
+            "line": 23,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-aes-mode",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:33dc1656465ab3443da6c3295e52f014",
+        "name": "AES-CBC",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "mode": "cbc",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/patient_records.py",
+              "line": 23,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:data-category",
+            "value": "aadhaar_pii,health_record"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-aes-mode"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-2512bd093c93c11afd733efa3c41a9acb6c13e29923cf80247b5c6201de07e23",
+        "artefact_id": "2512bd093c93c11afd733efa3c41a9acb6c13e29923cf80247b5c6201de07e23",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "0e32668b352078551be03e93819864c969e9a3842e95cb1b28204b62790bd1fe",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "RSA-2048",
+      "algorithm": "rsa",
+      "oid": null,
+      "primitive": "pke",
+      "purposes": [
+        "key_encapsulation"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": null,
+        "padding": null,
+        "key_size_bits": 2048,
+        "curve": null,
+        "parameter_set": "2048",
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "python/patient_records.py",
+            "line": 28,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-rsa-generate",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:04f220b98ad63b51602c34dfbfbcdc70",
+        "name": "RSA-2048",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "pke",
+            "parameterSetIdentifier": "2048",
+            "cryptoFunctions": [
+              "encapsulate"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/patient_records.py",
+              "line": 28,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "rsa"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:data-category",
+            "value": "aadhaar_pii,health_record"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:key-size-bits",
+            "value": "2048"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-rsa-generate"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-0e32668b352078551be03e93819864c969e9a3842e95cb1b28204b62790bd1fe",
+        "artefact_id": "0e32668b352078551be03e93819864c969e9a3842e95cb1b28204b62790bd1fe",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": 10.0,
+          "scenario": "baseline",
+          "status": "calculated",
+          "projected_break_year": 2036,
+          "migration_deadline_year": 2036,
+          "logical_qubits_required": 6190,
+          "gate_count_required": 2624225018.0,
+          "assumptions": {
+            "scenario_multiplier": "1.0",
+            "construction": "Gidney-Ekera 2019 logical factoring circuit",
+            "source_id": "gidney-ekera-2019",
+            "error_correction": "logical circuit model; physical overhead excluded",
+            "logical_qubit_definition": "circuit-width logical qubits",
+            "physical_error_rate": "not modelled in Q"
+          },
+          "caveats": [
+            "Gidney 2025 materially reduces a physical-qubit scenario; it does not make this logical threshold a physical-qubit estimate."
+          ],
+          "confidence": "low",
+          "forecast_capability": {
+            "year": 2036,
+            "logical_qubits": 7000.0,
+            "logical_gates": 3000000000.0,
+            "confidence": "low",
+            "basis": "extrapolated tail"
+          }
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 25.0,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed public-key algorithm is Shor-breakable."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 8.0,
+            "max_points": 15,
+            "has_evidence": true,
+            "reason": "Both projected resource dimensions first meet Q in 10 years."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "69dd5c1f22b29a654442508698c9f0f044748ef3ec0ff5f43db1c3d68cf18822",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES-CBC",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": "cbc",
+        "padding": null,
+        "key_size_bits": null,
+        "curve": null,
+        "parameter_set": null,
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "python/patient_records.py",
+            "line": 33,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-aes-mode",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:c50dded0b9dee1bbc369adc19ceca009",
+        "name": "AES-CBC",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "mode": "cbc",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/patient_records.py",
+              "line": 33,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:data-category",
+            "value": "aadhaar_pii,health_record"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-aes-mode"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-69dd5c1f22b29a654442508698c9f0f044748ef3ec0ff5f43db1c3d68cf18822",
+        "artefact_id": "69dd5c1f22b29a654442508698c9f0f044748ef3ec0ff5f43db1c3d68cf18822",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "070ec53ef106273f83148b9c453b9beef27e9c982ce7520737ca9f4a4e0f8107",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "AES-CBC",
+      "algorithm": "aes",
+      "oid": null,
+      "primitive": "block_cipher",
+      "purposes": [
+        "encryption"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": {
+        "detail_type": "algorithm",
+        "mode": "cbc",
+        "padding": null,
+        "key_size_bits": null,
+        "curve": null,
+        "parameter_set": null,
+        "rounds": null
+      },
+      "evidence": [
+        {
+          "location": {
+            "path": "python/patient_records.py",
+            "line": 39,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-aes-mode",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:4882c89835c592cd38ed598ac8d6ab9c",
+        "name": "AES-CBC",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "block-cipher",
+            "mode": "cbc",
+            "cryptoFunctions": [
+              "encrypt"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/patient_records.py",
+              "line": 39,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "aes"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:data-category",
+            "value": "aadhaar_pii,health_record"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-aes-mode"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-070ec53ef106273f83148b9c453b9beef27e9c982ce7520737ca9f4a4e0f8107",
+        "artefact_id": "070ec53ef106273f83148b9c453b9beef27e9c982ce7520737ca9f4a4e0f8107",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    },
+    {
+      "artefact_id": "207132f038df8d3191f44f8f52e9a6093cd31b224f8996d027e8890c56747bd7",
+      "scan_id": null,
+      "asset_type": "algorithm",
+      "name": "SHA2",
+      "algorithm": "sha2",
+      "oid": null,
+      "primitive": "hash",
+      "purposes": [
+        "hashing"
+      ],
+      "quantum_vulnerability": "unknown",
+      "nist_security_level": "unknown",
+      "detail": null,
+      "evidence": [
+        {
+          "location": {
+            "path": "python/patient_records.py",
+            "line": 45,
+            "column": null,
+            "end_line": null,
+            "symbol": null
+          },
+          "detection_method": "semgrep_pattern",
+          "confidence": "high",
+          "snippet": null,
+          "rule_id": "rules.crypto.trinetra-python-sha2",
+          "additional_context": "requires login",
+          "redacted": false
+        }
+      ],
+      "discovered_by": "source",
+      "first_seen": "2026-03-14T10:30:00Z",
+      "last_seen": "2026-03-14T10:30:00Z",
+      "raw_cbom": {
+        "type": "cryptographic-asset",
+        "bom-ref": "trinetra:afc605a02f44eb7877b76cd08202005a",
+        "name": "SHA2",
+        "cryptoProperties": {
+          "assetType": "algorithm",
+          "algorithmProperties": {
+            "primitive": "hash",
+            "cryptoFunctions": [
+              "digest"
+            ]
+          }
+        },
+        "evidence": {
+          "occurrences": [
+            {
+              "location": "python/patient_records.py",
+              "line": 45,
+              "additionalContext": "requires login"
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "trinetra:algorithm",
+            "value": "sha2"
+          },
+          {
+            "name": "trinetra:confidence",
+            "value": "high"
+          },
+          {
+            "name": "trinetra:data-category",
+            "value": "aadhaar_pii,health_record"
+          },
+          {
+            "name": "trinetra:detection-method",
+            "value": "semgrep_pattern"
+          },
+          {
+            "name": "trinetra:rule-id",
+            "value": "rules.crypto.trinetra-python-sha2"
+          }
+        ]
+      },
+      "risk_assessment": {
+        "assessment_id": "assessment-207132f038df8d3191f44f8f52e9a6093cd31b224f8996d027e8890c56747bd7",
+        "artefact_id": "207132f038df8d3191f44f8f52e9a6093cd31b224f8996d027e8890c56747bd7",
+        "scan_id": null,
+        "status": "needs_context",
+        "final_score": null,
+        "final_confidence": null,
+        "priority": "none",
+        "mosca": {
+          "x_years": null,
+          "y_years": null,
+          "z_years": 8.0,
+          "z_basis": "org_horizon",
+          "is_urgent": null,
+          "shortfall_years": null,
+          "confidence": null,
+          "evidence": []
+        },
+        "resource": {
+          "m_years": null,
+          "scenario": "baseline",
+          "status": "model_unavailable",
+          "projected_break_year": null,
+          "migration_deadline_year": null,
+          "logical_qubits_required": null,
+          "gate_count_required": null,
+          "assumptions": {},
+          "caveats": [
+            "No cited logical-resource model matches the observed algorithm and key size."
+          ],
+          "confidence": null,
+          "forecast_capability": {}
+        },
+        "contributions": [
+          {
+            "factor": "algorithm_quantum_vulnerability",
+            "points": 12.5,
+            "max_points": 25,
+            "has_evidence": true,
+            "reason": "The observed symmetric or hash algorithm is quantum-weakened by Grover's algorithm."
+          },
+          {
+            "factor": "mosca_timing_risk",
+            "points": 0.0,
+            "max_points": 20,
+            "has_evidence": false,
+            "reason": "Mosca timing could not be resolved."
+          },
+          {
+            "factor": "resource_feasibility",
+            "points": 0.0,
+            "max_points": 15,
+            "has_evidence": false,
+            "reason": "No comparable two-dimensional resource model was available."
+          },
+          {
+            "factor": "data_sensitivity",
+            "points": 0.0,
+            "max_points": 12,
+            "has_evidence": false,
+            "reason": "No data-classification evidence was supplied."
+          },
+          {
+            "factor": "business_criticality",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No business criticality evidence was supplied."
+          },
+          {
+            "factor": "exposure",
+            "points": 0.0,
+            "max_points": 10,
+            "has_evidence": false,
+            "reason": "No exposure evidence was supplied."
+          },
+          {
+            "factor": "migration_complexity",
+            "points": 4.0,
+            "max_points": 8,
+            "has_evidence": true,
+            "reason": "A detected algorithm use requires an application code or configuration change."
+          }
+        ],
+        "missing_fields": [
+          "data_lifetime_years",
+          "migration_time_years",
+          "quantum_resource_model"
+        ],
+        "rationale": "A comparable score needs both the Mosca and quantum-resource tracks; supply the listed evidence.",
+        "policy_version": "current-security-2026.1",
+        "weights_version": "risk-weights-2026.1",
+        "quantum_forecast_profile_version": "quantum-capability-2026.2",
+        "assessed_at": "2026-09-21T06:32:02.444220Z",
+        "input_provenance": {}
+      }
+    }
+  ],
+  "summary": {
+    "total_artefacts": 31,
+    "artefacts_by_type": {
+      "algorithm": 31
+    },
+    "quantum_vulnerable_count": 0,
+    "assessed_count": 31,
+    "recommendations_count": 0
+  }
+}

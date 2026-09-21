@@ -1,12 +1,21 @@
-"""Tests for observed vs declared protocol comparison (Phase 11A)."""
-
-from app.models.artefact import CryptoArtefact
+from dataclasses import dataclass
+from typing import Any
 from app.models.enums import AssetType, Confidence, ProtocolName
-from app.schemas.artefact import ProtocolDetail
 from app.services.observed_comparison import (
     compare_observed_vs_declared,
     generate_comparison_report,
 )
+
+
+@dataclass
+class CryptoArtefact:
+    id: str
+    scan_id: str
+    application_id: str
+    name: str
+    asset_type: AssetType
+    confidence: Confidence = Confidence.HIGH
+    detail: dict[str, Any] | None = None
 
 
 def test_matched_protocol():

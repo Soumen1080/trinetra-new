@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Artefact, Scan, Dashboard } from "../api/client";
+import { useApi } from "../hooks/useApi";
+import { useAuth } from "../hooks/useAuth";
 
 export const DEMO_DATASET_KEY = "trinetra_demo_dataset_active";
 
@@ -157,64 +159,85 @@ export function DemoDataLoader({
   className = "",
   variant = "secondary",
 }: DemoDataLoaderProps) {
+  const api = useApi();
+  const { project } = useAuth();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(() => {
     return localStorage.getItem(DEMO_DATASET_KEY) === "true";
   });
 
-  const handleLoadDemoData = () => {
+  const handleLoadDemoData = async () => {
     setLoading(true);
 
+    try {
+      await api.demoSeed();
+    } catch {
+      // Best-effort backend seed; client fallback proceeds if offline
+    }
+
     // Populate TanStack Query cache with comprehensive demo dataset
-    setTimeout(() => {
-      // Seed dashboard query
-      queryClient.setQueryData(["dashboard"], DEMO_DASHBOARD);
-      queryClient.setQueriesData({ queryKey: ["dashboard"] }, DEMO_DASHBOARD);
+    const projectId = project?.id;
+    queryClient.setQueryData(["dashboard"], DEMO_DASHBOARD);
+    if (projectId) {
+      queryClient.setQueryData(["dashboard", projectId], DEMO_DASHBOARD);
+    }
+    queryClient.setQueriesData({ queryKey: ["dashboard"] }, DEMO_DASHBOARD);
 
-      // Seed scans query
-      const scansData = {
-        items: DEMO_SCANS,
-        total: DEMO_SCANS.length,
-        offset: 0,
-        limit: 25,
-      };
-      queryClient.setQueryData(["scans"], scansData);
-      queryClient.setQueriesData({ queryKey: ["scans"] }, scansData);
+    const scansData = {
+      items: DEMO_SCANS,
+      total: DEMO_SCANS.length,
+      offset: 0,
+      limit: 25,
+    };
+    queryClient.setQueryData(["scans"], scansData);
+    if (projectId) {
+      queryClient.setQueryData(["scans", projectId], scansData);
+    }
+    queryClient.setQueriesData({ queryKey: ["scans"] }, scansData);
 
-      // Seed artefacts queries
-      const artefactsData = {
-        items: DEMO_DASHBOARD.worst_offenders,
-        total: 48,
-        offset: 0,
-        limit: 50,
-        facets: {
-          type: { algorithm: 22, certificate: 11, library: 9, key: 4, cloud_service: 2 },
-          priority: { p0: 18, p1: 16, p2: 8, none: 6 },
-          application: {
-            "app-payment": 14,
-            "app-auth": 12,
-            "app-edge": 9,
-            "app-archive": 8,
-            "app-b2b": 5,
-          },
-          algorithm: { "RSA-2048": 12, "ECDH-P256": 8, "AES-256-GCM": 14, "3DES": 4, "ML-KEM-768": 6 },
-          quantum_status: { shor_broken: 30, grover_weakened: 4, quantum_safe: 14 },
-          scanner: { source: 32, container: 10, cloud_hsm: 6 },
+    const artefactsData = {
+      items: DEMO_DASHBOARD.worst_offenders,
+      total: 48,
+      offset: 0,
+      limit: 50,
+      facets: {
+        type: { algorithm: 22, certificate: 11, library: 9, key: 4, cloud_service: 2 },
+        priority: { p0: 18, p1: 16, p2: 8, none: 6 },
+        application: {
+          "app-payment": 14,
+          "app-auth": 12,
+          "app-edge": 9,
+          "app-archive": 8,
+          "app-b2b": 5,
         },
-      };
-      queryClient.setQueryData(["artefacts"], artefactsData);
-      queryClient.setQueriesData({ queryKey: ["artefacts"] }, artefactsData);
+        algorithm: { "RSA-2048": 12, "ECDH-P256": 8, "AES-256-GCM": 14, "3DES": 4, "ML-KEM-768": 6 },
+        quantum_status: { shor_broken: 30, grover_weakened: 4, quantum_safe: 14 },
+        scanner: { source: 32, container: 10, cloud_hsm: 6 },
+      },
+    };
+    queryClient.setQueryData(["artefacts"], artefactsData);
+    if (projectId) {
+      queryClient.setQueryData(["artefacts", projectId], artefactsData);
+    }
+    queryClient.setQueriesData({ queryKey: ["artefacts"] }, artefactsData);
 
-      localStorage.setItem(DEMO_DATASET_KEY, "true");
-      setLoaded(true);
-      setLoading(false);
-    }, 50);
+    queryClient.invalidateQueries();
+    localStorage.setItem(DEMO_DATASET_KEY, "true");
+    setLoaded(true);
+    setLoading(false);
   };
 
-  const handleResetDemoData = () => {
+  const handleResetDemoData = async () => {
+    setLoading(true);
+    try {
+      await api.deleteDemoSeed();
+    } catch {
+      // Ignore
+    }
     localStorage.removeItem(DEMO_DATASET_KEY);
     setLoaded(false);
+    setLoading(false);
     queryClient.invalidateQueries();
   };
 

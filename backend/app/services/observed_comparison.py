@@ -15,9 +15,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any
 
-from app.models.artefact import CryptoArtefact
 from app.models.enums import AssetType
-from app.schemas.artefact import ProtocolDetail
+from app.schemas.artefact import CryptoArtefact, ProtocolDetail
 
 
 @dataclass
@@ -48,7 +47,7 @@ class ComparisonSummary:
 
 
 def compare_observed_vs_declared(
-    artefacts: list[CryptoArtefact],
+    artefacts: list[Any],
 ) -> ComparisonSummary:
     """Compare observed protocol findings against declared ones.
 
@@ -59,18 +58,30 @@ def compare_observed_vs_declared(
         ComparisonSummary with matched/mismatched protocols and issues
     """
     # Separate observed from declared protocol artefacts
-    declared: dict[str, list[CryptoArtefact]] = defaultdict(list)
-    observed: dict[str, list[CryptoArtefact]] = defaultdict(list)
+    declared: dict[str, list[Any]] = defaultdict(list)
+    observed: dict[str, list[Any]] = defaultdict(list)
 
     for art in artefacts:
-        if art.asset_type != AssetType.PROTOCOL or not art.detail:
+        asset_type = getattr(art, "asset_type", None) or getattr(art, "type", None)
+        if asset_type is None:
+            continue
+        type_str = asset_type.value if hasattr(asset_type, "value") else str(asset_type)
+        if type_str.lower() != "protocol":
             continue
 
-        detail = art.detail
-        if not isinstance(detail, dict):
+        raw_detail = getattr(art, "detail", None)
+        if not raw_detail:
             continue
 
-        protocol_detail = detail
+        if hasattr(raw_detail, "model_dump"):
+            protocol_detail = raw_detail.model_dump(mode="python")
+        elif hasattr(raw_detail, "__dict__"):
+            protocol_detail = {k: v for k, v in raw_detail.__dict__.items() if not k.startswith("_")}
+        elif isinstance(raw_detail, dict):
+            protocol_detail = raw_detail
+        else:
+            continue
+
         key = _protocol_key(protocol_detail)
 
         if protocol_detail.get("is_observed", False):

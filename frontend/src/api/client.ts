@@ -172,6 +172,13 @@ export function createApi(context: ApiContext = {}) {
       request<ArtefactList>(`/risk/hndl${query(params)}`),
     compliance: () => request<ComplianceData>("/risk/compliance"),
     algorithm_inventory: () => request<AlgorithmBucket[]>("/risk/algorithm-inventory"),
+    demoSeed: () =>
+      request<{ scan_ids: string[]; artefact_count: number; already_existed: boolean }>("/demo/seed", {
+        method: "POST",
+        mutation: true,
+      }),
+    deleteDemoSeed: () =>
+      request<{ deleted: number }>("/demo/seed", { method: "DELETE", mutation: true }),
   };
 }
 

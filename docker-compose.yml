@@ -33,9 +33,15 @@ services:
       - TRINETRA_CELERY_BROKER_URL=redis://redis:6379/0
       - TRINETRA_CELERY_RESULT_BACKEND=redis://redis:6379/0
       - TRINETRA_WORKER_CONCURRENCY=4
+      - TRINETRA_SCANNER_TOKEN=trinetra-internal-scanner-auth-token-secret-32ch
+      - TRINETRA_SOURCE_SCANNER_URL=http://scanner-source:8080
+      - TRINETRA_INPUT_ROOT=/scan-workdir
     volumes:
       - trinetra-data:/data
       - trinetra-artifacts:/artifact-store
+      - trinetra-workdir:/scan-workdir
+      - ./backend/app:/app/app:ro
+      - c:/Users/soume/Desktop/PROJECTS:/host-projects:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -45,6 +51,23 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  scanner-source:
+    build:
+      context: .
+      dockerfile: scanners/source/Dockerfile
+    container_name: trinetra-scanner-source
+    restart: unless-stopped
+    environment:
+      - TRINETRA_SCANNER_TOKEN=trinetra-internal-scanner-auth-token-secret-32ch
+      - TRINETRA_SCANNER_ADDR=:8080
+      - TRINETRA_INPUT_ROOT=/scan-workdir
+      - TRINETRA_ARTIFACT_STORE=/artifact-store
+      - TRINETRA_RULES_ROOT=/rules
+    volumes:
+      - trinetra-artifacts:/artifact-store
+      - trinetra-workdir:/scan-workdir
+      - ./rules:/rules:ro
 
   worker:
     build:
@@ -63,14 +86,22 @@ services:
       - TRINETRA_WORKER_CONCURRENCY=4
       - TRINETRA_TASK_TIME_LIMIT=3600
       - TRINETRA_TASK_SOFT_TIME_LIMIT=3300
+      - TRINETRA_SCANNER_TOKEN=trinetra-internal-scanner-auth-token-secret-32ch
+      - TRINETRA_SOURCE_SCANNER_URL=http://scanner-source:8080
+      - TRINETRA_INPUT_ROOT=/scan-workdir
     volumes:
       - trinetra-data:/data
       - trinetra-artifacts:/artifact-store
+      - trinetra-workdir:/scan-workdir
+      - ./backend/app:/app/app:ro
+      - c:/Users/soume/Desktop/PROJECTS:/host-projects:ro
     depends_on:
       redis:
         condition: service_healthy
       backend:
         condition: service_healthy
+      scanner-source:
+        condition: service_started
 
   frontend:
     build:
@@ -88,3 +119,4 @@ volumes:
   trinetra-data:
   trinetra-artifacts:
   trinetra-redis-data:
+  trinetra-workdir:

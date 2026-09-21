@@ -87,7 +87,14 @@ from app.engines.profiles.loader import load_risk_profiles
 from app.exporters import ExportFormat, export
 from app.models import tables
 from app.models.base import utcnow
-from app.models.enums import AssetType, AssessmentStatus, ProvenanceTier, ScanStatus, UserRole
+from app.models.enums import (
+    AssetType,
+    AssessmentStatus,
+    ProvenanceTier,
+    QuantumVulnerability,
+    ScanStatus,
+    UserRole,
+)
 from app.repositories import (
     append_assessment,
     application_for_project,
@@ -1632,9 +1639,17 @@ def dashboard_summary(
         priority_counts[assessment.priority if assessment else "none"] += 1
         if assessment and assessment.status == AssessmentStatus.NEEDS_CONTEXT.value:
             needs_context += 1
-        if row.quantum_vulnerability in {"shor_broken", "grover_weakened"}:
+        vuln = row.quantum_vulnerability
+        if vuln == "unknown":
+            algo_lower = (row.algorithm or row.name or "").lower()
+            if any(k in algo_lower for k in ["rsa", "dsa", "ecdh", "ecdsa", "dh", "elgamal", "ecc"]):
+                vuln = "shor_broken"
+            elif any(k in algo_lower for k in ["aes", "sha", "des", "3des", "rc4", "md5", "chacha"]):
+                vuln = "grover_weakened"
+
+        if vuln in {"shor_broken", "grover_weakened"}:
             quantum_vulnerable_count += 1
-        if row.quantum_vulnerability == "quantum_safe":
+        if vuln == "quantum_safe":
             quantum_safe_count += 1
         if assessment and assessment.migration_deadline_year is not None:
             deadlines.append(assessment.migration_deadline_year)
@@ -1701,14 +1716,26 @@ def dashboard_summary(
 
 async def scan_websocket(websocket: WebSocket, scan_id: str) -> None:
     """Best-effort live stream backed by durable events (works without Redis)."""
-    token = websocket.query_params.get("access_token", "")
-    project_id = websocket.query_params.get("project_id", "")
+    token = (
+        websocket.query_params.get("access_token")
+        or websocket.cookies.get("trinetra_access_token")
+        or ""
+    )
+    project_id = (
+        websocket.query_params.get("project_id")
+        or websocket.cookies.get("trinetra_project_id")
+        or ""
+    )
     try:
         user_id = decode_access_token(token)
     except HTTPException:
         await websocket.close(code=4401)
         return
     with websocket.app.state.session_factory() as session:
+        if not project_id:
+            scan_obj = session.get(tables.Scan, scan_id)
+            if scan_obj:
+                project_id = scan_obj.project_id or ""
         if (
             not project_id
             or project_for_user(session, project_id=project_id, user_id=user_id) is None
@@ -2281,7 +2308,7 @@ def export_artefacts_csv(
 
 
 @router.get(
-    "/api/v1/applications/{application_id}/observed-vs-declared",
+    "/applications/{application_id}/observed-vs-declared",
     tags=["analysis"],
     response_model=dict[str, Any],
 )
@@ -2302,16 +2329,14 @@ def compare_observed_vs_declared_protocols(
     )
 
     # Fetch all protocol artefacts for this application
-    artefacts = session.scalars(
-        select(tables.Artefact)
-        .where(
+    artefact_rows = session.scalars(
+        select(tables.Artefact).where(
             tables.Artefact.application_id == application_id,
-            tables.Artefact.asset_type == AssetType.PROTOCOL,
+            tables.Artefact.type == AssetType.PROTOCOL.value,
         )
-        .options(joinedload(tables.Artefact.detail))
     ).all()
 
-    if not artefacts:
+    if not artefact_rows:
         return {
             "application_id": application_id,
             "summary": {
@@ -2326,10 +2351,503 @@ def compare_observed_vs_declared_protocols(
         }
 
     # Perform comparison
-    summary = compare_observed_vs_declared([art for art in artefacts])
+    artefacts = [artefact_from_row(art) for art in artefact_rows]
+    summary = compare_observed_vs_declared(artefacts)
     summary.application_id = application_id
 
     return generate_comparison_report(summary)
+
+
+# ---------------------------------------------------------------------------
+# Phase 10 — Risk & Migration Visualisation Endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/risk/mosca-timeline",
+    tags=["risk"],
+    response_model=list[dict[str, Any]],
+)
+def get_mosca_timeline(
+    request: Request,
+    principal: Reader,
+    session: Db,
+) -> list[dict[str, Any]]:
+    """Return Mosca inequality timeline data for applications in the active project."""
+    project = _project(request, principal)
+    apps = list(
+        session.scalars(
+            select(tables.Application).where(tables.Application.project_id == project.id)
+        )
+    )
+    artefacts = list(
+        session.scalars(
+            select(tables.Artefact)
+            .join(tables.Scan)
+            .where(tables.Scan.project_id == project.id)
+        )
+    )
+
+    at_risk_by_app: dict[str, int] = {}
+    for art in artefacts:
+        if art.quantum_vulnerability in {"shor_broken", "grover_weakened"}:
+            app_id = art.application_id or "unassigned"
+            at_risk_by_app[app_id] = at_risk_by_app.get(app_id, 0) + 1
+
+    timeline: list[dict[str, Any]] = []
+
+    for app in apps:
+        x_years = app.data_retention_years if app.data_retention_years is not None else 7
+        z_years = app.migration_time_years if app.migration_time_years is not None else 2.0
+        deadline = int(2035 - round(z_years))
+        timeline.append(
+            {
+                "application_id": app.id,
+                "application_name": app.name,
+                "x_years": x_years,
+                "y_years": 2035,
+                "z_years": z_years,
+                "migration_deadline_year": deadline,
+                "data_classification": app.data_classification or "confidential",
+                "at_risk_count": at_risk_by_app.get(app.id, 0),
+            }
+        )
+
+    if not timeline:
+        total_at_risk = sum(
+            1 for a in artefacts if a.quantum_vulnerability in {"shor_broken", "grover_weakened"}
+        )
+        timeline.append(
+            {
+                "application_id": "proj-default",
+                "application_name": project.name or "Default System",
+                "x_years": 7,
+                "y_years": 2035,
+                "z_years": 2.0,
+                "migration_deadline_year": 2033,
+                "data_classification": "confidential",
+                "at_risk_count": total_at_risk,
+            }
+        )
+    elif "unassigned" in at_risk_by_app and at_risk_by_app["unassigned"] > 0:
+        timeline.append(
+            {
+                "application_id": "unassigned",
+                "application_name": "Unassigned Scanned Findings",
+                "x_years": 5,
+                "y_years": 2035,
+                "z_years": 1.5,
+                "migration_deadline_year": 2033,
+                "data_classification": "internal",
+                "at_risk_count": at_risk_by_app["unassigned"],
+            }
+        )
+
+    return timeline
+
+
+@router.get(
+    "/risk/heatmap",
+    tags=["risk"],
+    response_model=dict[str, Any],
+)
+def get_risk_heatmap(
+    request: Request,
+    principal: Reader,
+    session: Db,
+) -> dict[str, Any]:
+    """5x5 risk heatmap matrix: business criticality x quantum vulnerability."""
+    project = _project(request, principal)
+    statement = (
+        select(tables.Artefact)
+        .join(tables.Scan)
+        .where(tables.Scan.project_id == project.id)
+        .options(selectinload(tables.Artefact.assessments))
+    )
+    artefacts = list(session.scalars(statement))
+
+    crit_map = {
+        "unknown": 0,
+        "low": 1,
+        "medium": 2,
+        "high": 3,
+        "critical": 4,
+    }
+
+    apps = {
+        a.id: a
+        for a in session.scalars(
+            select(tables.Application).where(tables.Application.project_id == project.id)
+        )
+    }
+
+    cells_map: dict[tuple[int, int], dict[str, Any]] = {}
+
+    for row in artefacts:
+        app = apps.get(row.application_id) if row.application_id else None
+        crit_str = app.business_criticality if app else "medium"
+        crit_bin = crit_map.get(crit_str.lower(), 2)
+
+        assessment = _latest(row)
+        priority = (assessment.priority if assessment else "").lower()
+
+        if priority == "p0" or row.quantum_vulnerability == "shor_broken":
+            vuln_bin = 4 if priority == "p0" else 3
+        elif priority == "p1" or row.quantum_vulnerability == "grover_weakened":
+            vuln_bin = 3 if priority == "p1" else 2
+        elif row.quantum_vulnerability == "quantum_safe":
+            vuln_bin = 0
+        else:
+            vuln_bin = 1
+
+        key = (crit_bin, vuln_bin)
+        if key not in cells_map:
+            cells_map[key] = {
+                "criticality_bin": crit_bin,
+                "vuln_bin": vuln_bin,
+                "count": 0,
+                "application_ids": set(),
+            }
+        cells_map[key]["count"] += 1
+        if row.application_id:
+            cells_map[key]["application_ids"].add(row.application_id)
+
+    cells = [
+        {
+            "criticality_bin": c["criticality_bin"],
+            "vuln_bin": c["vuln_bin"],
+            "count": c["count"],
+            "application_ids": sorted(c["application_ids"]),
+        }
+        for c in cells_map.values()
+    ]
+
+    return {
+        "cells": cells,
+        "total": len(artefacts),
+    }
+
+
+@router.get(
+    "/risk/dependency-graph",
+    tags=["risk"],
+    response_model=dict[str, Any],
+)
+def get_dependency_graph(
+    request: Request,
+    principal: Reader,
+    session: Db,
+    application_id: str | None = None,
+) -> dict[str, Any]:
+    """Directed dependency graph of application -> libraries -> algorithms."""
+    project = _project(request, principal)
+    apps = list(
+        session.scalars(
+            select(tables.Application).where(tables.Application.project_id == project.id)
+        )
+    )
+
+    statement = (
+        select(tables.Artefact)
+        .join(tables.Scan)
+        .where(tables.Scan.project_id == project.id)
+        .options(selectinload(tables.Artefact.assessments))
+    )
+    if application_id:
+        statement = statement.where(tables.Artefact.application_id == application_id)
+    artefacts = list(session.scalars(statement))
+
+    nodes: dict[str, dict[str, Any]] = {}
+    edges: list[dict[str, str]] = []
+    seen_edges: set[tuple[str, str]] = set()
+
+    for app in apps:
+        if application_id and app.id != application_id:
+            continue
+        app_node_id = f"app-{app.id}"
+        nodes[app_node_id] = {
+            "id": app_node_id,
+            "label": app.name,
+            "type": "application",
+            "priority": "P0" if app.business_criticality == "critical" else "P1",
+            "artefact_count": 0,
+        }
+
+    if not nodes:
+        nodes["app-default"] = {
+            "id": "app-default",
+            "label": project.name or "Primary Application",
+            "type": "application",
+            "priority": "P1",
+            "artefact_count": len(artefacts),
+        }
+
+    for art in artefacts:
+        app_id = (
+            f"app-{art.application_id}"
+            if art.application_id and f"app-{art.application_id}" in nodes
+            else list(nodes.keys())[0]
+        )
+        nodes[app_id]["artefact_count"] = (nodes[app_id].get("artefact_count") or 0) + 1
+
+        assessment = _latest(art)
+        priority = (
+            assessment.priority.upper() if assessment and assessment.priority else "NONE"
+        )
+
+        if art.type == "library":
+            node_id = f"lib-{art.name.lower().replace(' ', '-')}"
+            if node_id not in nodes:
+                nodes[node_id] = {
+                    "id": node_id,
+                    "label": art.name,
+                    "type": "library",
+                    "priority": priority,
+                }
+            edge_key = (app_id, node_id)
+            if edge_key not in seen_edges:
+                edges.append({"source": app_id, "target": node_id, "label": "links"})
+                seen_edges.add(edge_key)
+        else:
+            algo_label = art.algorithm or art.name
+            if art.key_size_bits:
+                algo_label = f"{algo_label}-{art.key_size_bits}"
+            node_id = f"algo-{algo_label.lower().replace(' ', '-')}"
+            if node_id not in nodes:
+                node_type = "algorithm"
+                if art.type == "certificate":
+                    node_type = "certificate"
+                elif art.type in {"symmetric_key", "asymmetric_key", "key"}:
+                    node_type = "key"
+                nodes[node_id] = {
+                    "id": node_id,
+                    "label": algo_label,
+                    "type": node_type,
+                    "priority": priority,
+                }
+            edge_key = (app_id, node_id)
+            if edge_key not in seen_edges:
+                edges.append({"source": app_id, "target": node_id, "label": "uses"})
+                seen_edges.add(edge_key)
+
+    return {"nodes": list(nodes.values()), "edges": edges}
+
+
+@router.get(
+    "/risk/hndl",
+    tags=["risk"],
+    response_model=ArtefactListResponse,
+)
+def get_hndl_artefacts(
+    request: Request,
+    principal: Reader,
+    session: Db,
+    application_id: str | None = None,
+    offset: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=500),
+) -> ArtefactListResponse:
+    """Findings exposed to Harvest Now, Decrypt Later (HNDL) risk."""
+    project = _project(request, principal)
+    statement = (
+        select(tables.Artefact)
+        .join(tables.Scan)
+        .where(
+            tables.Scan.project_id == project.id,
+            tables.Artefact.quantum_vulnerability.in_(
+                [
+                    QuantumVulnerability.SHOR_BROKEN.value,
+                    QuantumVulnerability.GROVER_WEAKENED.value,
+                ]
+            ),
+        )
+        .options(
+            selectinload(tables.Artefact.assessments).selectinload(
+                tables.RiskAssessment.recommendation
+            ),
+            selectinload(tables.Artefact.review),
+        )
+    )
+    if application_id:
+        statement = statement.where(tables.Artefact.application_id == application_id)
+
+    rows = _filter_artefacts(
+        list(session.scalars(statement)),
+        asset_type=None,
+        priority=None,
+        application_id=application_id,
+        algorithm=None,
+        quantum_status=None,
+        scanner=None,
+        search=None,
+    )
+    return _artefact_query_response(rows, offset=offset, limit=limit)
+
+
+@router.get(
+    "/risk/compliance",
+    tags=["risk"],
+    response_model=dict[str, Any],
+)
+def get_compliance_posture(
+    request: Request,
+    principal: Reader,
+    session: Db,
+) -> dict[str, Any]:
+    """Calculate project cryptographic compliance against CNSA 2.0, NIST IR 8547, and BSI standards."""
+    project = _project(request, principal)
+    artefacts = list(
+        session.scalars(
+            select(tables.Artefact)
+            .join(tables.Scan)
+            .where(tables.Scan.project_id == project.id)
+            .options(selectinload(tables.Artefact.assessments))
+        )
+    )
+    apps = list(
+        session.scalars(
+            select(tables.Application).where(tables.Application.project_id == project.id)
+        )
+    )
+
+    compliant_count = sum(
+        1 for a in artefacts if a.quantum_vulnerability == "quantum_safe"
+    )
+    at_risk_count = sum(
+        1 for a in artefacts if a.quantum_vulnerability == "grover_weakened"
+    )
+    non_compliant_count = sum(
+        1
+        for a in artefacts
+        if a.quantum_vulnerability in {"shor_broken", "classically_broken"}
+    )
+
+    standards = [
+        {
+            "name": "CNSA 2.0 (Phase 1)",
+            "deadline_year": 2026,
+            "description": "Firmware & Software Code Signing transition to stateful hash-based / ML-DSA signatures.",
+            "compliant_count": compliant_count,
+            "at_risk_count": at_risk_count,
+            "non_compliant_count": non_compliant_count,
+        },
+        {
+            "name": "CNSA 2.0 (Phase 2) / NIST IR 8547",
+            "deadline_year": 2030,
+            "description": "Web browsers, TLS servers, API Gateways, and cloud service endpoints key exchange.",
+            "compliant_count": compliant_count,
+            "at_risk_count": at_risk_count,
+            "non_compliant_count": non_compliant_count,
+        },
+        {
+            "name": "CNSA 2.0 (Phase 3)",
+            "deadline_year": 2033,
+            "description": "Operating systems, network equipment, VPN routers, and bulk symmetric storage.",
+            "compliant_count": compliant_count,
+            "at_risk_count": at_risk_count,
+            "non_compliant_count": non_compliant_count,
+        },
+        {
+            "name": "BSI TR-02102 / Full Cutoff",
+            "deadline_year": 2035,
+            "description": "Mandatory deprecation of legacy classical public-key cryptography.",
+            "compliant_count": compliant_count,
+            "at_risk_count": at_risk_count,
+            "non_compliant_count": non_compliant_count,
+        },
+    ]
+
+    systems: list[dict[str, Any]] = []
+    for app in apps:
+        app_arts = [a for a in artefacts if a.application_id == app.id]
+        has_broken = any(
+            a.quantum_vulnerability in {"shor_broken", "classically_broken"}
+            for a in app_arts
+        )
+        has_grover = any(
+            a.quantum_vulnerability == "grover_weakened" for a in app_arts
+        )
+        status_val = (
+            "non_compliant"
+            if has_broken
+            else ("at_risk" if has_grover else "on_track")
+        )
+        algos = (
+            ", ".join(
+                sorted({a.algorithm or a.name for a in app_arts if a.algorithm or a.name})
+            )
+            or "Standard TLS"
+        )
+
+        systems.append(
+            {
+                "id": f"comp-{app.id}",
+                "systemName": app.name,
+                "standard": "CNSA 2.0",
+                "currentCrypto": algos[:40],
+                "targetDeadline": 2030,
+                "status": status_val,
+                "gapAnalysis": (
+                    "Migrate asymmetric keys to ML-KEM / ML-DSA before 2030 mandate."
+                    if status_val != "on_track"
+                    else "Cryptographic parameters satisfy quantum-safe requirements."
+                ),
+            }
+        )
+
+    return {"standards": standards, "systems": systems}
+
+
+@router.get(
+    "/risk/algorithm-inventory",
+    tags=["risk"],
+    response_model=list[dict[str, Any]],
+)
+def get_algorithm_inventory(
+    request: Request,
+    principal: Reader,
+    session: Db,
+) -> list[dict[str, Any]]:
+    """Grouped algorithm inventory breakdown with quantum-safe classification and priority."""
+    project = _project(request, principal)
+    statement = (
+        select(tables.Artefact)
+        .join(tables.Scan)
+        .where(tables.Scan.project_id == project.id)
+        .options(selectinload(tables.Artefact.assessments))
+    )
+    artefacts = list(session.scalars(statement))
+
+    groups: dict[tuple[str, str | None, int | None], dict[str, Any]] = {}
+    priority_order = {"p0": 0, "p1": 1, "p2": 2, "none": 3}
+
+    for row in artefacts:
+        algo_name = row.algorithm or row.name
+        key = (algo_name, row.mode, row.key_size_bits)
+        assessment = _latest(row)
+        prio = (
+            assessment.priority.lower()
+            if assessment and assessment.priority
+            else "none"
+        )
+
+        if key not in groups:
+            groups[key] = {
+                "algorithm": algo_name,
+                "mode": row.mode,
+                "key_size": row.key_size_bits,
+                "count": 0,
+                "quantum_safe": row.quantum_vulnerability == "quantum_safe",
+                "priority": prio.upper() if prio != "none" else "none",
+            }
+        groups[key]["count"] += 1
+
+        curr_prio = groups[key]["priority"].lower()
+        if priority_order.get(prio, 3) < priority_order.get(curr_prio, 3):
+            groups[key]["priority"] = prio.upper()
+
+    result = list(groups.values())
+    result.sort(key=lambda x: x["count"], reverse=True)
+    return result
 
 
 __all__ = ["router", "scan_websocket"]

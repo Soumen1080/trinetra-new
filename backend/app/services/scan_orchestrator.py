@@ -8,7 +8,11 @@ can always fall back to HTTP polling when a Redis/WebSocket delivery is missed.
 from __future__ import annotations
 
 import json
+import logging
 import os
+import re
+import shutil
+import subprocess
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,11 +23,41 @@ from urllib.request import Request, urlopen
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
+logger = logging.getLogger(__name__)
+
+from app.engines.final_risk_engine import (
+    RiskSettings,
+    classify_risk,
+    _security_token,
+    _effective_quantum_vulnerability,
+)
+from app.engines.profiles.loader import load_pqc_evidence_profile, load_risk_profiles
+from app.engines.recommendation_engine import (
+    recommend_replacement,
+    recommendation_id_for_assessment,
+)
 from app.models import tables
 from app.models.base import utcnow
-from app.models.enums import ScannerKind, ScanStatus, ScanTargetKind
-from app.repositories import record_progress
-from app.schemas.mapping import artefact_to_row
+from app.models.enums import (
+    AssetType,
+    BusinessCriticality,
+    DataClassification,
+    ExposureLevel,
+    ProvenanceTier,
+    QuantumVulnerability,
+    ScannerKind,
+    ScanStatus,
+    ScanTargetKind,
+)
+from app.repositories import append_assessment, append_recommendation, record_progress
+from app.schemas.common import Provenance
+from app.schemas.context import ArtefactContext
+from app.schemas.mapping import (
+    artefact_to_row,
+    context_from_row,
+    context_to_row,
+)
+from app.schemas.recommendation import RecommendationContext, RecommendationRequirements
 from app.services.cache import ArtefactCache, compute_content_hash
 from app.services.cbom_ingest import CBOMValidationError, ingest_document
 from app.services.observability import metrics
@@ -149,6 +183,116 @@ def scanner_endpoint(target_kind: ScanTargetKind) -> tuple[str, ScannerKind]:
     raise ValueError("UNSUPPORTED_TARGET_TYPE")
 
 
+def _resolve_local_path(raw_path: str) -> Path | None:
+    """Resolve a local path either directly, via /host-projects, or /scan-workdir."""
+    clean = raw_path.strip()
+    p = Path(clean)
+    if p.exists():
+        return p
+
+    normalized = clean.replace("\\", "/")
+    if "/PROJECTS/" in normalized or "/projects/" in normalized:
+        parts = re.split(r"/PROJECTS/|/projects/", normalized, flags=re.IGNORECASE)
+        if len(parts) > 1:
+            candidate = Path("/host-projects") / parts[1].lstrip("/")
+            if candidate.exists():
+                return candidate
+
+    candidate_basename = Path("/host-projects") / p.name
+    if candidate_basename.exists():
+        return candidate_basename
+
+    input_root = Path(os.getenv("TRINETRA_INPUT_ROOT", "/scan-workdir")).resolve()
+    candidate_input = (input_root / clean.lstrip("/\\")).resolve()
+    if candidate_input.exists():
+        return candidate_input
+
+    return None
+
+
+def prepare_scan_target(scan: tables.Scan) -> str:
+    """Prepare the target for the scanner microservice.
+
+    Returns a target_reference path relative to TRINETRA_INPUT_ROOT.
+    """
+    input_root = Path(os.getenv("TRINETRA_INPUT_ROOT", "/scan-workdir")).resolve()
+    input_root.mkdir(parents=True, exist_ok=True)
+    target_dir = input_root / scan.id
+
+    if scan.target_kind == ScanTargetKind.GIT_REPOSITORY.value:
+        if target_dir.exists():
+            shutil.rmtree(target_dir, ignore_errors=True)
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        git_url = scan.target_identifier.strip()
+        ref = (scan.target_reference or "").strip()
+
+        # Prevent dubiously-owned repository errors under container runtimes
+        subprocess.run(
+            ["git", "config", "--global", "--add", "safe.directory", "*"],
+            capture_output=True,
+            text=True,
+        )
+
+        cloned = False
+        if ref:
+            # First attempt: shallow clone of the requested branch or tag
+            cmd = ["git", "clone", "--depth", "1", "--branch", ref, git_url, str(target_dir)]
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+            if proc.returncode == 0:
+                cloned = True
+            else:
+                # Reference might be a commit hash or special ref; fallback to clone and checkout
+                if target_dir.exists():
+                    shutil.rmtree(target_dir, ignore_errors=True)
+                target_dir.mkdir(parents=True, exist_ok=True)
+                cmd = ["git", "clone", "--depth", "50", git_url, str(target_dir)]
+                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+                if proc.returncode == 0:
+                    co = subprocess.run(
+                        ["git", "-C", str(target_dir), "checkout", ref],
+                        capture_output=True,
+                        text=True,
+                    )
+                    if co.returncode == 0:
+                        cloned = True
+
+        if not cloned:
+            if target_dir.exists():
+                shutil.rmtree(target_dir, ignore_errors=True)
+            target_dir.mkdir(parents=True, exist_ok=True)
+            cmd = ["git", "clone", "--depth", "1", git_url, str(target_dir)]
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+            if proc.returncode != 0:
+                err_msg = proc.stderr.strip() or proc.stdout.strip() or "git clone failed"
+                raise RuntimeError(f"GIT_CLONE_FAILED: {err_msg}")
+
+        return scan.id
+
+    elif scan.target_kind == ScanTargetKind.LOCAL_PATH.value:
+        if target_dir.exists() and any(target_dir.iterdir()):
+            return scan.id
+        src = _resolve_local_path(scan.target_identifier)
+        if src is None:
+            raise RuntimeError(f"TARGET_NOT_FOUND: Local path '{scan.target_identifier}' was not found.")
+
+        target_dir.mkdir(parents=True, exist_ok=True)
+        if src.is_file():
+            shutil.copy2(src, target_dir / src.name)
+        else:
+            shutil.copytree(
+                src,
+                target_dir,
+                dirs_exist_ok=True,
+                ignore=shutil.ignore_patterns(
+                    ".git", "node_modules", ".venv", "__pycache__", ".next", "dist", "build"
+                ),
+            )
+        return scan.id
+
+    return scan.target_reference or scan.id
+
+
 def _artifact_path(reference: str) -> Path:
     """Resolve only a relative artifact-store reference, rejecting traversal."""
     store = Path(os.getenv("TRINETRA_ARTIFACT_STORE", "/artifact-store")).resolve()
@@ -231,6 +375,16 @@ def execute_scan(
             scan = session.get(tables.Scan, scan_id)
             if scan is None:
                 return
+
+            prepared_target = scan.id
+            if gateway is None:
+                prepared_target = prepare_scan_target(scan)
+            else:
+                try:
+                    prepared_target = prepare_scan_target(scan)
+                except Exception:
+                    pass
+
             endpoint, scanner_kind = scanner_endpoint(ScanTargetKind(scan.target_kind))
             publish_progress(
                 session,
@@ -244,7 +398,7 @@ def execute_scan(
             response = scanner.scan(
                 endpoint=endpoint,
                 scan_id=scan.id,
-                target_reference=scan.target_reference or scan.target_identifier,
+                target_reference=prepared_target,
             )
 
         path = _artifact_path(response.artifact_reference)
@@ -275,8 +429,123 @@ def execute_scan(
                 ).__bool__()
             )
             if not existing:
+                profiles = None
+                settings = None
+                pqc_profile = None
+                try:
+                    profiles = load_risk_profiles()
+                    settings = RiskSettings()
+                    pqc_profile = load_pqc_evidence_profile()
+                except Exception:
+                    pass
+
                 for artefact in ingested.artefacts:
-                    session.add(artefact_to_row(artefact, scan_id=scan.id))
+                    artefact.scan_id = scan.id
+
+                    token = _security_token(artefact.algorithm or artefact.name)
+                    broken = set()
+                    resistant = set()
+                    if profiles and profiles.current_security:
+                        broken = {
+                            _security_token(item)
+                            for item in profiles.current_security.classically_broken_algorithms
+                        }
+                        resistant = {
+                            _security_token(item)
+                            for item in profiles.current_security.quantum_resistant_algorithms
+                        }
+
+                    if artefact.asset_type is AssetType.LIBRARY:
+                        effective_vuln = QuantumVulnerability.NOT_APPLICABLE
+                    elif artefact.quantum_vulnerability is QuantumVulnerability.CLASSICALLY_BROKEN or (token and token in broken):
+                        effective_vuln = QuantumVulnerability.CLASSICALLY_BROKEN
+                    elif artefact.quantum_vulnerability is QuantumVulnerability.QUANTUM_SAFE or (token and token in resistant):
+                        effective_vuln = QuantumVulnerability.QUANTUM_SAFE
+                    else:
+                        effective_vuln = _effective_quantum_vulnerability(artefact)
+
+                    artefact.quantum_vulnerability = effective_vuln
+
+                    existing_row = session.get(tables.Artefact, artefact.artefact_id)
+                    if existing_row is not None:
+                        existing_row.scan_id = scan.id
+                        existing_row.last_seen = utcnow()
+                        existing_row.quantum_vulnerability = effective_vuln.value
+                        if artefact.evidence:
+                            existing_row.location = artefact.evidence[0].location.render()
+                        art_row = existing_row
+                    else:
+                        art_row = artefact_to_row(artefact, scan_id=scan.id)
+                        art_row.quantum_vulnerability = effective_vuln.value
+                        session.add(art_row)
+                        session.flush()
+
+                    if profiles and settings and pqc_profile:
+                        try:
+                            ctx_row = session.scalar(
+                                select(tables.ArtefactContext).where(
+                                    tables.ArtefactContext.artefact_id == art_row.id
+                                )
+                            )
+                            if ctx_row is not None:
+                                ctx = context_from_row(ctx_row)
+                            else:
+                                ctx = ArtefactContext(
+                                    artefact_id=art_row.id,
+                                    business_criticality=BusinessCriticality.HIGH,
+                                    data_classification=DataClassification.CONFIDENTIAL,
+                                    exposure=ExposureLevel.INTERNAL,
+                                    data_lifetime_years=7,
+                                    migration_time_years=2.0,
+                                    provenance={
+                                        "business_criticality": Provenance(
+                                            tier=ProvenanceTier.ORG_PRESET,
+                                            source_detail="Default organisation preset",
+                                        ),
+                                        "data_classification": Provenance(
+                                            tier=ProvenanceTier.ORG_PRESET,
+                                            source_detail="Default organisation preset",
+                                        ),
+                                        "exposure": Provenance(
+                                            tier=ProvenanceTier.ORG_PRESET,
+                                            source_detail="Default organisation preset",
+                                        ),
+                                        "data_lifetime_years": Provenance(
+                                            tier=ProvenanceTier.ORG_PRESET,
+                                            source_detail="Default organisation preset",
+                                        ),
+                                        "migration_time_years": Provenance(
+                                            tier=ProvenanceTier.ORG_PRESET,
+                                            source_detail="Default organisation preset",
+                                        ),
+                                    },
+                                )
+
+                            assessment = classify_risk(
+                                artefact,
+                                ctx,
+                                profiles,
+                                settings,
+                                assessment_id=str(uuid.uuid4()),
+                                assessed_at=scan.finished_at or utcnow(),
+                            )
+                            append_assessment(session, assessment)
+
+                            rec = recommend_replacement(
+                                RecommendationContext(
+                                    recommendation_id=recommendation_id_for_assessment(
+                                        assessment.assessment_id
+                                    ),
+                                    assessment=assessment,
+                                    artefact=artefact,
+                                    requirements=RecommendationRequirements(),
+                                ),
+                                profile=pqc_profile,
+                            )
+                            if rec:
+                                append_recommendation(session, rec)
+                        except Exception as exc:
+                            logger.warning("Failed to assess artefact %s: %s", art_row.id, exc)
             scan.scanners_run = [scanner_kind.value]
             scan.tool_versions = [item.model_dump(mode="json") for item in ingested.tools]
             scan.coverage_json = {
@@ -311,7 +580,14 @@ def execute_scan(
         MemoryError,
         Exception,
     ) as error:
+        logger.exception("execute_scan failed for scan_id=%s: %s", scan_id, error)
         code = str(error) if str(error).isupper() else "SCANNER_FAILED"
+        err_msg = str(error)
+        msg = (
+            f"The scan target could not be prepared: {err_msg}"
+            if "GIT_CLONE_FAILED" in err_msg or "TARGET_NOT_FOUND" in err_msg
+            else f"The scan could not complete: {err_msg}"
+        )
         with session_factory() as session:
             scan = session.get(tables.Scan, scan_id)
             if scan is None:
@@ -321,10 +597,7 @@ def execute_scan(
             scan.errors_json = [
                 {
                     "code": code,
-                    "message": (
-                        "The scan could not complete. Check the target and scanner "
-                        "availability."
-                    ),
+                    "message": msg,
                     "is_retryable": code == "SCANNER_UNAVAILABLE",
                     "occurred_at": scan.finished_at.isoformat(),
                 }

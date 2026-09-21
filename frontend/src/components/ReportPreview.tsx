@@ -24,7 +24,18 @@ export function ReportPreview({
     setDownloading(true);
     setDownloadMsg("");
     try {
-      const report = await api.createReport(scanId, format);
+      let targetScanId = scanId;
+      if (!targetScanId || targetScanId === "scan-live-latest") {
+        const scans = await api.scans(0, 1);
+        if (scans?.items && scans.items.length > 0) {
+          targetScanId = scans.items[0].id;
+        } else {
+          setDownloadMsg("No completed scans available in this project to generate a report. Please run a scan first.");
+          setDownloading(false);
+          return;
+        }
+      }
+      const report = await api.createReport(targetScanId, format);
       const { blob, name } = await api.downloadReport(report.id);
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
